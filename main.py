@@ -39,8 +39,6 @@ else:
     BASE_URL = f"http://{SERVER_IP}:{PORT}"
     print(f"🏠 YEREL MOD (Local): {BASE_URL}")
 
-print(f"🚀 SERVER BAŞLATILIYOR... IP ADRESİ: {SERVER_IP}")
-print(f"📱 Telefondan erişim için resimler şu adresten sunulacak: {BASE_URL}/static/crops/...")
 
 # Klasör Ayarları
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
