@@ -28,10 +28,16 @@ def get_local_ip():
         return "127.0.0.1"
 
 
-# Bilgisayarın IP'sini alıyoruz (Örn: 192.168.1.35)
-SERVER_IP = get_local_ip()
-PORT = 8000
-BASE_URL = f"http://{SERVER_IP}:{PORT}"
+RENDER_URL = os.environ.get("RENDER_EXTERNAL_URL")
+
+if RENDER_URL:
+    BASE_URL = RENDER_URL
+    print(f"☁️ BULUT MODU (Render): {BASE_URL}")
+else:
+    SERVER_IP = get_local_ip()
+    PORT = 8000
+    BASE_URL = f"http://{SERVER_IP}:{PORT}"
+    print(f"🏠 YEREL MOD (Local): {BASE_URL}")
 
 print(f"🚀 SERVER BAŞLATILIYOR... IP ADRESİ: {SERVER_IP}")
 print(f"📱 Telefondan erişim için resimler şu adresten sunulacak: {BASE_URL}/static/crops/...")
