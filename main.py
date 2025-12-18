@@ -37,8 +37,12 @@ print(f"🚀 SERVER BAŞLATILIYOR... IP ADRESİ: {SERVER_IP}")
 print(f"📱 Telefondan erişim için resimler şu adresten sunulacak: {BASE_URL}/static/crops/...")
 
 # Klasör Ayarları
-STATIC_DIR = "static"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
 CROPS_DIR = os.path.join(STATIC_DIR, "crops")
+
+# Klasörleri oluştur (Garanti olsun)
+os.makedirs(STATIC_DIR, exist_ok=True)
 os.makedirs(CROPS_DIR, exist_ok=True)
 
 app.add_middleware(
@@ -557,7 +561,7 @@ async def generate_ui(
 
 # ... Diğer endpointler (update_layout, publish_ab vs) aynı ...
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 @app.get("/")
