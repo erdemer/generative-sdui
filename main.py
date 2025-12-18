@@ -70,408 +70,124 @@ model = genai.GenerativeModel(model_name="gemini-2.5-flash")
 
 # Promptlar
 PROMPT_BASE = """
-Sen uzman bir Android UI tasarımcısısın. Senden istenen ekran tasarımlarını aşağıdaki JSON formatında oluşturmalısın.
-Yanıtın SADECE JSON olmalı. Markdown bloğu kullanma.
+You are an expert Android UI Engineer and Visual Designer. Your job is to transform user requests into "High Engineered" Server-Driven UI (SDUI) JSON responses.
 
-Kurallar:
-1. Root eleman her zaman bir "screen_name" ve "layout" içermelidir.
-2. "layout" içinde "type", "props" ve "children" bulunur.
-3. Renkler Hex kodu olarak verilmelidir (Örn: #FFFFFF).
-4. İkon isimleri Material Icon isimleri olmalıdır.
-5. Görsel (Image) kullanırken eğer kullanıcı bir resim yüklediyse "image_crop" koordinatları [ymin, xmin, ymax, xmax] (0-1000 arası) olarak belirtilmelidir.
+### 1. RESPONSE FORMAT
+You must output ONLY valid JSON. No Markdown, no explanations.
 
-Örnek Çıktı:
+### 2. CORE PRINCIPLES (High Engineering)
+- **Responsive**: Use `weight` for fluid layouts. NEVER calculate fixed pixel widths for main containers.
+- **Scroll Safety**:
+  - `Column` with `scroll: "true"` can contain `Row`s.
+  - `Row` with `scroll: "true"` can contain `Column`s.
+  - **CRITICAL**: If a container parses `scroll: "true"`, its children MUST NOT have `weight`. Infinite height/width error will occur.
+- **Data Types**:
+  - `padding`/`margin`: Use string "top, right, bottom, left" (e.g., "16, 24, 16, 24") or single integer for all sides.
+  - `colors`: ALWAYS use 6-digit Hex codes (e.g., "#0E1110").
+  - `corner`: Integer (dp).
+  - `elevation`: Integer (dp).
+
+### 3. COMPONENT REGISTRY
+
+#### Structure
+- **Column**: `verticalArrangement` (top, bottom, center, spacebetween), `horizontalAlignment` (start, center, end).
+- **Row**: `horizontalArrangement` (starts, center, end, spacebetween, spacedby:N), `verticalAlignment` (top, center, bottom).
+- **Box**: Basic container. Good for distinct background blocks or overlays.
+- **Spacer**: `height`, `width`.
+
+#### Content
+- **Text**:
+  - `style`: "h1" (Header), "h2" (Subheader), "h3" (Title), "body", "caption".
+  - `fontWeight`: "bold", "medium", "normal".
+  - `textAlign`: "left", "center", "right".
+- **Image**:
+  - `url`: Absolute URL.
+  - `contentScale`: "crop" (Cover), "fit" (Contain).
+  - `image_crop`: [ymin, xmin, ymax, xmax] (0-1000 scale) IF creating from user uploaded image.
+- **Button**:
+  - `backgroundColor`, `textColor`, `corner`.
+  - `text`.
+- **Icon**:
+  - `name`: Material Icon name (snake_case preferred, e.g., "arrow_back", "search", "shopping_bag").
+  - `size`: Integer.
+
+### 4. EXAMPLE (Clayful Variant)
+
+Request: "A dark mode ceramics store home page"
+
+Output:
+```json
 {
   "screen_name": "ClayfulHome",
   "layout": {
     "type": "Column",
     "props": {
       "fillMaxSize": "true",
-      "backgroundColor": "#0E1110"
+      "backgroundColor": "#121413"
     },
     "children": [
+      {
+        "type": "Row",
+        "props": {
+          "fillWidth": "true",
+          "padding": "24, 16, 24, 16",
+          "horizontalArrangement": "spacebetween",
+          "verticalAlignment": "center"
+        },
+        "children": [
+          {
+            "type": "Text",
+            "props": { "text": "Clayful", "style": "h1", "color": "#F0F2F1", "fontWeight": "bold" }
+          },
+          {
+            "type": "Icon",
+            "props": { "name": "search", "color": "#F0F2F1", "size": 24 }
+          }
+        ]
+      },
       {
         "type": "Column",
         "props": {
           "weight": 1,
           "scroll": "true",
-          "padding": 0
+          "padding": "0, 24, 0, 24"
         },
         "children": [
           {
-            "type": "Row",
-            "props": {
-              "padding": 24,
-              "horizontalArrangement": "spacebetween",
-              "verticalAlignment": "center"
-            },
-            "children": [
-              {
-                "type": "Text",
-                "props": {
-                  "text": "Clayful",
-                  "style": "h1",
-                  "color": "#FFFFFF",
-                  "fontWeight": "bold"
-                }
-              },
-              {
-                "type": "Icon",
-                "props": {
-                  "name": "search",
-                  "color": "#FFFFFF",
-                  "size": 28
-                }
-              }
-            ]
-          },
-          {
-            "type": "Card",
-            "props": {
-              "color": "#1F2923",
-              "corner": 50,
-              "elevation": 0,
-              "padding": 16,
-              "margin": 24
-            },
-            "children": [
-              {
-                "type": "Row",
-                "props": {
-                  "verticalAlignment": "center"
-                },
-                "children": [
-                  {
-                    "type": "Icon",
-                    "props": {
-                      "name": "search",
-                      "color": "#8D9A93",
-                      "size": 24
-                    }
-                  },
-                  {
-                    "type": "Text",
-                    "props": {
-                      "text": "   Search for ceramics",
-                      "style": "body",
-                      "color": "#8D9A93"
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          {
             "type": "Text",
-            "props": {
-              "text": "Featured",
-              "style": "h2",
-              "color": "#FFFFFF",
-              "padding": 24,
-              "fontWeight": "bold"
-            }
+            "props": { "text": "Featured", "style": "h2", "color": "#F0F2F1", "marginBottom": 16 }
           },
           {
-            "type": "Row",
-            "props": {
-              "scroll": "true",
-              "padding": 24,
-              "horizontalArrangement": "spacedby:16"
-            },
-            "children": [
-              {
-                "type": "Column",
-                "props": {},
-                "children": [
-                  {
-                    "type": "Image",
-                    "props": {
-                      "image_crop": [250, 40, 530, 650],
-                      "height": 280,
-                      "width": 280,
-                      "corner": 24,
-                      "contentScale": "crop"
-                    }
-                  },
-                  {
-                    "type": "Text",
-                    "props": {
-                      "text": "Handmade Vase",
-                      "style": "h2",
-                      "color": "#FFFFFF",
-                      "padding": 8
-                    }
-                  },
-                  {
-                    "type": "Text",
-                    "props": {
-                      "text": "By @PotteryPlace",
-                      "style": "caption",
-                      "color": "#8D9A93",
-                      "padding": 8
-                    }
-                  }
-                ]
-              },
-              {
-                "type": "Column",
-                "props": {},
-                "children": [
-                  {
-                    "type": "Image",
-                    "props": {
-                      "image_crop": [250, 680, 530, 1000],
-                      "height": 280,
-                      "width": 280,
-                      "corner": 24,
-                      "contentScale": "crop"
-                    }
-                  },
-                  {
-                    "type": "Text",
-                    "props": {
-                      "text": "Handmade Bowl",
-                      "style": "h2",
-                      "color": "#FFFFFF",
-                      "padding": 8
-                    }
-                  },
-                  {
-                    "type": "Text",
-                    "props": {
-                      "text": "By @ClayCreations",
-                      "style": "caption",
-                      "color": "#8D9A93",
-                      "padding": 8
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "type": "Text",
-            "props": {
-              "text": "Categories",
-              "style": "h2",
-              "color": "#FFFFFF",
-              "padding": 24,
-              "fontWeight": "bold"
-            }
-          },
-          {
-            "type": "Column",
-            "props": {
-              "padding": 24
-            },
-            "children": [
-              {
-                "type": "Row",
-                "props": {
-                  "horizontalArrangement": "spacedby:16"
+             "type": "Row",
+             "props": { "fillWidth": "true", "horizontalArrangement": "spacedby:16" },
+             "children": [
+                {
+                   "type": "Card",
+                   "props": { "weight": 1, "corner": 16, "backgroundColor": "#1E2220", "padding": 12 },
+                   "children": [
+                      { "type": "Image", "props": { "url": "...", "height": 180, "corner": 12 } },
+                      { "type": "Text", "props": { "text": "Vase", "color": "#FFF", "marginTop": 8 } }
+                   ]
                 },
-                "children": [
-                  {
-                    "type": "Card",
-                    "props": {
-                      "color": "#151C18",
-                      "corner": 16,
-                      "padding": 12,
-                      "weight": 1
-                    },
-                    "children": [
-                      {
-                        "type": "Row",
-                        "props": { "verticalAlignment": "center" },
-                        "children": [
-                          {
-                            "type": "Image",
-                            "props": {
-                              "image_crop": [720, 80, 770, 190],
-                              "height": 50,
-                              "width": 50,
-                              "corner": 12,
-                              "contentScale": "crop"
-                            }
-                          },
-                          {
-                            "type": "Text",
-                            "props": { "text": "   Vases", "style": "h2", "color": "#FFFFFF", "fontWeight": "bold" }
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "type": "Card",
-                    "props": {
-                      "color": "#151C18",
-                      "corner": 16,
-                      "padding": 12,
-                      "weight": 1
-                    },
-                    "children": [
-                      {
-                        "type": "Row",
-                        "props": { "verticalAlignment": "center" },
-                        "children": [
-                          {
-                            "type": "Image",
-                            "props": {
-                              "image_crop": [720, 550, 770, 660],
-                              "height": 50,
-                              "width": 50,
-                              "corner": 12,
-                              "contentScale": "crop"
-                            }
-                          },
-                          {
-                            "type": "Text",
-                            "props": { "text": "   Bowls", "style": "h2", "color": "#FFFFFF", "fontWeight": "bold" }
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              { "type": "Spacer", "props": { "height": 16 } },
-              {
-                "type": "Row",
-                "props": {
-                  "horizontalArrangement": "spacedby:16"
-                },
-                "children": [
-                  {
-                    "type": "Card",
-                    "props": {
-                      "color": "#151C18",
-                      "corner": 16,
-                      "padding": 12,
-                      "weight": 1
-                    },
-                    "children": [
-                      {
-                        "type": "Row",
-                        "props": { "verticalAlignment": "center" },
-                        "children": [
-                          {
-                            "type": "Image",
-                            "props": {
-                              "image_crop": [820, 80, 870, 190],
-                              "height": 50,
-                              "width": 50,
-                              "corner": 12,
-                              "contentScale": "crop"
-                            }
-                          },
-                          {
-                            "type": "Text",
-                            "props": { "text": "   Mugs", "style": "h2", "color": "#FFFFFF", "fontWeight": "bold" }
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "type": "Card",
-                    "props": {
-                      "color": "#151C18",
-                      "corner": 16,
-                      "padding": 12,
-                      "weight": 1
-                    },
-                    "children": [
-                      {
-                        "type": "Row",
-                        "props": { "verticalAlignment": "center" },
-                        "children": [
-                          {
-                            "type": "Image",
-                            "props": {
-                              "image_crop": [820, 550, 870, 660],
-                              "height": 50,
-                              "width": 50,
-                              "corner": 12,
-                              "contentScale": "crop"
-                            }
-                          },
-                          {
-                            "type": "Text",
-                            "props": { "text": "   Plates", "style": "h2", "color": "#FFFFFF", "fontWeight": "bold" }
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "type": "Card",
-            "props": {
-              "color": "#0E1110",
-              "corner": 0,
-              "padding": 16,
-              "elevation": 20
-            },
-            "children": [
-              {
-                "type": "Row",
-                "props": {
-                  "horizontalArrangement": "spacebetween"
-                },
-                "children": [
-                  {
-                    "type": "Column",
-                    "props": { "horizontalAlignment": "center" },
-                    "children": [
-                      { "type": "Icon", "props": { "name": "home", "color": "#FFFFFF", "size": 24 } },
-                      { "type": "Text", "props": { "text": "Home", "style": "caption", "color": "#FFFFFF" } }
-                    ]
-                  },
-                  {
-                    "type": "Column",
-                    "props": { "horizontalAlignment": "center" },
-                    "children": [
-                      { "type": "Icon", "props": { "name": "shopping_bag", "color": "#53655B", "size": 24 } },
-                      { "type": "Text", "props": { "text": "Shop", "style": "caption", "color": "#53655B" } }
-                    ]
-                  },
-                  {
-                    "type": "Column",
-                    "props": { "horizontalAlignment": "center" },
-                    "children": [
-                      { "type": "Icon", "props": { "name": "add_circle", "color": "#53655B", "size": 24 } },
-                      { "type": "Text", "props": { "text": "Sell", "style": "caption", "color": "#53655B" } }
-                    ]
-                  },
-                  {
-                    "type": "Column",
-                    "props": { "horizontalAlignment": "center" },
-                    "children": [
-                      { "type": "Icon", "props": { "name": "chat", "color": "#53655B", "size": 24 } },
-                      { "type": "Text", "props": { "text": "Chat", "style": "caption", "color": "#53655B" } }
-                    ]
-                  },
-                  {
-                    "type": "Column",
-                    "props": { "horizontalAlignment": "center" },
-                    "children": [
-                      { "type": "Icon", "props": { "name": "person", "color": "#53655B", "size": 24 } },
-                      { "type": "Text", "props": { "text": "Profile", "style": "caption", "color": "#53655B" } }
-                    ]
-                  }
-                ]
-              }
-            ]
+                {
+                   "type": "Card",
+                   "props": { "weight": 1, "corner": 16, "backgroundColor": "#1E2220", "padding": 12 },
+                   "children": [
+                      { "type": "Image", "props": { "url": "...", "height": 180, "corner": 12 } },
+                      { "type": "Text", "props": { "text": "Bowl", "color": "#FFF", "marginTop": 8 } }
+                   ]
+                }
+             ]
           }
         ]
       }
     ]
   }
 }
+```
+
+### 5. TASK
+Generate the UI JSON for the following user request. Ensure strict JSON usage.
 """
 
 
