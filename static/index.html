@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDUI Studio Pro 🚀</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root { --bg: #121212; --panel: #1E1E1E; --border: #333; --text: #E0E0E0; --accent: #BB86FC; --success: #03DAC6; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+
+        /* Layout */
+        .sidebar { width: 350px; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; gap: 15px; overflow-y: auto; }
+        .main-content { flex: 1; display: flex; flex-direction: column; padding: 20px; gap: 20px; overflow: hidden; position: relative; }
+        .workspace { display: flex; gap: 20px; flex: 1; min-height: 0; position: relative; }
+
+        h2 { margin: 0 0 10px 0; font-size: 1rem; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+
+        /* Inputs & Controls */
+        textarea#promptInput { background: #2C2C2C; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; resize: none; height: 80px; width: 100%; box-sizing: border-box; }
+
+        .toggle-container {
+            display: flex; align-items: center; gap: 10px; background: #2C2C2C; padding: 10px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+        }
+        .toggle-container:hover { border-color: var(--accent); }
+        .toggle-container input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); }
+        .toggle-text { font-size: 0.9rem; color: #CCC; }
+
+        /* Empty State Styling */
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; color: #555; text-align: center; border: 2px dashed #333; border-radius: 12px;
+        }
+        .empty-state .material-icons { font-size: 64px; margin-bottom: 10px; opacity: 0.5; }
+        .empty-state p { margin: 0; font-size: 1.1rem; }
+        .empty-state small { font-size: 0.9rem; margin-top: 5px; opacity: 0.7; }
+
+        /* JSON Editor */
+        textarea#jsonEditor {
+            background: #0d0d0d; border: 1px solid var(--border); color: #00FF00; padding: 15px; border-radius: 8px; resize: none; width: 100%; height: 100%; box-sizing: border-box; font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; line-height: 1.5;
+        }
+        textarea#jsonEditor.fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; border: none; padding: 40px; font-size: 16px; }
+
+        /* File Upload */
+        .file-upload { border: 2px dashed var(--border); padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; transition: 0.2s; position: relative; }
+        .file-upload:hover { border-color: var(--accent); background: rgba(187, 134, 252, 0.05); }
+        .preview-img { max-width: 100%; max-height: 150px; border-radius: 8px; display: none; margin-top: 10px; object-fit: cover; }
+
+        /* Buttons */
+        button { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-primary { background: var(--accent); color: black; width: 100%; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-publish { background: var(--success); color: black; }
+        .btn-ab { background: linear-gradient(45deg, #FF5252, #448AFF); color: white; }
+        .action-btn { background: #333; color: white; width: auto; padding: 8px 12px; font-size: 12px; }
+        #exitFullscreenBtn { position: fixed; top: 20px; right: 20px; z-index: 10000; background: rgba(255, 0, 0, 0.7); color: white; display: none; }
+
+        /* Tree */
+        .tree-view { flex: 1; background: #000; border-radius: 8px; border: 1px solid var(--border); overflow: auto; padding: 10px; height: 100%; box-sizing: border-box; }
+        .tree-node { margin-left: 15px; border-left: 1px solid #333; padding-left: 10px; margin-top: 5px; }
+        .node-header { display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 4px; border-radius: 4px; }
+        .node-header:hover { background: #333; }
+        .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .tag-col { background: #E91E63; color: white; }
+        .tag-row { background: #2196F3; color: white; }
+        .tag-img { background: #FF9800; color: black; }
+        .tag-txt { background: #4CAF50; color: white; }
+        .edit-input { background: transparent; border: none; border-bottom: 1px solid #555; color: #BBB; font-family: monospace; width: 120px; }
+        .prop-row { display: flex; gap: 8px; font-size: 12px; margin-left: 20px; color: #888; align-items: center; margin-bottom: 2px; }
+        .prop-key { color: var(--accent); }
+
+        /* Tabs */
+        .tabs-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .tabs { display: flex; gap: 10px; }
+        .tab-btn { background: #333; color: #AAA; padding: 10px 20px; }
+        .tab-btn.active { background: var(--accent); color: black; }
+
+        /* Loading */
+        .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 999; color: white; flex-direction: column; text-align: center;}
+        .loading-steps { margin-top: 15px; color: #AAA; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h1>🧪 SDUI Studio</h1>
+
+        <div>
+            <h2><span class="material-icons">image</span> Referans Görsel</h2>
+            <div class="file-upload" onclick="document.getElementById('imgInput').click()">
+                <input type="file" id="imgInput" hidden accept="image/*" onchange="previewFile()">
+                <span id="uploadText">Resim Seç veya Sürükle</span>
+                <img id="imgPreview" class="preview-img">
+            </div>
+
+            <div style="margin-top: 10px;">
+                <label class="toggle-container">
+                    <input type="checkbox" id="smartCropToggle">
+                    <span class="toggle-text">Resimden Parça Kes (Smart Crop)</span>
+                </label>
+                <div style="font-size: 11px; color: #666; margin-top: 5px; margin-left: 5px;">
+                    * Seçili değilse Unsplash resimleri kullanılır.
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h2><span class="material-icons">edit</span> Prompt</h2>
+            <textarea id="promptInput" placeholder="Örn: Bu görseldeki renkleri kullanarak modern bir profil sayfası yap..."></textarea>
+        </div>
+
+        <button class="btn-primary" onclick="generateUI()">
+            <span class="material-icons">auto_awesome</span> TASARIMI ÜRET
+        </button>
+
+        <hr style="width: 100%; border-color: #333;">
+
+        <div>
+            <h2><span class="material-icons">rocket_launch</span> Yayınla</h2>
+            <div style="display: flex; gap: 10px; flex-direction: column;">
+                <button class="btn-publish" onclick="publishSingle()">Tekil Yayınla</button>
+                <button class="btn-ab" onclick="saveToVariant('A')">Varyant A'ya Kaydet</button>
+                <button class="btn-ab" onclick="saveToVariant('B')">Varyant B'ye Kaydet</button>
+                <button class="btn-ab" onclick="publishAB()" style="background: transparent; border: 1px solid #555; color: white;">A/B Başlat</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="tabs-header">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('tree')">🌳 Görsel Ağaç</button>
+                <button class="tab-btn" onclick="switchTab('json')">{} Ham JSON</button>
+            </div>
+            <button id="fsBtn" class="action-btn" onclick="toggleFullscreen()" style="display:none;">
+                <span class="material-icons">open_in_full</span> Tam Ekran
+            </button>
+        </div>
+
+        <div class="workspace">
+            <div id="treeContainer" class="tree-view">
+                <div class="empty-state">
+                    <span class="material-icons">dashboard_customize</span>
+                    <p>Henüz bir tasarım üretilmedi</p>
+                    <small>Sol taraftan bir resim yükleyin veya prompt yazıp "Üret" diyin.</small>
+                </div>
+            </div>
+
+            <textarea id="jsonEditor" style="display: none;" oninput="syncJsonToTree()"></textarea>
+        </div>
+    </div>
+
+    <button id="exitFullscreenBtn" onclick="toggleFullscreen()">Çıkış (ESC)</button>
+
+    <div id="loading" class="loading-overlay">
+        <span class="material-icons" style="font-size: 48px; animation: spin 1s infinite linear; color: var(--accent);">autorenew</span>
+        <h3 id="loadingTitle" style="margin-top: 20px;">Yapay Zeka Çalışıyor...</h3>
+        <p id="loadingDesc" class="loading-steps">Tasarım analiz ediliyor...</p>
+    </div>
+
+    <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+
+    <script>
+        let currentData = null;
+        let variantA = null;
+        let variantB = null;
+
+        // --- UI LOGIC ---
+        function toggleFullscreen() {
+            const editor = document.getElementById('jsonEditor');
+            const exitBtn = document.getElementById('exitFullscreenBtn');
+            editor.classList.toggle('fullscreen');
+            exitBtn.style.display = editor.classList.contains('fullscreen') ? 'block' : 'none';
+        }
+
+        document.addEventListener('keydown', e => { if(e.key === "Escape") toggleFullscreen(); });
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`button[onclick="switchTab('${tab}')"]`).classList.add('active');
+
+            document.getElementById('treeContainer').style.display = tab === 'tree' ? 'block' : 'none';
+            document.getElementById('jsonEditor').style.display = tab === 'json' ? 'block' : 'none';
+            document.getElementById('fsBtn').style.display = tab === 'json' ? 'flex' : 'none';
+
+            if (tab === 'tree') syncJsonToTree();
+        }
+
+        function previewFile() {
+            const file = document.getElementById('imgInput').files[0];
+            const preview = document.getElementById('imgPreview');
+            const text = document.getElementById('uploadText');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; text.style.display = 'none'; };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function syncJsonToTree() {
+            try {
+                const val = document.getElementById('jsonEditor').value;
+                if(val.trim()) {
+                    currentData = JSON.parse(val);
+                    // Tree'yi güncellemek için updateEditors'ı çağırmak yerine direkt data ile çalışıyoruz
+                    // Ama renderNode fonksiyonunu çağırmak gerekebilir
+                    const container = document.getElementById('treeContainer');
+                    container.innerHTML = '';
+                    container.appendChild(renderNode(currentData.layout, currentData.layout));
+                }
+            } catch(e) {}
+        }
+
+        // --- GENERATE ---
+        async function generateUI() {
+            const prompt = document.getElementById('promptInput').value;
+            const fileInput = document.getElementById('imgInput');
+            const smartCrop = document.getElementById('smartCropToggle').checked;
+
+            if (!prompt && !fileInput.files[0]) return alert("Lütfen prompt yazın veya resim yükleyin.");
+
+            // LOADING MESAJINI AYARLA
+            const loadingTitle = document.getElementById('loadingTitle');
+            const loadingDesc = document.getElementById('loadingDesc');
+            document.getElementById('loading').style.display = 'flex';
+
+            if (smartCrop && fileInput.files[0]) {
+                loadingTitle.innerText = "Görsel İşleniyor & Kesiliyor ✂️";
+                loadingDesc.innerText = "Yapay zeka nesneleri algılıyor, koordinatları hesaplıyor ve parçalıyor...\nBu işlem biraz sürebilir.";
+            } else {
+                loadingTitle.innerText = "Tasarım Üretiliyor 🎨";
+                loadingDesc.innerText = "Yapay zeka renk paletini ve düzeni oluşturuyor...";
+            }
+
+            const formData = new FormData();
+            formData.append('prompt', prompt);
+            formData.append('smart_crop', smartCrop); // Checkbox değerini gönder
+            if (fileInput.files[0]) formData.append('image', fileInput.files[0]);
+
+            try {
+                const res = await fetch('/generate', { method: 'POST', body: formData });
+                const data = await res.json();
+
+                if(data.detail) return alert("Hata: " + JSON.stringify(data.detail));
+
+                currentData = data;
+                updateEditors(data);
+            } catch (e) {
+                alert("Hata: " + e);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // --- RENDERERS ---
+        function updateEditors(data) {
+            // HATA YÖNETİMİ: Veriyi ekrana bas
+            document.getElementById('jsonEditor').value = JSON.stringify(data, null, 2);
+
+            const container = document.getElementById('treeContainer');
+            container.innerHTML = '';
+
+            // Eğer layout yoksa veya hata mesajı varsa
+            if (!data || !data.layout) {
+                let errorMsg = "Geçersiz Veri Yapısı";
+                if (data.detail) errorMsg = "Backend Hatası: " + data.detail;
+
+                container.innerHTML = `
+                    <div class="empty-state" style="border-color: #FF5252; color: #FF5252;">
+                        <span class="material-icons">error_outline</span>
+                        <p>${errorMsg}</p>
+                        <small style="color:#AAA">Sağ taraftaki 'Ham JSON' sekmesinden gelen hatayı inceleyin.</small>
+                    </div>`;
+                return;
+            }
+
+            try {
+                container.appendChild(renderNode(data.layout, data.layout));
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<div style="color:red;text-align:center">Ağaç oluşturulamadı.</div>';
+            }
+        }
+
+        function renderNode(node, parentRef) {
+            if (!node) return document.createElement('div');
+            const div = document.createElement('div');
+            div.className = 'tree-node';
+
+            const header = document.createElement('div');
+            header.className = 'node-header';
+
+            let nodeType = node.type || 'Unknown';
+            let icon = 'widgets';
+            let colorClass = 'tag-col';
+
+            if (nodeType === 'Row') { icon = 'view_week'; colorClass = 'tag-row'; }
+            if (nodeType === 'Image') { icon = 'image'; colorClass = 'tag-img'; }
+            if (nodeType === 'Text') { icon = 'text_fields'; colorClass = 'tag-txt'; }
+
+            header.innerHTML = `
+                <span class="material-icons" style="font-size: 16px; color: #888;">${(node.children && node.children.length) ? 'expand_more' : 'fiber_manual_record'}</span>
+                <span class="tag ${colorClass}">${nodeType}</span>
+            `;
+
+            header.onclick = (e) => {
+                const childrenDiv = div.querySelector('.children-container');
+                if (childrenDiv) {
+                    const isHidden = childrenDiv.style.display === 'none';
+                    childrenDiv.style.display = isHidden ? 'block' : 'none';
+                    header.querySelector('.material-icons').innerText = isHidden ? 'expand_more' : 'chevron_right';
+                }
+            };
+            div.appendChild(header);
+
+            if (node.props) {
+                Object.keys(node.props).forEach(key => {
+                    const propRow = document.createElement('div');
+                    propRow.className = 'prop-row';
+                    const input = document.createElement('input');
+                    input.className = 'edit-input';
+                    input.value = node.props[key] || "";
+                    input.oninput = (e) => {
+                        node.props[key] = e.target.value;
+                        document.getElementById('jsonEditor').value = JSON.stringify(currentData, null, 2);
+                    };
+                    propRow.innerHTML = `<span class="prop-key">${key}:</span>`;
+                    propRow.appendChild(input);
+                    div.appendChild(propRow);
+                });
+            }
+
+            if (node.children && Array.isArray(node.children)) {
+                const childrenContainer = document.createElement('div');
+                childrenContainer.className = 'children-container';
+                node.children.forEach(child => { if (child) childrenContainer.appendChild(renderNode(child, node)); });
+                div.appendChild(childrenContainer);
+            }
+            return div;
+        }
+
+        // --- PUBLISH ACTIONS ---
+        function ensureData() {
+            if (!currentData) {
+                try {
+                    const val = document.getElementById('jsonEditor').value;
+                    if (val) currentData = JSON.parse(val);
+                } catch (e) { return false; }
+            }
+            if (!currentData) {
+                alert("Veri yok! Önce bir tasarım üretin.");
+                return false;
+            }
+            return true;
+        }
+
+        async function publishSingle() {
+            if (!ensureData()) return;
+            await fetch('/update_layout', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(currentData)
+            });
+            alert("✅ Yayında!");
+        }
+
+        function saveToVariant(v) {
+            if (!ensureData()) return;
+            if(v === 'A') { variantA = currentData; alert("Varyant A Hazır"); }
+            if(v === 'B') { variantB = currentData; alert("Varyant B Hazır"); }
+        }
+
+        async function publishAB() {
+            if(!variantA || !variantB) return alert("Önce A ve B varyantlarını hazırla.");
+            await fetch('/publish_ab', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ layout_a: variantA, layout_b: variantB })
+            });
+            alert("🚀 A/B Testi Başladı!");
+        }
+    </script>
+</body>
+</html>
