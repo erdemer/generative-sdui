@@ -563,7 +563,39 @@ async def generate_ui(
         return {"detail": str(e), "layout": None}
 
 
-# ... Diğer endpointler (update_layout, publish_ab vs) aynı ...
+@app.post("/update_layout")
+async def update_layout(layout: dict = Body(...)):
+    global current_layout
+    current_layout = layout
+    print("✅ Tasarım Güncellendi (Tekil Yayın)")
+    return {"status": "success"}
+
+
+@app.post("/publish_ab")
+async def publish_ab(data: dict = Body(...)):
+    global variant_a, variant_b, ab_test_active
+    variant_a = data.get('layout_a')
+    variant_b = data.get('layout_b')
+    ab_test_active = True
+    print("🚀 A/B Testi Başlatıldı")
+    return {"status": "success"}
+
+
+@app.get("/current-ui")
+async def get_current_ui():
+    import random
+    # A/B testi aktifse rastgele birini dön
+    if ab_test_active and variant_a and variant_b:
+        chosen = random.choice(["A", "B"])
+        print(f"🎲 A/B İsteği: Varyant {chosen} gönderildi.")
+        return variant_a if chosen == "A" else variant_b
+
+    # Değilse normal layoutu dön
+    if current_layout:
+        return current_layout
+
+    # Hiçbir şey yoksa boş dön
+    return {}
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
