@@ -261,8 +261,12 @@ async def generate_ui(
             print("📥 Manuel JSON algılandı, işleniyor...")
             parsed_json = json_repair.loads(prompt)
         else:
-            # Yapay Zeka Modu (Kodun kısalığı için burayı özet geçiyorum, eski kodun aynısı)
-            response = model.generate_content([PROMPT_BASE, prompt])
+            # Yapay Zeka Modu
+            input_content = [PROMPT_BASE, prompt]
+            if pil_image:
+                input_content.append(pil_image)
+            
+            response = model.generate_content(input_content)
             parsed_json = json_repair.loads(response.text)
 
         # RESİM KESME İŞLEMİ
