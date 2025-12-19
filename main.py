@@ -246,6 +246,7 @@ def process_crops(ui_data, original_image: Image.Image):
 async def generate_ui(
         prompt: str = Form(...),
         image: UploadFile = File(None),
+        current_json: str = Form(None),
         smart_crop: bool = Form(False)
 ):
     try:
@@ -262,7 +263,34 @@ async def generate_ui(
             parsed_json = json_repair.loads(prompt)
         else:
             # Yapay Zeka Modu
-            input_content = [PROMPT_BASE, prompt]
+            input_content = []
+            
+            if current_json:
+                print("✨ Revize Modu: Mevcut tasarım güncelleniyor...")
+                REFINE_PROMPT = f"""
+                You are modifying an existing SDUI JSON layout based on a user request.
+                
+                ### EXISTING JSON:
+                {current_json}
+                
+                ### USER REQUEST:
+                {prompt}
+                
+                ### INSTRUCTIONS:
+                1. Modify the EXISTING JSON to satisfy the user request.
+                2. Preserve the overall structure and existing components unless explicitly asked to change them.
+                3. Keep existing `_id` values if possible to maintain state, or generate new ones if adding items.
+                4. Output ONLY the valid, updated JSON. No Markdown.
+                """
+                input_content.append(REFINE_PROMPT)
+                # Note: We don't necessarily need PROMPT_BASE here if we trust the model to follow the structure of the input JSON, 
+                # but adding it creates consistency. Let's try appending the user prompt concept + base rules if needed. 
+                # Actually, for refinement, specific instructions + existing JSON is usually better.
+                # Let's keep it simple.
+            else:
+                input_content.append(PROMPT_BASE)
+                input_content.append(prompt)
+
             if pil_image:
                 input_content.append(pil_image)
             

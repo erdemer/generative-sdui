@@ -465,6 +465,58 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(187, 134, 252, 0.3);
+        }
+
+        .generate-btn.secondary {
+            background: #333;
+            color: #aaa;
+            cursor: not-allowed;
+            opacity: 0.6;
+            transition: all 0.3s;
+        }
+
+        .generate-btn.secondary.active {
+            background: #2e7d32;
+            /* Green for go */
+            color: white;
+            cursor: pointer;
+            opacity: 1;
+            animation: pulse-green 2s infinite;
+            border: 1px solid #4CAF50;
+        }
+
+        @keyframes pulse-green {
+            0% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            }
+        }
+
+        .drop-zone {
+            border: 2px dashed #555;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            color: #888;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .drop-zone.hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
         .mobile-frame.web .notch {
             display: none;
         }
@@ -566,8 +618,13 @@
                 placeholder="Örn: Bu görseldeki renkleri kullanarak modern bir profil sayfası yap..."></textarea>
         </div>
 
-        <button class="btn-primary" onclick="generateUI()">
+        <button class="generate-btn" onclick="generate('create')" style="margin-top: 10px;">
             <span class="material-icons">auto_awesome</span> TASARIMI ÜRET
+        </button>
+
+        <button id="btnRefine" class="generate-btn secondary" onclick="generate('refine')"
+            style="margin-top: 10px; display: none;" disabled>
+            <span class="material-icons">edit_note</span> MEVCUT TASARIMI REVİZE ET
         </button>
 
         <hr style="width: 100%; border-color: #333;">
@@ -652,6 +709,33 @@
             exitBtn.style.display = editor.classList.contains('fullscreen') ? 'block' : 'none';
         }
 
+        // Prompt/Refine State Logic
+        const promptInput = document.getElementById('promptInput');
+        promptInput.addEventListener('input', updateRefineButtonState);
+
+        function updateRefineButtonState() {
+            const btn = document.getElementById('btnRefine');
+            const hasData = currentData != null;
+            const hasText = promptInput.value.trim().length > 0;
+
+            if (btn) {
+                if (hasData && hasText) {
+                    btn.classList.add('active');
+                    btn.disabled = false;
+                    btn.style.display = 'flex';
+                } else if (hasData) {
+                    // Has data but no text -> Show but disabled
+                    btn.classList.remove('active');
+                    btn.disabled = true;
+                    btn.style.display = 'flex';
+                } else {
+                    // No data -> Hide
+                    btn.style.display = 'none';
+                    btn.classList.remove('active');
+                }
+            }
+        }
+
         document.addEventListener('keydown', e => { if (e.key === "Escape") toggleFullscreen(); });
 
         function setDevice(type) {
@@ -723,7 +807,7 @@
         }
 
         // --- GENERATE ---
-        async function generateUI() {
+        async function generate(mode = 'create') {
             const prompt = document.getElementById('promptInput').value;
             const fileInput = document.getElementById('imgInput');
             const smartCrop = document.getElementById('smartCropToggle').checked;
@@ -735,7 +819,10 @@
             const loadingDesc = document.getElementById('loadingDesc');
             document.getElementById('loading').style.display = 'flex';
 
-            if (smartCrop && fileInput.files[0]) {
+            if (mode === 'refine') {
+                loadingTitle.innerText = "Tasarım Revize Ediliyor ✏️";
+                loadingDesc.innerText = "Yapay zeka mevcut tasarım üzerinde değişiklik yapıyor...";
+            } else if (smartCrop && fileInput.files[0]) {
                 loadingTitle.innerText = "Görsel İşleniyor & Kesiliyor ✂️";
                 loadingDesc.innerText = "Yapay zeka nesneleri algılıyor, koordinatları hesaplıyor ve parçalıyor...\nBu işlem biraz sürebilir.";
             } else {
@@ -748,11 +835,18 @@
             formData.append('smart_crop', smartCrop); // Checkbox değerini gönder
             if (fileInput.files[0]) formData.append('image', fileInput.files[0]);
 
+            // REFINE LOGIC
+            if (mode === 'refine' && currentData) {
+                formData.append('current_json', JSON.stringify(currentData));
+            }
+
             try {
                 const res = await fetch('/generate', { method: 'POST', body: formData });
                 const data = await res.json();
 
                 if (data.detail) return alert("Hata: " + JSON.stringify(data.detail));
+
+                if (mode === 'create') document.getElementById('promptInput').value = ''; // Clean up after new gen
 
                 currentData = data;
                 updateEditors(data);
@@ -760,12 +854,16 @@
                 alert("Hata: " + e);
             } finally {
                 document.getElementById('loading').style.display = 'none';
+                updateRefineButtonState();
             }
         }
 
         // --- RENDERERS ---
         function updateEditors(data) {
             if (data && data.layout) tagDataWithIds(data.layout); // ID ekle
+
+            // Sync UI State
+            updateRefineButtonState();
 
             // HATA YÖNETİMİ: Veriyi ekrana bas
             document.getElementById('jsonEditor').value = JSON.stringify(data, null, 2);
