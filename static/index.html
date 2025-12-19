@@ -1,85 +1,541 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SDUI Studio Pro 🚀</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        :root { --bg: #121212; --panel: #1E1E1E; --border: #333; --text: #E0E0E0; --accent: #BB86FC; --success: #03DAC6; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        :root {
+            --bg: #121212;
+            --panel: #1E1E1E;
+            --border: #333;
+            --text: #E0E0E0;
+            --accent: #BB86FC;
+            --success: #03DAC6;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
 
         /* Layout */
-        .sidebar { width: 350px; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; gap: 15px; overflow-y: auto; }
-        .main-content { flex: 1; display: flex; flex-direction: column; padding: 20px; gap: 20px; overflow: hidden; position: relative; }
-        .workspace { display: flex; gap: 20px; flex: 1; min-height: 0; position: relative; }
+        .sidebar {
+            width: 350px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 15px;
+            overflow-y: auto;
+        }
 
-        h2 { margin: 0 0 10px 0; font-size: 1rem; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .workspace {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            min-height: 0;
+            position: relative;
+        }
+
+        h2 {
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
         /* Inputs & Controls */
-        textarea#promptInput { background: #2C2C2C; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; resize: none; height: 80px; width: 100%; box-sizing: border-box; }
+        textarea#promptInput {
+            background: #2C2C2C;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            resize: none;
+            height: 80px;
+            width: 100%;
+            box-sizing: border-box;
+        }
 
         .toggle-container {
-            display: flex; align-items: center; gap: 10px; background: #2C2C2C; padding: 10px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #2C2C2C;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            cursor: pointer;
         }
-        .toggle-container:hover { border-color: var(--accent); }
-        .toggle-container input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); }
-        .toggle-text { font-size: 0.9rem; color: #CCC; }
+
+        .toggle-container:hover {
+            border-color: var(--accent);
+        }
+
+        .toggle-container input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        .toggle-text {
+            font-size: 0.9rem;
+            color: #CCC;
+        }
 
         /* Empty State Styling */
         .empty-state {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100%; color: #555; text-align: center; border: 2px dashed #333; border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #555;
+            text-align: center;
+            border: 2px dashed #333;
+            border-radius: 12px;
         }
-        .empty-state .material-icons { font-size: 64px; margin-bottom: 10px; opacity: 0.5; }
-        .empty-state p { margin: 0; font-size: 1.1rem; }
-        .empty-state small { font-size: 0.9rem; margin-top: 5px; opacity: 0.7; }
+
+        .empty-state .material-icons {
+            font-size: 64px;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .empty-state small {
+            font-size: 0.9rem;
+            margin-top: 5px;
+            opacity: 0.7;
+        }
 
         /* JSON Editor */
         textarea#jsonEditor {
-            background: #0d0d0d; border: 1px solid var(--border); color: #00FF00; padding: 15px; border-radius: 8px; resize: none; width: 100%; height: 100%; box-sizing: border-box; font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; line-height: 1.5;
+            background: #0d0d0d;
+            border: 1px solid var(--border);
+            color: #00FF00;
+            padding: 15px;
+            border-radius: 8px;
+            resize: none;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.5;
         }
-        textarea#jsonEditor.fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; border: none; padding: 40px; font-size: 16px; }
+
+        textarea#jsonEditor.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            border: none;
+            padding: 40px;
+            font-size: 16px;
+        }
 
         /* File Upload */
-        .file-upload { border: 2px dashed var(--border); padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; transition: 0.2s; position: relative; }
-        .file-upload:hover { border-color: var(--accent); background: rgba(187, 134, 252, 0.05); }
-        .preview-img { max-width: 100%; max-height: 150px; border-radius: 8px; display: none; margin-top: 10px; object-fit: cover; }
+        .file-upload {
+            border: 2px dashed var(--border);
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .file-upload:hover {
+            border-color: var(--accent);
+            background: rgba(187, 134, 252, 0.05);
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 8px;
+            display: none;
+            margin-top: 10px;
+            object-fit: cover;
+        }
 
         /* Buttons */
-        button { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-primary { background: var(--accent); color: black; width: 100%; }
-        .btn-primary:hover { opacity: 0.9; }
-        .btn-publish { background: var(--success); color: black; }
-        .btn-ab { background: linear-gradient(45deg, #FF5252, #448AFF); color: white; }
-        .action-btn { background: #333; color: white; width: auto; padding: 8px 12px; font-size: 12px; }
-        #exitFullscreenBtn { position: fixed; top: 20px; right: 20px; z-index: 10000; background: rgba(255, 0, 0, 0.7); color: white; display: none; }
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: black;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-publish {
+            background: var(--success);
+            color: black;
+        }
+
+        .btn-ab {
+            background: linear-gradient(45deg, #FF5252, #448AFF);
+            color: white;
+        }
+
+        .action-btn {
+            background: #333;
+            color: white;
+            width: auto;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        #exitFullscreenBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            display: none;
+        }
 
         /* Tree */
-        .tree-view { flex: 1; background: #000; border-radius: 8px; border: 1px solid var(--border); overflow: auto; padding: 10px; height: 100%; box-sizing: border-box; }
-        .tree-node { margin-left: 15px; border-left: 1px solid #333; padding-left: 10px; margin-top: 5px; }
-        .node-header { display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 4px; border-radius: 4px; }
-        .node-header:hover { background: #333; }
-        .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-        .tag-col { background: #E91E63; color: white; }
-        .tag-row { background: #2196F3; color: white; }
-        .tag-img { background: #FF9800; color: black; }
-        .tag-txt { background: #4CAF50; color: white; }
-        .edit-input { background: transparent; border: none; border-bottom: 1px solid #555; color: #BBB; font-family: monospace; width: 120px; }
-        .prop-row { display: flex; gap: 8px; font-size: 12px; margin-left: 20px; color: #888; align-items: center; margin-bottom: 2px; }
-        .prop-key { color: var(--accent); }
+        .tree-view {
+            flex: 1;
+            background: #000;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            overflow: auto;
+            padding: 10px;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        .tree-node {
+            margin-left: 15px;
+            border-left: 1px solid #333;
+            padding-left: 10px;
+            margin-top: 5px;
+        }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .node-header:hover {
+            background: #333;
+        }
+
+        .tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .tag-col {
+            background: #E91E63;
+            color: white;
+        }
+
+        .tag-row {
+            background: #2196F3;
+            color: white;
+        }
+
+        .tag-img {
+            background: #FF9800;
+            color: black;
+        }
+
+        .tag-txt {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .edit-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #555;
+            color: #BBB;
+            font-family: monospace;
+            width: 120px;
+        }
+
+        .prop-row {
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+            margin-left: 20px;
+            color: #888;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+
+        .prop-key {
+            color: var(--accent);
+        }
 
         /* Tabs */
-        .tabs-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .tabs { display: flex; gap: 10px; }
-        .tab-btn { background: #333; color: #AAA; padding: 10px 20px; }
-        .tab-btn.active { background: var(--accent); color: black; }
+        .tabs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: #333;
+            color: #AAA;
+            padding: 10px 20px;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: black;
+        }
 
         /* Loading */
-        .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 999; color: white; flex-direction: column; text-align: center;}
-        .loading-steps { margin-top: 15px; color: #AAA; font-size: 0.9rem; }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            color: white;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .loading-steps {
+            margin-top: 15px;
+            color: #AAA;
+            font-size: 0.9rem;
+        }
+
+        /* Preview Pane */
+        .preview-pane {
+            width: 420px;
+            min-width: 420px;
+            background: #000;
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .mobile-frame {
+            width: 360px;
+            height: 760px;
+            background: #111;
+            border-radius: 40px;
+            border: 12px solid #333;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notch {
+            width: 150px;
+            height: 25px;
+            background: #333;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            z-index: 100;
+        }
+
+        /* Toggle Device */
+        .device-toggle {
+            display: flex;
+            background: #222;
+            border-radius: 20px;
+            padding: 4px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+        }
+
+        .device-toggle button {
+            background: transparent;
+            color: #888;
+            border-radius: 16px;
+            padding: 6px 16px;
+            font-size: 12px;
+        }
+
+        .device-toggle button.active {
+            background: #444;
+            color: white;
+        }
+
+        /* Android Frame */
+        .mobile-frame.android {
+            border-radius: 20px;
+            /* Sharper corners */
+            border-width: 8px;
+        }
+
+        .mobile-frame.android .notch {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            left: 20px;
+            top: 12px;
+            transform: none;
+            /* Punch hole left */
+            background: #000;
+        }
+
+        /* Web Frame */
+        .preview-pane.wide-mode {
+            flex: 2;
+            min-width: 600px;
+            transition: 0.3s;
+        }
+
+        .mobile-frame.web {
+            width: 100%;
+            height: 95%;
+            max-width: 100%;
+            border: 1px solid #444;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .mobile-frame.web .notch {
+            display: none;
+        }
+
+        .mobile-frame.web .app-content {
+            padding-top: 0;
+            padding-bottom: 20px;
+        }
+
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            background-color: #FFF;
+            /* Default bg */
+            font-family: 'Roboto', sans-serif;
+            padding-top: 36px;
+            /* Notch area */
+            padding-bottom: 40px;
+            /* Safe area & corners */
+        }
+
+        /* Global Reset for Preview */
+        .app-content * {
+            box-sizing: border-box;
+        }
+
+        /* Generated Elements Helper Classes */
+        .sdui-col {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .sdui-row {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .sdui-img {
+            display: block;
+            max-width: 100%;
+        }
+
+        /* Scroll hide */
+        .app-content::-webkit-scrollbar {
+            width: 0;
+        }
+
+        /* Interaction Highlight */
+        .highlight {
+            animation: highlightFade 2s forwards;
+            border: 2px solid var(--accent) !important;
+        }
+
+        @keyframes highlightFade {
+            0% {
+                background-color: rgba(187, 134, 252, 0.4);
+            }
+
+            100% {
+                background-color: transparent;
+            }
+        }
     </style>
 </head>
+
 <body>
 
     <div class="sidebar">
@@ -106,7 +562,8 @@
 
         <div>
             <h2><span class="material-icons">edit</span> Prompt</h2>
-            <textarea id="promptInput" placeholder="Örn: Bu görseldeki renkleri kullanarak modern bir profil sayfası yap..."></textarea>
+            <textarea id="promptInput"
+                placeholder="Örn: Bu görseldeki renkleri kullanarak modern bir profil sayfası yap..."></textarea>
         </div>
 
         <button class="btn-primary" onclick="generateUI()">
@@ -121,7 +578,8 @@
                 <button class="btn-publish" onclick="publishSingle()">Tekil Yayınla</button>
                 <button class="btn-ab" onclick="saveToVariant('A')">Varyant A'ya Kaydet</button>
                 <button class="btn-ab" onclick="saveToVariant('B')">Varyant B'ye Kaydet</button>
-                <button class="btn-ab" onclick="publishAB()" style="background: transparent; border: 1px solid #555; color: white;">A/B Başlat</button>
+                <button class="btn-ab" onclick="publishAB()"
+                    style="background: transparent; border: 1px solid #555; color: white;">A/B Başlat</button>
             </div>
         </div>
     </div>
@@ -147,18 +605,39 @@
             </div>
 
             <textarea id="jsonEditor" style="display: none;" oninput="syncJsonToTree()"></textarea>
+
+            <!-- Preview Pane -->
+            <div class="preview-pane">
+                <div class="device-toggle">
+                    <button class="active" onclick="setDevice('ios')" id="btn-ios">iOS</button>
+                    <button onclick="setDevice('android')" id="btn-android">Android</button>
+                    <button onclick="setDevice('web')" id="btn-web">Web</button>
+                </div>
+                <h3 style="margin-bottom: 10px; color: #666; font-size: 14px;">CANLI ÖNİZLEME</h3>
+                <div class="mobile-frame">
+                    <div class="notch"></div>
+                    <div id="appPreview" class="app-content"></div>
+                </div>
+            </div>
         </div>
     </div>
 
     <button id="exitFullscreenBtn" onclick="toggleFullscreen()">Çıkış (ESC)</button>
 
     <div id="loading" class="loading-overlay">
-        <span class="material-icons" style="font-size: 48px; animation: spin 1s infinite linear; color: var(--accent);">autorenew</span>
+        <span class="material-icons"
+            style="font-size: 48px; animation: spin 1s infinite linear; color: var(--accent);">autorenew</span>
         <h3 id="loadingTitle" style="margin-top: 20px;">Yapay Zeka Çalışıyor...</h3>
         <p id="loadingDesc" class="loading-steps">Tasarım analiz ediliyor...</p>
     </div>
 
-    <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+    <style>
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 
     <script>
         let currentData = null;
@@ -173,7 +652,32 @@
             exitBtn.style.display = editor.classList.contains('fullscreen') ? 'block' : 'none';
         }
 
-        document.addEventListener('keydown', e => { if(e.key === "Escape") toggleFullscreen(); });
+        document.addEventListener('keydown', e => { if (e.key === "Escape") toggleFullscreen(); });
+
+        function setDevice(type) {
+            const frame = document.querySelector('.mobile-frame');
+            const previewPane = document.querySelector('.preview-pane');
+            const btnIos = document.getElementById('btn-ios');
+            const btnAndroid = document.getElementById('btn-android');
+            const btnWeb = document.getElementById('btn-web');
+
+            // Reset
+            frame.className = 'mobile-frame';
+            previewPane.classList.remove('wide-mode');
+            [btnIos, btnAndroid, btnWeb].forEach(b => b.classList.remove('active'));
+
+            if (type === 'android') {
+                frame.classList.add('android');
+                btnAndroid.classList.add('active');
+            } else if (type === 'web') {
+                frame.classList.add('web');
+                previewPane.classList.add('wide-mode');
+                btnWeb.classList.add('active');
+            } else {
+                // iOS Default
+                btnIos.classList.add('active');
+            }
+        }
 
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -200,15 +704,22 @@
         function syncJsonToTree() {
             try {
                 const val = document.getElementById('jsonEditor').value;
-                if(val.trim()) {
+                if (val.trim()) {
                     currentData = JSON.parse(val);
+                    if (currentData.layout) tagDataWithIds(currentData.layout); // ID ekle
+
                     // Tree'yi güncellemek için updateEditors'ı çağırmak yerine direkt data ile çalışıyoruz
                     // Ama renderNode fonksiyonunu çağırmak gerekebilir
                     const container = document.getElementById('treeContainer');
                     container.innerHTML = '';
-                    container.appendChild(renderNode(currentData.layout, currentData.layout));
+                    try {
+                        container.appendChild(renderNode(currentData.layout, currentData.layout));
+                    } catch (e) { }
+
+                    // PREVIEW UPDATE
+                    updatePreview(currentData);
                 }
-            } catch(e) {}
+            } catch (e) { }
         }
 
         // --- GENERATE ---
@@ -241,7 +752,7 @@
                 const res = await fetch('/generate', { method: 'POST', body: formData });
                 const data = await res.json();
 
-                if(data.detail) return alert("Hata: " + JSON.stringify(data.detail));
+                if (data.detail) return alert("Hata: " + JSON.stringify(data.detail));
 
                 currentData = data;
                 updateEditors(data);
@@ -254,6 +765,8 @@
 
         // --- RENDERERS ---
         function updateEditors(data) {
+            if (data && data.layout) tagDataWithIds(data.layout); // ID ekle
+
             // HATA YÖNETİMİ: Veriyi ekrana bas
             document.getElementById('jsonEditor').value = JSON.stringify(data, null, 2);
 
@@ -280,12 +793,16 @@
                 console.error(e);
                 container.innerHTML = '<div style="color:red;text-align:center">Ağaç oluşturulamadı.</div>';
             }
+
+            // PREVIEW UPDATE
+            updatePreview(data);
         }
 
         function renderNode(node, parentRef) {
             if (!node) return document.createElement('div');
             const div = document.createElement('div');
             div.className = 'tree-node';
+            if (node._id) div.setAttribute('data-id', node._id);
 
             const header = document.createElement('div');
             header.className = 'node-header';
@@ -323,6 +840,7 @@
                     input.oninput = (e) => {
                         node.props[key] = e.target.value;
                         document.getElementById('jsonEditor').value = JSON.stringify(currentData, null, 2);
+                        updatePreview(currentData); // Live Render
                     };
                     propRow.innerHTML = `<span class="prop-key">${key}:</span>`;
                     propRow.appendChild(input);
@@ -337,6 +855,198 @@
                 div.appendChild(childrenContainer);
             }
             return div;
+        }
+
+        // --- PREVIEW RENDERER ---
+        function renderPreview(node) {
+            if (!node) return null;
+            let el;
+
+            // 1. Element Oluşturma
+            if (node.type === 'Column') {
+                el = document.createElement('div');
+                el.classList.add('sdui-col');
+            } else if (node.type === 'Row') {
+                el = document.createElement('div');
+                el.classList.add('sdui-row');
+            } else if (node.type === 'Text') {
+                el = document.createElement('div');
+                el.innerText = node.props.text || "";
+            } else if (node.type === 'Image') {
+                el = document.createElement('img');
+                el.classList.add('sdui-img');
+                el.src = node.props.url || "";
+            } else if (node.type === 'Icon') {
+                el = document.createElement('span');
+                el.classList.add('material-icons');
+                el.innerText = node.props.name || "help";
+            } else if (node.type === 'Box' || node.type === 'Card') {
+                el = document.createElement('div');
+                el.classList.add('sdui-col');
+            } else if (node.type === 'Spacer') {
+                el = document.createElement('div');
+            } else {
+                el = document.createElement('div');
+            }
+
+            // LINK: Preview elemanına ID ekle
+            if (node._id) {
+                el.setAttribute('data-id', node._id);
+                el.onclick = (e) => {
+                    e.stopPropagation(); // Parentlara gitmesin
+                    highlightTreeNode(node._id);
+                };
+            }
+
+            // 2. Props İşleme
+            if (node.props) {
+                const s = el.style;
+                const p = node.props;
+
+                // Boyutlar
+                if (p.fillMaxSize === 'true') { s.width = '100%'; s.height = '100%'; }
+                if (p.fillWidth === 'true') s.width = '100%';
+                if (p.width) s.width = typeof p.width === 'number' ? p.width + 'px' : p.width;
+                if (p.height) s.height = typeof p.height === 'number' ? p.height + 'px' : p.height;
+                if (p.weight) s.flex = p.weight;
+
+                // Renkler
+                if (p.backgroundColor) s.backgroundColor = p.backgroundColor;
+                if (p.color) s.color = p.color;
+                if (p.textColor) s.color = p.textColor;
+
+                // Spacing
+                if (p.padding) {
+                    if (typeof p.padding === 'number') s.padding = p.padding + 'px';
+                    else {
+                        const parts = p.padding.split(',').map(x => x.trim() + 'px');
+                        if (parts.length === 1) s.padding = parts[0];
+                        else if (parts.length === 2) s.padding = `${parts[0]} ${parts[1]}`;
+                        else if (parts.length === 4) s.padding = `${parts[0]} ${parts[1]} ${parts[2]} ${parts[3]}`;
+                    }
+                }
+                if (p.margin) s.margin = typeof p.margin === 'number' ? p.margin + 'px' : p.margin;
+                if (p.marginBottom) s.marginBottom = p.marginBottom + 'px';
+                if (p.marginTop) s.marginTop = p.marginTop + 'px';
+
+                // BorderRadius
+                if (p.corner) s.borderRadius = p.corner + 'px';
+
+                // Flex Hizalama
+                if (node.type === 'Column') {
+                    if (p.verticalArrangement === 'center') s.justifyContent = 'center';
+                    if (p.verticalArrangement === 'bottom') s.justifyContent = 'flex-end';
+                    if (p.verticalArrangement === 'spacebetween') s.justifyContent = 'space-between';
+
+                    if (p.horizontalAlignment === 'center') s.alignItems = 'center';
+                    if (p.horizontalAlignment === 'end') s.alignItems = 'flex-end';
+                }
+                if (node.type === 'Row') {
+                    if (p.horizontalArrangement === 'center') s.justifyContent = 'center';
+                    if (p.horizontalArrangement === 'end') s.justifyContent = 'flex-end';
+                    if (p.horizontalArrangement === 'spacebetween') s.justifyContent = 'space-between';
+                    if (p.horizontalArrangement && p.horizontalArrangement.startsWith('spacedby:')) {
+                        s.gap = p.horizontalArrangement.split(':')[1] + 'px';
+                    }
+
+                    if (p.verticalAlignment === 'center') s.alignItems = 'center';
+                    if (p.verticalAlignment === 'bottom') s.alignItems = 'flex-end';
+                }
+
+                // Text Stilleri
+                if (node.type === 'Text') {
+                    if (p.style === 'h1') { s.fontSize = '24px'; s.fontWeight = 'bold'; }
+                    if (p.style === 'h2') { s.fontSize = '20px'; s.fontWeight = 'bold'; }
+                    if (p.style === 'h3') { s.fontSize = '18px'; s.fontWeight = '600'; }
+                    if (p.style === 'caption') { s.fontSize = '12px'; s.color = '#888'; }
+
+                    if (p.fontWeight === 'bold') s.fontWeight = 'bold';
+                    if (p.textAlign) s.textAlign = p.textAlign;
+                }
+
+                // Icon Size
+                if (node.type === 'Icon' && p.size) s.fontSize = p.size + 'px';
+
+                // Image Scale
+                if (node.type === 'Image') {
+                    if (p.contentScale === 'crop') s.objectFit = 'cover';
+                    if (p.contentScale === 'fit') s.objectFit = 'contain';
+                    if (!p.width && !p.height && !p.fillWidth) s.width = '100%';
+                }
+
+                // Scroll
+                if (p.scroll === 'true') {
+                    s.overflow = 'auto';
+                }
+            }
+
+            // 3. Çocukları render et
+            if (node.children && Array.isArray(node.children)) {
+                node.children.forEach(child => {
+                    const childEl = renderPreview(child);
+                    if (childEl) el.appendChild(childEl);
+                });
+            }
+
+            return el;
+        }
+
+        function updatePreview(data) {
+            const container = document.getElementById('appPreview');
+            container.innerHTML = '';
+
+            if (data && data.layout) {
+                if (data.layout.props && data.layout.props.backgroundColor) {
+                    container.style.backgroundColor = data.layout.props.backgroundColor;
+                } else {
+                    container.style.backgroundColor = '#FFFFFF';
+                }
+
+                const rootEl = renderPreview(data.layout);
+                if (rootEl) container.appendChild(rootEl);
+            }
+        }
+
+
+
+        // --- INTERACTION HELPERS ---
+        function tagDataWithIds(node) {
+            if (!node) return;
+            if (!node._id) node._id = Math.random().toString(36).substr(2, 9);
+            if (node.children && Array.isArray(node.children)) {
+                node.children.forEach(child => tagDataWithIds(child));
+            }
+        }
+
+        function highlightTreeNode(id) {
+            // Tab switch
+            switchTab('tree');
+
+            // Find Node
+            setTimeout(() => {
+                const treeNode = document.querySelector(`.tree-node[data-id="${id}"]`);
+                if (treeNode) {
+                    // Expand Parents
+                    let parent = treeNode.parentElement;
+                    while (parent && parent.className !== 'tree-view') {
+                        if (parent.classList.contains('children-container')) {
+                            parent.style.display = 'block';
+                            // Icon update
+                            const header = parent.parentElement.querySelector('.node-header .material-icons');
+                            if (header) header.innerText = 'expand_more';
+                        }
+                        parent = parent.parentElement;
+                    }
+
+                    // Scroll into view
+                    treeNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    // Highlight effect
+                    const header = treeNode.querySelector('.node-header');
+                    header.classList.add('highlight');
+                    setTimeout(() => header.classList.remove('highlight'), 2000);
+                }
+            }, 100);
         }
 
         // --- PUBLISH ACTIONS ---
@@ -358,7 +1068,7 @@
             if (!ensureData()) return;
             await fetch('/update_layout', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(currentData)
             });
             alert("✅ Yayında!");
@@ -366,19 +1076,20 @@
 
         function saveToVariant(v) {
             if (!ensureData()) return;
-            if(v === 'A') { variantA = currentData; alert("Varyant A Hazır"); }
-            if(v === 'B') { variantB = currentData; alert("Varyant B Hazır"); }
+            if (v === 'A') { variantA = currentData; alert("Varyant A Hazır"); }
+            if (v === 'B') { variantB = currentData; alert("Varyant B Hazır"); }
         }
 
         async function publishAB() {
-            if(!variantA || !variantB) return alert("Önce A ve B varyantlarını hazırla.");
+            if (!variantA || !variantB) return alert("Önce A ve B varyantlarını hazırla.");
             await fetch('/publish_ab', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ layout_a: variantA, layout_b: variantB })
             });
             alert("🚀 A/B Testi Başladı!");
         }
     </script>
 </body>
+
 </html>
