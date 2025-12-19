@@ -846,7 +846,7 @@
 
                 if (data.detail) return alert("Hata: " + JSON.stringify(data.detail));
 
-                if (mode === 'create') document.getElementById('promptInput').value = ''; // Clean up after new gen
+                document.getElementById('promptInput').value = ''; // Clean up after gen
 
                 currentData = data;
                 updateEditors(data);
