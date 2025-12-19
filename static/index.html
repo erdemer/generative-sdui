@@ -844,6 +844,41 @@
                     };
                     propRow.innerHTML = `<span class="prop-key">${key}:</span>`;
                     propRow.appendChild(input);
+
+                    // COLOR PICKER
+                    if (key.toLowerCase().includes('color')) {
+                        const colorInput = document.createElement('input');
+                        colorInput.type = 'color';
+                        colorInput.style.marginLeft = '5px';
+                        colorInput.style.width = '24px';
+                        colorInput.style.height = '24px';
+                        colorInput.style.padding = '0';
+                        colorInput.style.border = 'none';
+                        colorInput.style.cursor = 'pointer';
+
+                        // Try to set initial value if it's a hex
+                        if (node.props[key] && node.props[key].startsWith('#')) {
+                            colorInput.value = node.props[key];
+                        }
+
+                        colorInput.oninput = (e) => {
+                            const newColor = e.target.value;
+                            input.value = newColor; // Text inputunu güncelle
+                            node.props[key] = newColor; // Modeli güncelle
+                            document.getElementById('jsonEditor').value = JSON.stringify(currentData, null, 2);
+                            updatePreview(currentData); // Live render
+                        };
+
+                        // Sync Text -> Color Picker
+                        input.addEventListener('input', (e) => {
+                            if (e.target.value.startsWith('#')) {
+                                colorInput.value = e.target.value;
+                            }
+                        });
+
+                        propRow.appendChild(colorInput);
+                    }
+
                     div.appendChild(propRow);
                 });
             }
