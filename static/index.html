@@ -935,11 +935,21 @@
                     const input = document.createElement('input');
                     input.className = 'edit-input';
                     input.value = node.props[key] || "";
+                    
+                    // SAFE INPUT HANDLER
                     input.oninput = (e) => {
-                        node.props[key] = e.target.value;
-                        document.getElementById('jsonEditor').value = JSON.stringify(currentData, null, 2);
-                        updatePreview(currentData); // Live Render
+                        try {
+                           node.props[key] = e.target.value;
+                           // Update global JSON editor silently (no event trigger)
+                           const jsonEditor = document.getElementById('jsonEditor');
+                           if(jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
+                           
+                           updatePreview(currentData); // Live Render
+                        } catch(err) {
+                           console.warn("Input handling error:", err);
+                        }
                     };
+                    
                     propRow.innerHTML = `<span class="prop-key">${key}:</span>`;
                     propRow.appendChild(input);
 
@@ -955,23 +965,33 @@
                         colorInput.style.cursor = 'pointer';
 
                         // Try to set initial value if it's a hex
-                        if (node.props[key] && node.props[key].startsWith('#')) {
+                        if (node.props[key] && node.props[key].startsWith('#') && node.props[key].length === 7) {
                             colorInput.value = node.props[key];
                         }
 
                         colorInput.oninput = (e) => {
-                            const newColor = e.target.value;
-                            input.value = newColor; // Text inputunu güncelle
-                            node.props[key] = newColor; // Modeli güncelle
-                            document.getElementById('jsonEditor').value = JSON.stringify(currentData, null, 2);
-                            updatePreview(currentData); // Live render
+                             try {
+                                const newColor = e.target.value;
+                                input.value = newColor; // Text inputunu güncelle
+                                node.props[key] = newColor; // Modeli güncelle
+                                
+                                const jsonEditor = document.getElementById('jsonEditor');
+                                if(jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
+
+                                updatePreview(currentData); // Live render
+                             } catch(err) {
+                                console.warn("Color picker error:", err);
+                             }
                         };
 
                         // Sync Text -> Color Picker
                         input.addEventListener('input', (e) => {
-                            if (e.target.value.startsWith('#')) {
-                                colorInput.value = e.target.value;
-                            }
+                             try {
+                                const val = e.target.value;
+                                if (val.startsWith('#') && val.length === 7) {
+                                    colorInput.value = val;
+                                }
+                             } catch(err) { }
                         });
 
                         propRow.appendChild(colorInput);
