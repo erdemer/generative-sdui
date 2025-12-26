@@ -935,21 +935,21 @@
                     const input = document.createElement('input');
                     input.className = 'edit-input';
                     input.value = node.props[key] || "";
-                    
+
                     // SAFE INPUT HANDLER
                     input.oninput = (e) => {
                         try {
-                           node.props[key] = e.target.value;
-                           // Update global JSON editor silently (no event trigger)
-                           const jsonEditor = document.getElementById('jsonEditor');
-                           if(jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
-                           
-                           updatePreview(currentData); // Live Render
-                        } catch(err) {
-                           console.warn("Input handling error:", err);
+                            node.props[key] = e.target.value;
+                            // Update global JSON editor silently (no event trigger)
+                            const jsonEditor = document.getElementById('jsonEditor');
+                            if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
+
+                            updatePreview(currentData); // Live Render
+                        } catch (err) {
+                            console.warn("Input handling error:", err);
                         }
                     };
-                    
+
                     propRow.innerHTML = `<span class="prop-key">${key}:</span>`;
                     propRow.appendChild(input);
 
@@ -970,31 +970,52 @@
                         }
 
                         colorInput.oninput = (e) => {
-                             try {
+                            try {
                                 const newColor = e.target.value;
                                 input.value = newColor; // Text inputunu güncelle
                                 node.props[key] = newColor; // Modeli güncelle
-                                
+
                                 const jsonEditor = document.getElementById('jsonEditor');
-                                if(jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
+                                if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
 
                                 updatePreview(currentData); // Live render
-                             } catch(err) {
+                            } catch (err) {
                                 console.warn("Color picker error:", err);
-                             }
+                            }
                         };
 
                         // Sync Text -> Color Picker
                         input.addEventListener('input', (e) => {
-                             try {
+                            try {
                                 const val = e.target.value;
                                 if (val.startsWith('#') && val.length === 7) {
                                     colorInput.value = val;
                                 }
-                             } catch(err) { }
+                            } catch (err) { }
                         });
 
                         propRow.appendChild(colorInput);
+
+                        // Gradient Button
+                        const gradientBtn = document.createElement('button');
+                        gradientBtn.innerText = '🌈';
+                        gradientBtn.title = 'Gradient Yap';
+                        gradientBtn.style.marginLeft = '5px';
+                        gradientBtn.style.padding = '0 5px';
+                        gradientBtn.style.fontSize = '12px';
+                        gradientBtn.style.height = '24px';
+                        gradientBtn.style.cursor = 'pointer';
+                        gradientBtn.onclick = () => {
+                            const gradientVal = "linear-gradient(135deg, #FF5252 0%, #448AFF 100%)";
+                            input.value = gradientVal;
+                            try {
+                                const jsonEditor = document.getElementById('jsonEditor');
+                                node.props[key] = gradientVal; // Update model
+                                if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
+                                updatePreview(currentData); // Live Render
+                            } catch (err) { }
+                        };
+                        propRow.appendChild(gradientBtn);
                     }
 
                     div.appendChild(propRow);
@@ -1064,7 +1085,7 @@
                 if (p.weight) s.flex = p.weight;
 
                 // Renkler
-                if (p.backgroundColor) s.backgroundColor = p.backgroundColor;
+                if (p.backgroundColor) s.background = p.backgroundColor; // Support Gradients
                 if (p.color) s.color = p.color;
                 if (p.textColor) s.color = p.textColor;
 
@@ -1150,9 +1171,9 @@
 
             if (data && data.layout) {
                 if (data.layout.props && data.layout.props.backgroundColor) {
-                    container.style.backgroundColor = data.layout.props.backgroundColor;
+                    container.style.background = data.layout.props.backgroundColor;
                 } else {
-                    container.style.backgroundColor = '#FFFFFF';
+                    container.style.background = '#FFFFFF';
                 }
 
                 const rootEl = renderPreview(data.layout);

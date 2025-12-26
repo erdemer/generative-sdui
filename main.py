@@ -83,7 +83,7 @@ You must output ONLY valid JSON. No Markdown, no explanations.
   - **CRITICAL**: If a container parses `scroll: "true"`, its children MUST NOT have `weight`. Infinite height/width error will occur.
 - **Data Types**:
   - `padding`/`margin`: Use string "top, right, bottom, left" (e.g., "16, 24, 16, 24") or single integer for all sides.
-  - `colors`: ALWAYS use 6-digit Hex codes (e.g., "#0E1110").
+  - `colors`: ALWAYS use 6-digit Hex codes (e.g., "#0E1110") OR CSS Gradients (e.g., "linear-gradient(135deg, #FF0000, #0000FF)").
   - `corner`: Integer (dp).
   - `elevation`: Integer (dp).
 
