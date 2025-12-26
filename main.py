@@ -86,8 +86,14 @@ You must output ONLY valid JSON. No Markdown, no explanations.
   - `colors`: ALWAYS use 6-digit Hex codes (e.g., "#0E1110") OR CSS Gradients (e.g., "linear-gradient(135deg, #FF0000, #0000FF)").
   - `corner`: Integer (dp).
   - `elevation`: Integer (dp).
+  - `elevation`: Integer (dp).
 
-### 3. COMPONENT REGISTRY
+### 3. CONSISTENCY RULES
+- **Images**:
+  - For images in Cards, Lists, or Grids, ALWAYS specify a fixed `height` (e.g., 150, 180, 200) and set `contentScale: 'crop'`.
+  - NEVER leave image dimensions auto in these contexts.
+
+### 4. COMPONENT REGISTRY
 
 #### Structure
 - **Column**: `verticalArrangement` (top, bottom, center, spacebetween), `horizontalAlignment` (start, center, end).
