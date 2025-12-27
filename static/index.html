@@ -888,6 +888,9 @@
 
                     // PREVIEW UPDATE
                     updatePreview(currentData);
+
+                    // Auto Save
+                    saveToLocalStorage(currentData);
                 }
             } catch (e) { }
         }
@@ -950,6 +953,9 @@
 
             // Sync UI State
             updateRefineButtonState();
+
+            // Auto Save
+            saveToLocalStorage(data);
 
             // HATA YÖNETİMİ: Veriyi ekrana bas
             document.getElementById('jsonEditor').value = JSON.stringify(data, null, 2);
@@ -1031,6 +1037,7 @@
                             if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
 
                             updatePreview(currentData); // Live Render
+                            saveToLocalStorage(currentData); // Auto Save prop edit
                         } catch (err) {
                             console.warn("Input handling error:", err);
                         }
@@ -1066,6 +1073,7 @@
                                 if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
 
                                 updatePreview(currentData); // Live render
+                                saveToLocalStorage(currentData); // Auto Save color edit
                             } catch (err) { }
                         };
 
@@ -1136,6 +1144,7 @@
                                 node.props[key] = val; // Update model
                                 if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
                                 updatePreview(currentData); // Live Render
+                                saveToLocalStorage(currentData); // Auto Save gradient
                             } catch (err) { }
                         };
 
@@ -1194,6 +1203,7 @@
                                     const jsonEditor = document.getElementById('jsonEditor');
                                     if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
                                     updatePreview(currentData);
+                                    saveToLocalStorage(currentData); // Auto Save object edit
                                 } catch (err) { console.warn(err); }
                             };
 
@@ -1551,6 +1561,41 @@
             });
             alert("🚀 A/B Testi Başladı!");
         }
+        // --- PERSISTENCE ---
+        const LS_KEY = 'sdui_layout_data';
+
+        function saveToLocalStorage(data) {
+            try {
+                if (data) {
+                    localStorage.setItem(LS_KEY, JSON.stringify(data));
+                }
+            } catch (e) {
+                console.warn("Local Storage Save Error:", e);
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const saved = localStorage.getItem(LS_KEY);
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    // Validasyon basitçe yapılabilir
+                    if (data && data.layout) {
+                        currentData = data;
+                        updateEditors(data);
+                        // Toast ile bilgi ver
+                        setTimeout(() => showToast("Yedeklenen tasarım yüklendi 📂"), 500);
+                    }
+                }
+            } catch (e) {
+                console.warn("Local Storage Load Error:", e);
+            }
+        }
+
+        // --- INIT ---
+        window.onload = () => {
+            loadFromLocalStorage();
+        };
     </script>
 </body>
 
