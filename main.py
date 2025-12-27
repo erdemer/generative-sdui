@@ -117,6 +117,25 @@ You must output ONLY valid JSON. No Markdown, no explanations.
   - `name`: Material Icon name (snake_case preferred, e.g., "arrow_back", "search", "shopping_bag").
   - `size`: Integer.
 
+### 5. INTERACTIVITY & ACTIONS (NEW)
+You can make any component interactive by adding an `onClick` property.
+- `onClick`:
+  - `type`: "toast", "alert", "navigate".
+  - `message`: String (for toast/alert).
+  - `destination`: String (for navigate, e.g. "ScreenName").
+  - `url`: String (for openUrl).
+
+**Example**:
+```json
+{
+  "type": "Button",
+  "props": {
+    "text": "Buy Now",
+    "onClick": { "type": "toast", "message": "Added to cart!" }
+  }
+}
+```
+
 ### 4. EXAMPLE (Clayful Variant)
 
 Request: "A dark mode ceramics store home page"

@@ -585,6 +585,90 @@
                 background-color: transparent;
             }
         }
+
+        /* --- RIPPLE EFFECT --- */
+        .ripple-container {
+            position: relative;
+            overflow: hidden;
+            transform: translate3d(0, 0, 0);
+        }
+
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            width: 100px;
+            height: 100px;
+            margin-top: -50px;
+            margin-left: -50px;
+            animation: ripple-anim 0.6s linear;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        @keyframes ripple-anim {
+            0% {
+                transform: scale(0);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* --- TOAST --- */
+        #toast-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 9999;
+            pointer-events: none;
+            width: 90%;
+            align-items: center;
+        }
+
+        .toast-msg {
+            background: rgba(40, 40, 40, 0.95);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            font-size: 14px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: toast-in-out 3s forwards;
+            backdrop-filter: blur(4px);
+            border: 1px solid #444;
+            text-align: center;
+        }
+
+        @keyframes toast-in-out {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            10% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            90% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
     </style>
 </head>
 
@@ -674,6 +758,8 @@
                 <div class="mobile-frame">
                     <div class="notch"></div>
                     <div id="appPreview" class="app-content"></div>
+                    <!-- Toast Container for Preview -->
+                    <div id="toast-container"></div>
                 </div>
             </div>
         </div>
@@ -1066,10 +1152,23 @@
             // LINK: Preview elemanına ID ekle
             if (node._id) {
                 el.setAttribute('data-id', node._id);
-                el.onclick = (e) => {
-                    e.stopPropagation(); // Parentlara gitmesin
+                // Tree Highlight Click
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     highlightTreeNode(node._id);
-                };
+
+                    // Action Handling
+                    if (node.props && node.props.onClick) {
+                        createRipple(e, el);
+                        handleAction(node.props.onClick);
+                    }
+                });
+
+                // Cursor Pointer if clickable
+                if (node.props && node.props.onClick) {
+                    el.style.cursor = 'pointer';
+                    el.classList.add('ripple-container'); // For Ripple positioning
+                }
             }
 
             // 2. Props İşleme
@@ -1179,6 +1278,60 @@
                 const rootEl = renderPreview(data.layout);
                 if (rootEl) container.appendChild(rootEl);
             }
+        }
+
+        // --- ACTION HANDLERS ---
+        function handleAction(action) {
+            console.log("Action Triggered:", action);
+
+            if (action.type === 'toast' && action.message) {
+                showToast(action.message);
+            }
+            else if (action.type === 'alert' && action.message) {
+                // Wait for ripple :)
+                setTimeout(() => alert(action.message), 100);
+            }
+            else if (action.type === 'navigate' && action.destination) {
+                showToast(`Navigating to: ${action.destination}`);
+            }
+            else if (action.type === 'openUrl' && action.url) {
+                window.open(action.url, '_blank');
+            }
+        }
+
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            toast.innerText = msg;
+
+            container.appendChild(toast);
+
+            // Auto cleanup
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        function createRipple(event, element) {
+            const ripple = document.createElement("div");
+            ripple.className = "ripple-effect";
+
+            // Position relative to element
+            const rect = element.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            ripple.style.left = x + "px";
+            ripple.style.top = y + "px";
+
+            element.appendChild(ripple);
+
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
         }
 
 
