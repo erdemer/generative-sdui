@@ -1356,9 +1356,30 @@
 
                 // Image Scale
                 if (node.type === 'Image') {
+                    s.display = 'block'; // Ensure block display
                     if (p.contentScale === 'crop') s.objectFit = 'cover';
                     if (p.contentScale === 'fit') s.objectFit = 'contain';
+
+                    // Critical Fix: width 100% was causing issues in some flex containers
+                    if (p.fillWidth === 'true' || !p.width) {
+                        s.width = '100%';
+                    }
                     if (!p.width && !p.height && !p.fillWidth) s.width = '100%';
+
+                    // Auto-fix Pollinations URLs (Encode spaces)
+                    if (node.props.url && node.props.url.includes('pollinations.ai') && node.props.url.includes(' ')) {
+                        el.src = node.props.url.replace(/ /g, '%20');
+                    } else {
+                        el.src = node.props.url || "";
+                    }
+
+                    // 404 Fallback
+                    el.onerror = function () {
+                        console.warn("Image load failed, swapping to placeholder:", el.src);
+                        // Use random picsum instead of grayscale to keep it alive
+                        el.src = `https://picsum.photos/400/300?random=${Math.floor(Math.random() * 1000)}`;
+                        el.alt = 'Image load failed';
+                    };
                 }
 
                 // Scroll

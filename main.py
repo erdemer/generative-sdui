@@ -91,7 +91,15 @@ You must output ONLY valid JSON. No Markdown, no explanations.
 ### 3. CONSISTENCY RULES
 - **Images**:
   - For images in Cards, Lists, or Grids, ALWAYS specify a fixed `height` (e.g., 150, 180, 200) and set `contentScale: 'crop'`.
-  - NEVER leave image dimensions auto in these contexts.
+  - **URL SOURCE**:
+    - IF the user provides a specific URL, USE IT EXACTLY AS IS.
+    - **PREFERRED**: Use `https://image.pollinations.ai/prompt/{description}?nologo=true`
+      - Replace `{description}` with a SHORT, VISUAL English description.
+      - **CRITICAL**: YOU MUST replace ALL SPACES with UNDERSCORES `_`. (e.g. `hot_coffee_cup` NOT `hot coffee cup`).
+      - Usage of this service allows you to "generate" images matching the UI.
+    - FALLBACK: `https://picsum.photos/{width}/{height}?random={random_int}`
+    - **FORBIDDEN**: DO NOT generate `unsplash.com` URLs.
+    - NEVER leave image dimensions auto in these contexts.
 
 ### 4. COMPONENT REGISTRY
 
