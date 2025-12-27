@@ -1050,9 +1050,10 @@
                         colorInput.style.border = 'none';
                         colorInput.style.cursor = 'pointer';
 
-                        // Try to set initial value if it's a hex
-                        if (node.props[key] && node.props[key].startsWith('#') && node.props[key].length === 7) {
-                            colorInput.value = node.props[key];
+                        // Check if valid hex
+                        const currentVal = node.props[key];
+                        if (currentVal && typeof currentVal === 'string' && currentVal.startsWith('#') && currentVal.length === 7) {
+                            colorInput.value = currentVal;
                         }
 
                         colorInput.oninput = (e) => {
@@ -1065,43 +1066,146 @@
                                 if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
 
                                 updatePreview(currentData); // Live render
-                            } catch (err) {
-                                console.warn("Color picker error:", err);
-                            }
-                        };
-
-                        // Sync Text -> Color Picker
-                        input.addEventListener('input', (e) => {
-                            try {
-                                const val = e.target.value;
-                                if (val.startsWith('#') && val.length === 7) {
-                                    colorInput.value = val;
-                                }
                             } catch (err) { }
-                        });
+                        };
 
                         propRow.appendChild(colorInput);
 
-                        // Gradient Button
+                        // Gradient Builder Toggle Button
                         const gradientBtn = document.createElement('button');
                         gradientBtn.innerText = '🌈';
-                        gradientBtn.title = 'Gradient Yap';
+                        gradientBtn.title = 'Özel Gradient Oluştur';
                         gradientBtn.style.marginLeft = '5px';
                         gradientBtn.style.padding = '0 5px';
                         gradientBtn.style.fontSize = '12px';
                         gradientBtn.style.height = '24px';
                         gradientBtn.style.cursor = 'pointer';
-                        gradientBtn.onclick = () => {
-                            const gradientVal = "linear-gradient(135deg, #FF5252 0%, #448AFF 100%)";
-                            input.value = gradientVal;
+
+                        // Create Gradient Builder UI (Hidden by default)
+                        const gradBuilder = document.createElement('div');
+                        gradBuilder.style.display = 'none';
+                        gradBuilder.style.flexDirection = 'column';
+                        gradBuilder.style.gap = '5px';
+                        gradBuilder.style.marginTop = '5px';
+                        gradBuilder.style.padding = '8px';
+                        gradBuilder.style.background = '#222';
+                        gradBuilder.style.border = '1px solid #444';
+                        gradBuilder.style.borderRadius = '4px';
+
+                        // 1. Inputs Row
+                        const gRow1 = document.createElement('div');
+                        gRow1.style.display = 'flex';
+                        gRow1.style.gap = '10px';
+                        gRow1.style.alignItems = 'center';
+
+                        // Start Color
+                        const c1 = document.createElement('input'); c1.type = 'color'; c1.value = '#FF5252';
+                        c1.style.border = 'none'; c1.style.width = '24px'; c1.style.height = '24px'; c1.style.cursor = 'pointer'; c1.title = 'Başlangıç Rengi';
+
+                        // End Color
+                        const c2 = document.createElement('input'); c2.type = 'color'; c2.value = '#448AFF';
+                        c2.style.border = 'none'; c2.style.width = '24px'; c2.style.height = '24px'; c2.style.cursor = 'pointer'; c2.title = 'Bitiş Rengi';
+
+                        // Angle
+                        const angle = document.createElement('input');
+                        angle.type = 'number'; angle.value = '135'; angle.style.width = '40px';
+                        angle.className = 'edit-input'; angle.style.textAlign = 'center'; angle.title = 'Açı (Derece)';
+
+                        gRow1.appendChild(document.createTextNode('Start:')); gRow1.appendChild(c1);
+                        gRow1.appendChild(document.createTextNode('End:')); gRow1.appendChild(c2);
+                        gRow1.appendChild(document.createTextNode('Deg:')); gRow1.appendChild(angle);
+
+                        // 2. Action Row
+                        const gRow2 = document.createElement('div');
+                        gRow2.style.display = 'flex';
+                        gRow2.style.justifyContent = 'flex-end';
+
+                        const applyBtn = document.createElement('button');
+                        applyBtn.innerText = 'Uygula';
+                        applyBtn.className = 'action-btn';
+                        applyBtn.style.fontSize = '10px';
+                        applyBtn.style.padding = '4px 8px';
+
+                        applyBtn.onclick = () => {
+                            const val = `linear-gradient(${angle.value}deg, ${c1.value} 0%, ${c2.value} 100%)`;
+                            input.value = val;
+                            gradBuilder.style.display = 'none'; // Hide after apply
+
                             try {
                                 const jsonEditor = document.getElementById('jsonEditor');
-                                node.props[key] = gradientVal; // Update model
+                                node.props[key] = val; // Update model
                                 if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
                                 updatePreview(currentData); // Live Render
                             } catch (err) { }
                         };
+
+                        gRow2.appendChild(applyBtn);
+
+                        gradBuilder.appendChild(gRow1);
+                        gradBuilder.appendChild(gRow2);
+
+                        // Toggle Logic
+                        gradientBtn.onclick = () => {
+                            gradBuilder.style.display = gradBuilder.style.display === 'none' ? 'flex' : 'none';
+                        };
+
                         propRow.appendChild(gradientBtn);
+                        div.appendChild(propRow); // Append main row first
+                        div.appendChild(gradBuilder); // Append builder below
+
+                        // Handle splitting logic (NEXT IF BLOCK)...
+                        // We need to return here to avoid appending propRow again at the bottom
+
+                        // Check for Object Split logic next...
+                    } else {
+                        // Default append for non-color props (if they are not objects)
+                        // But we wait for object check
+                        div.appendChild(propRow);
+                    }
+
+                    // Handle Object inputs (like onClick) properly
+                    if (typeof node.props[key] === 'object' && node.props[key] !== null) {
+                        // Create a container for the object
+                        const objContainer = document.createElement('div');
+                        objContainer.style.marginLeft = '10px';
+                        objContainer.style.borderLeft = '1px dashed #444';
+                        objContainer.style.paddingLeft = '5px';
+
+                        // Label for the object prop
+                        propRow.innerHTML = `<span class="prop-key">${key}:</span>`;
+                        div.appendChild(propRow);
+
+                        // Iterate over object keys (e.g. type, message, destination)
+                        Object.keys(node.props[key]).forEach(subKey => {
+                            const subRow = document.createElement('div');
+                            subRow.className = 'prop-row';
+
+                            const subInput = document.createElement('input');
+                            subInput.className = 'edit-input';
+                            subInput.style.width = '100px';
+                            subInput.value = node.props[key][subKey] || "";
+
+                            subInput.oninput = (e) => {
+                                try {
+                                    // Update the specific field in the object
+                                    node.props[key][subKey] = e.target.value;
+
+                                    // Trigger updates
+                                    const jsonEditor = document.getElementById('jsonEditor');
+                                    if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
+                                    updatePreview(currentData);
+                                } catch (err) { console.warn(err); }
+                            };
+
+                            subRow.innerHTML = `<span class="prop-key" style="color:#aaa; font-size:11px;">${subKey}:</span>`;
+                            subRow.appendChild(subInput);
+                            objContainer.appendChild(subRow);
+                        });
+
+                        div.appendChild(objContainer);
+                        return; // Skip default append
+                    } else {
+                        // Normal Input Handler already defined above oninput
                     }
 
                     div.appendChild(propRow);
@@ -1143,6 +1247,15 @@
             } else if (node.type === 'Box' || node.type === 'Card') {
                 el = document.createElement('div');
                 el.classList.add('sdui-col');
+            } else if (node.type === 'Button') {
+                el = document.createElement('div');
+                el.innerText = node.props.text || "Button";
+                // Default Button Styles
+                el.style.display = 'flex';
+                el.style.alignItems = 'center';
+                el.style.justifyContent = 'center';
+                el.style.cursor = 'pointer';
+                if (!node.props.padding) el.style.padding = '12px 24px'; // Default padding if not set
             } else if (node.type === 'Spacer') {
                 el = document.createElement('div');
             } else {
@@ -1177,7 +1290,8 @@
                 const p = node.props;
 
                 // Boyutlar
-                if (p.fillMaxSize === 'true') { s.width = '100%'; s.height = '100%'; }
+                // Boyutlar
+                if (p.fillMaxSize === 'true') { s.width = '100%'; s.minHeight = '100%'; }
                 if (p.fillWidth === 'true') s.width = '100%';
                 if (p.width) s.width = typeof p.width === 'number' ? p.width + 'px' : p.width;
                 if (p.height) s.height = typeof p.height === 'number' ? p.height + 'px' : p.height;
