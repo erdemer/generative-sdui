@@ -223,6 +223,18 @@ Output:
 Generate the UI JSON for the following user request. Ensure strict JSON usage.
 """
 
+SMART_CROP_PROMPT = """
+### SMART CROP INSTRUCTIONS (CRITICAL)
+- The user has uploaded an image and requested "Smart Crop".
+- You MUST identify key objects or regions in the uploaded image that correspond to UI elements (e.g., product photos, header backgrounds).
+- For EVERY `Image` component that represents a distinct object from the source image:
+  - Add `image_crop`: [ymin, xmin, ymax, xmax] (0-1000 scale) to the `props`.
+  - Example: If the user wants a layout with 2 shoes from the image:
+    - Shoe 1: "image_crop": [200, 100, 400, 300]
+    - Shoe 2: "image_crop": [500, 600, 800, 900]
+- This allows the system to slice the original image and server them as high-quality assets.
+"""
+
 
 # --- RESİM KESME VE URL GÜNCELLEME ---
 def process_crops(ui_data, original_image: Image.Image):
@@ -325,6 +337,8 @@ async def generate_ui(
                 input_content.append(prompt)
 
             if pil_image:
+                if smart_crop:
+                    input_content.append(SMART_CROP_PROMPT)
                 input_content.append(pil_image)
             
             response = model.generate_content(input_content)
