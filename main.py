@@ -442,17 +442,27 @@ async def generate_ui(
 
 
 @app.post("/update_layout")
-async def update_layout(layout: dict = Body(...), platform: str = Body("mobile")):
+async def update_layout(
+    layout: dict = Body(...), 
+    screen_name: str = Body("Untitled"), 
+    platform: str = Body("mobile")
+):
     global current_layout, current_layout_mobile, current_layout_web
+    
+    # Reconstruct the full SDUI response
+    full_data = {
+        "screen_name": screen_name,
+        "layout": layout
+    }
     
     # Store based on platform
     if platform == "web":
-        current_layout_web = layout
+        current_layout_web = full_data
     else:
-        current_layout_mobile = layout
+        current_layout_mobile = full_data
         
     # Keep legacy for fallback or default
-    current_layout = layout
+    current_layout = full_data
     
     print(f"✅ Tasarım Güncellendi (Platform: {platform})")
     return {"status": "success"}
@@ -472,21 +482,29 @@ async def publish_ab(data: dict = Body(...)):
 async def get_current_ui(platform: str = "mobile"):
     import random
     
+    candidate = None
+    
     # Platforma göre layout getir
     if platform == "web" and current_layout_web:
-        return current_layout_web
+        candidate = current_layout_web
     elif platform == "mobile" and current_layout_mobile:
-        return current_layout_mobile
+        candidate = current_layout_mobile
 
-    # A/B testi aktifse rastgele birini dön (Sadece Mobile için destekliyoruz şu an)
-    if ab_test_active and variant_a and variant_b and platform != "web":
+    # A/B testi aktifse rastgele birini dön
+    if not candidate and ab_test_active and variant_a and variant_b and platform != "web":
         chosen = random.choice(["A", "B"])
         print(f"🎲 A/B İsteği: Varyant {chosen} gönderildi.")
-        return variant_a if chosen == "A" else variant_b
+        candidate = variant_a if chosen == "A" else variant_b
 
-    # Değilse normal layoutu dön (Legacy/Fallback)
-    if current_layout:
-        return current_layout
+    # Fallback legacy
+    if not candidate and current_layout:
+        candidate = current_layout
+
+    # VALIDATION: Check if candidate has required fields
+    if candidate and "screen_name" in candidate and "layout" in candidate:
+        return candidate
+
+    # Hiçbir şey yoksa veya geçersizse default yapı dön
 
     # Hiçbir şey yoksa boş yerine default yapı dön
     return {
