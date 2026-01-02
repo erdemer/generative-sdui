@@ -677,6 +677,18 @@
     <div class="sidebar">
         <h1>🧪 SDUI Studio</h1>
 
+        <!-- Platform Selector -->
+        <div style="margin-bottom: 20px;">
+            <div class="device-toggle" style="margin-bottom: 5px;">
+                <button class="active" onclick="setPlatform('mobile')" id="plat-mobile" style="flex: 1;">Mobile
+                    App</button>
+                <button onclick="setPlatform('web')" id="plat-web" style="flex: 1;">Web App</button>
+            </div>
+            <div style="font-size: 11px; color: #666; text-align: center;">
+                * Mobile: iOS/Android native | Web: Responsive
+            </div>
+        </div>
+
         <div>
             <h2><span class="material-icons">image</span> Referans Görsel</h2>
             <div class="file-upload" onclick="document.getElementById('imgInput').click()">
@@ -786,6 +798,59 @@
         let currentData = null;
         let variantA = null;
         let variantB = null;
+
+        let pMode = 'mobile'; // 'mobile' or 'web'
+
+
+        // --- PLATFORM LOGIC ---
+        function setPlatform(mode) {
+            // If try to switch to the same mode, do nothing
+            if (pMode === mode) return;
+
+            // Warn if we have data
+            if (currentData && !confirm("Platform değiştirildiğinde mevcut çalışma temizlenecektir. Devam etmek istiyor musunuz?")) {
+                return;
+            }
+
+            // Clear Data
+            currentData = null;
+            variantA = null;
+            variantB = null;
+            updateEditors(null); // Clear UI
+
+            pMode = mode;
+
+            // UI Update for Platform Switch
+            document.querySelectorAll('[id^="plat-"]').forEach(b => b.classList.remove('active'));
+            document.getElementById(`plat-${mode}`).classList.add('active');
+
+            // Handle Device Buttons & Variant Buttons
+            const btnIos = document.getElementById('btn-ios');
+            const btnAndroid = document.getElementById('btn-android');
+            const btnWeb = document.getElementById('btn-web');
+            const variantBtns = document.querySelectorAll('.btn-ab'); // Variant buttons class
+
+            if (mode === 'web') {
+                // WEB MODE
+                btnIos.style.display = 'none';
+                btnAndroid.style.display = 'none';
+                setDevice('web');
+
+                // Hide Variant buttons for Web (Publish Single Only)
+                variantBtns.forEach(b => b.style.display = 'none');
+            } else {
+                // MOBILE MODE
+                btnIos.style.display = 'inline-block';
+                btnAndroid.style.display = 'inline-block';
+
+                if (document.querySelector('.mobile-frame').classList.contains('web')) {
+                    setDevice('ios');
+                }
+
+                // Show Variant buttons for Mobile
+                variantBtns.forEach(b => b.style.display = 'block');
+            }
+        }
 
         // --- UI LOGIC ---
         function toggleFullscreen() {
@@ -921,6 +986,7 @@
 
             const formData = new FormData();
             formData.append('prompt', prompt);
+            formData.append('platform', pMode); // Add Platform
             formData.append('smart_crop', smartCrop); // Checkbox değerini gönder
             if (fileInput.files[0]) formData.append('image', fileInput.files[0]);
 
@@ -964,9 +1030,23 @@
             container.innerHTML = '';
 
             // Eğer layout yoksa veya hata mesajı varsa
+            // Eğer layout yoksa veya hata mesajı varsa
             if (!data || !data.layout) {
+                // If explicit null (clear), show empty state
+                if (data === null) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="material-icons">dashboard_customize</span>
+                            <p>Henüz bir tasarım üretilmedi</p>
+                            <small>Sol taraftan bir resim yükleyin veya prompt yazıp "Üret" diyin.</small>
+                        </div>`;
+                    // Clear Preview
+                    document.getElementById('appPreview').innerHTML = '';
+                    return;
+                }
+
                 let errorMsg = "Geçersiz Veri Yapısı";
-                if (data.detail) errorMsg = "Backend Hatası: " + data.detail;
+                if (data && data.detail) errorMsg = "Backend Hatası: " + data.detail;
 
                 container.innerHTML = `
                     <div class="empty-state" style="border-color: #FF5252; color: #FF5252;">
@@ -1655,13 +1735,23 @@
         }
 
         async function publishSingle() {
-            if (!ensureData()) return;
-            await fetch('/update_layout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(currentData)
-            });
-            alert("✅ Yayında!");
+            if (!currentData) return alert("Yayınlanacak veri yok!");
+            try {
+                // Include platform in the body
+                const payload = {
+                    ...currentData,
+                    platform: pMode
+                };
+
+                await fetch('/update_layout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                alert(`Tasarım (${pMode.toUpperCase()}) başarıyla yayınlandı! 🚀`);
+            } catch (e) {
+                alert("Hata: " + e);
+            }
         }
 
         function saveToVariant(v) {

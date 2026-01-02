@@ -58,7 +58,12 @@ app.add_middleware(
 )
 
 # Global State
-current_layout = None
+# Global State
+current_layout_mobile = None
+current_layout_web = None
+# Backwards compatibility / Default
+current_layout = None 
+
 variant_a = None
 variant_b = None
 ab_test_active = False
@@ -223,6 +228,76 @@ Output:
 Generate the UI JSON for the following user request. Ensure strict JSON usage.
 """
 
+PROMPT_WEB = """
+You are an expert Web UI Engineer and Visual Designer. Your job is to transform user requests into "High Engineered" Server-Driven UI (SDUI) JSON responses for a Responsive Web Application.
+
+
+### 1. RESPONSE FORMAT
+You must output ONLY valid JSON. No Markdown, no explanations.
+
+### 2. WEB PRINCIPLES
+- **Full Width**: Web apps usually take full width. Use `fillMaxSize: "true"` for the root container.
+- **Responsive Layout**:
+  - Use `Row` with `horizontalArrangement: "spacebetween"` for Navigation bars.
+  - Use `Row` with `weight` children for grid-like layouts (e.g. 3 cards side-by-side).
+- **Navigation**:
+  - Almost always start with a Top Navigation Bar (Logo left, Links/Profile right).
+- **Scrolling**:
+  - The main content should be scrollable (`scroll: "true"`).
+- **Styling**:
+  - Use plenty of whitespace (padding).
+  - Use `shadow` or `elevation` for cards to make them pop on white backgrounds.
+  - `backgroundColor` should generally be light (#FFFFFF, #F8F9FA) unless dark mode is requested.
+
+### 3. COMPONENT REGISTRY (Same as Mobile)
+- **Column**: `verticalArrangement` (top, bottom, center, spacebetween), `horizontalAlignment` (start, center, end).
+- **Row**: `horizontalArrangement` (starts, center, end, spacebetween, spacedby:N), `verticalAlignment` (top, center, bottom).
+- **Box**: Basic container.
+- **Spacer**: `height`, `width`.
+- **Text**, **Image**, **Button**, **Icon**: Standard props.
+
+### 4. EXAMPLE (Web Dashboard)
+Request: "A CRM Dashboard"
+Output:
+```json
+{
+  "screen_name": "WebCRM",
+  "layout": {
+    "type": "Column",
+    "props": { "fillMaxSize": "true", "backgroundColor": "#F5F7FB" },
+    "children": [
+      {
+         "type": "Row",
+         "props": { "fillWidth": "true", "padding": "16, 32, 16, 32", "backgroundColor": "#FFFFFF", "elevation": 4, "horizontalArrangement": "spacebetween", "verticalAlignment": "center" },
+         "children": [
+            { "type": "Text", "props": { "text": "CRM Pro", "style": "h2", "fontWeight": "bold", "color": "#333" } },
+            { "type": "Row", "props": { "horizontalArrangement": "spacedby:20" }, "children": [
+                { "type": "Text", "props": { "text": "Dashboard", "color": "#666" } },
+                { "type": "Text", "props": { "text": "Reports", "color": "#666" } },
+                { "type": "Button", "props": { "text": "Logout", "backgroundColor": "#FF5252", "textColor": "#FFF" } }
+            ]}
+         ]
+      },
+      {
+         "type": "Column",
+         "props": { "weight": 1, "scroll": "true", "padding": "32" },
+         "children": [
+            { "type": "Text", "props": { "text": "Overview", "style": "h1", "marginBottom": 24 } },
+            { "type": "Row", "props": { "fillWidth": "true", "horizontalArrangement": "spacedby:24" }, "children": [
+                { "type": "Card", "props": { "weight": 1, "backgroundColor": "#FFF", "padding": 24, "corner": 8, "elevation": 2 }, "children": [...] },
+                { "type": "Card", "props": { "weight": 1, "backgroundColor": "#FFF", "padding": 24, "corner": 8, "elevation": 2 }, "children": [...] }
+            ]}
+         ]
+      }
+    ]
+  }
+}
+```
+
+### 5. TASK
+Generate the UI JSON for the following user request. Ensure strict JSON usage.
+"""
+
 SMART_CROP_PROMPT = """
 ### SMART CROP INSTRUCTIONS (CRITICAL)
 - The user has uploaded an image and requested "Smart Crop".
@@ -292,7 +367,8 @@ async def generate_ui(
         prompt: str = Form(...),
         image: UploadFile = File(None),
         current_json: str = Form(None),
-        smart_crop: bool = Form(False)
+        smart_crop: bool = Form(False),
+        platform: str = Form("mobile")
 ):
     try:
         parsed_json = None
@@ -333,7 +409,14 @@ async def generate_ui(
                 # Actually, for refinement, specific instructions + existing JSON is usually better.
                 # Let's keep it simple.
             else:
-                input_content.append(PROMPT_BASE)
+                # SELECT PROMPT BASED ON PLATFORM
+                if platform == "web":
+                    print(f"🌐 Web Modu Seçildi")
+                    input_content.append(PROMPT_WEB)
+                else:
+                    print(f"📱 Mobile Modu Seçildi")
+                    input_content.append(PROMPT_BASE)
+                
                 input_content.append(prompt)
 
             if pil_image:
@@ -359,10 +442,19 @@ async def generate_ui(
 
 
 @app.post("/update_layout")
-async def update_layout(layout: dict = Body(...)):
-    global current_layout
+async def update_layout(layout: dict = Body(...), platform: str = Body("mobile")):
+    global current_layout, current_layout_mobile, current_layout_web
+    
+    # Store based on platform
+    if platform == "web":
+        current_layout_web = layout
+    else:
+        current_layout_mobile = layout
+        
+    # Keep legacy for fallback or default
     current_layout = layout
-    print("✅ Tasarım Güncellendi (Tekil Yayın)")
+    
+    print(f"✅ Tasarım Güncellendi (Platform: {platform})")
     return {"status": "success"}
 
 
@@ -377,15 +469,22 @@ async def publish_ab(data: dict = Body(...)):
 
 
 @app.get("/current-ui")
-async def get_current_ui():
+async def get_current_ui(platform: str = "mobile"):
     import random
-    # A/B testi aktifse rastgele birini dön
-    if ab_test_active and variant_a and variant_b:
+    
+    # Platforma göre layout getir
+    if platform == "web" and current_layout_web:
+        return current_layout_web
+    elif platform == "mobile" and current_layout_mobile:
+        return current_layout_mobile
+
+    # A/B testi aktifse rastgele birini dön (Sadece Mobile için destekliyoruz şu an)
+    if ab_test_active and variant_a and variant_b and platform != "web":
         chosen = random.choice(["A", "B"])
         print(f"🎲 A/B İsteği: Varyant {chosen} gönderildi.")
         return variant_a if chosen == "A" else variant_b
 
-    # Değilse normal layoutu dön
+    # Değilse normal layoutu dön (Legacy/Fallback)
     if current_layout:
         return current_layout
 
