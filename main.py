@@ -488,8 +488,47 @@ async def get_current_ui(platform: str = "mobile"):
     if current_layout:
         return current_layout
 
-    # Hiçbir şey yoksa boş dön
-    return {}
+    # Hiçbir şey yoksa boş yerine default yapı dön
+    return {
+        "screen_name": "EmptyState",
+        "layout": {
+            "type": "Column",
+            "props": {
+                "fillMaxSize": "true",
+                "verticalArrangement": "center",
+                "horizontalAlignment": "center",
+                "backgroundColor": "#FFFFFF"
+            },
+            "children": [
+                {
+                    "type": "Icon",
+                    "props": {
+                        "name": "u_turn_left",
+                        "size": 48,
+                        "color": "#9E9E9E"
+                    }
+                },
+                {
+                    "type": "Text",
+                    "props": {
+                        "text": "Henüz Tasarım Yok",
+                        "style": "h2",
+                        "color": "#666666",
+                        "marginTop": 16
+                    }
+                },
+                {
+                    "type": "Text",
+                    "props": {
+                        "text": "Lütfen SDUI Studio'dan yeni bir tasarım üretin.",
+                        "style": "body",
+                        "color": "#999999",
+                        "marginTop": 8
+                    }
+                }
+            ]
+        }
+    }
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
