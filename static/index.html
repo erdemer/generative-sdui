@@ -1742,7 +1742,7 @@
         async function publishSingle() {
             if (!currentData) return alert("Yayınlanacak veri yok!");
             try {
-                // Include platform in the body
+                // 1. Publish to Current Platform
                 const payload = {
                     ...currentData,
                     platform: pMode
@@ -1754,6 +1754,24 @@
                     body: JSON.stringify(payload)
                 });
                 alert(`Tasarım (${pMode.toUpperCase()}) başarıyla yayınlandı! 🚀`);
+
+                // 2. Cross-Platform Prompt (Mobile -> Web)
+                if (pMode === 'mobile') {
+                    if (confirm("Mobile yayınlandı! Web tarafına da yayınlansın mı?")) {
+                        const webPayload = {
+                            ...currentData,
+                            platform: 'web'
+                        };
+
+                        await fetch('/update_layout', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(webPayload)
+                        });
+                        alert("Tasarım (WEB) de başarıyla yayınlandı! 🌐");
+                    }
+                }
+
             } catch (e) {
                 alert("Hata: " + e);
             }
