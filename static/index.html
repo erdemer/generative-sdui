@@ -830,6 +830,9 @@
             const btnWeb = document.getElementById('btn-web');
             const variantBtns = document.querySelectorAll('.btn-ab'); // Variant buttons class
 
+            // Save to Local Storage
+            localStorage.setItem('sdui_platform_mode', mode);
+
             if (mode === 'web') {
                 // WEB MODE
                 btnIos.style.display = 'none';
@@ -1801,7 +1804,39 @@
         }
 
         // --- INIT ---
+        // --- INIT ---
         window.onload = () => {
+            // Restore Platform
+            const savedPlatform = localStorage.getItem('sdui_platform_mode');
+            if (savedPlatform && (savedPlatform === 'mobile' || savedPlatform === 'web')) {
+                // Directly set mode to avoid confirmation dialog on load
+                pMode = savedPlatform;
+
+                // UI Update for Platform Switch
+                document.querySelectorAll('[id^="plat-"]').forEach(b => b.classList.remove('active'));
+                document.getElementById(`plat-${savedPlatform}`).classList.add('active');
+
+                const btnIos = document.getElementById('btn-ios');
+                const btnAndroid = document.getElementById('btn-android');
+                const btnWeb = document.getElementById('btn-web');
+                const variantBtns = document.querySelectorAll('.btn-ab');
+
+                if (savedPlatform === 'web') {
+                    btnIos.style.display = 'none';
+                    btnAndroid.style.display = 'none';
+                    setDevice('web');
+                    variantBtns.forEach(b => b.style.display = 'none');
+                } else {
+                    btnIos.style.display = 'inline-block';
+                    btnAndroid.style.display = 'inline-block';
+                    variantBtns.forEach(b => b.style.display = 'block');
+                    // Default to iOS if just switched
+                    if (document.querySelector('.mobile-frame').classList.contains('web')) {
+                        setDevice('ios');
+                    }
+                }
+            }
+
             loadFromLocalStorage();
         };
     </script>
