@@ -496,9 +496,9 @@ async def get_current_ui(platform: str = "mobile"):
         print(f"🎲 A/B İsteği: Varyant {chosen} gönderildi.")
         candidate = variant_a if chosen == "A" else variant_b
 
-    # Fallback legacy
-    if not candidate and current_layout:
-        candidate = current_layout
+    # Fallback legacy - REMOVED to prevent cross-platform leakage
+    # if not candidate and current_layout:
+    #     candidate = current_layout
 
     # VALIDATION: Check if candidate has required fields
     if candidate and "screen_name" in candidate and "layout" in candidate:
