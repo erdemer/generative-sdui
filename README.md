@@ -4,7 +4,7 @@ This project is a FastAPI-based backend that leverages Google's Gemini AI to gen
 
 ## Features
 
-- **Generative UI**: Uses Google Gemini Pro Vision (gemini-2.5-flash) to generate UI layouts from text prompts or image inputs.
+- **Generative UI**: Uses Google Gemini Pro Vision (gemini-3-flash) to generate UI layouts from text prompts or image inputs.
 - **Server Driven UI Protocol**: Outputs JSON following a specific "screen_name" and "layout" structure compatible with a matching Android SDUI client.
 - **Smart Image Cropping**: Automatically detects and crops relevant parts of uploaded images to be used within the generated UI.
 - **Dynamic Content Serving**: Serves generated/cropped images locally.
