@@ -71,7 +71,7 @@ ab_test_active = False
 # API Key
 api_key = os.environ.get("GOOGLE_API_KEY")
 genai.configure(api_key=api_key)
-model = genai.GenerativeModel(model_name="gemini-3-flash")
+model = genai.GenerativeModel(model_name="gemini-3-flash-preview")
 
 # Promptlar
 PROMPT_BASE = """
