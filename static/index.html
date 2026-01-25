@@ -16,6 +16,26 @@
             --text: #E0E0E0;
             --accent: #BB86FC;
             --success: #03DAC6;
+            --input-bg: #2C2C2C;
+            --tree-bg: #000000;
+            --preview-bg: #000000;
+            --code-bg: #0d0d0d;
+            --btn-bg: #3c4043;
+        }
+
+        [data-theme="light"] {
+            --bg: #FFFFFF;
+            --panel: #F4F4F4;
+            --border: #E0E0E0;
+            --text: #333333;
+            --accent: #E60000;
+            /* Vodafone Red */
+            --success: #007C5A;
+            --input-bg: #FFFFFF;
+            --tree-bg: #FFFFFF;
+            --preview-bg: #E5E5E5;
+            --code-bg: #FAFAFA;
+            --btn-bg: #666666;
         }
 
         body {
@@ -59,7 +79,7 @@
             gap: 20px;
             overflow: hidden;
             position: relative;
-            background-color: #000;
+            background-color: var(--preview-bg);
         }
 
         .workspace {
@@ -83,16 +103,17 @@
 
         /* Material UI Polish */
         .attr-section {
-            background: #252526;
+            background: var(--bg);
             margin-bottom: 2px;
             padding: 10px;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border);
         }
 
         .attr-title {
             font-size: 11px;
             font-weight: 600;
-            color: #888;
+            color: var(--text);
+            opacity: 0.7;
             text-transform: uppercase;
             margin-bottom: 8px;
             letter-spacing: 0.5px;
@@ -105,15 +126,16 @@
         .attr-label {
             display: block;
             font-size: 12px;
-            color: #bbb;
+            color: var(--text);
+            opacity: 0.8;
             margin-bottom: 4px;
         }
 
         .attr-input {
             width: 100%;
-            background: #333;
-            border: 1px solid transparent;
-            color: #eee;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
             padding: 6px 8px;
             border-radius: 4px;
             font-size: 13px;
@@ -122,15 +144,15 @@
         }
 
         .attr-input:focus {
-            background: #3c3c3c;
+            background: var(--input-bg);
             border-color: var(--accent);
             outline: none;
         }
 
         .action-btn {
-            background: #3c4043;
+            background: var(--btn-bg);
             border: none;
-            color: #e8eaed;
+            color: white;
             padding: 8px 16px;
             border-radius: 4px;
             font-size: 12px;
@@ -148,9 +170,9 @@
 
         /* Inputs & Controls */
         textarea#promptInput {
-            background: #2C2C2C;
+            background: var(--input-bg);
             border: 1px solid var(--border);
-            color: white;
+            color: var(--text);
             padding: 10px;
             border-radius: 8px;
             resize: none;
@@ -163,7 +185,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            background: #2C2C2C;
+            background: var(--input-bg);
             padding: 10px;
             border-radius: 8px;
             border: 1px solid var(--border);
@@ -193,9 +215,10 @@
             align-items: center;
             justify-content: center;
             height: 100%;
-            color: #555;
+            color: var(--text);
+            opacity: 0.6;
             text-align: center;
-            border: 2px dashed #333;
+            border: 2px dashed var(--border);
             border-radius: 12px;
         }
 
@@ -218,9 +241,10 @@
 
         /* JSON Editor */
         textarea#jsonEditor {
-            background: #0d0d0d;
+            background: var(--code-bg);
             border: 1px solid var(--border);
-            color: #00FF00;
+            color: var(--success);
+            /* Keep green logic? Or variable? Let's assume green is nice for code */
             padding: 15px;
             border-radius: 8px;
             resize: none;
@@ -295,16 +319,23 @@
 
         .btn-publish {
             background: var(--success);
-            color: black;
-        }
-
-        .btn-ab {
-            background: linear-gradient(45deg, #FF5252, #448AFF);
             color: white;
         }
 
+        .btn-ab {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-red-gradient {
+            background: linear-gradient(135deg, #E60000, #B30000);
+            color: white;
+            border: none;
+        }
+
         .action-btn {
-            background: #333;
+            background: var(--btn-bg);
             color: white;
             width: auto;
             padding: 8px 12px;
@@ -324,7 +355,7 @@
         /* Tree */
         .tree-view {
             flex: 1;
-            background: #000;
+            background: var(--tree-bg);
             border-radius: 8px;
             border: 1px solid var(--border);
             overflow: auto;
@@ -335,7 +366,7 @@
 
         .tree-node {
             margin-left: 15px;
-            border-left: 1px solid #333;
+            border-left: 1px solid var(--border);
             padding-left: 10px;
             margin-top: 5px;
         }
@@ -350,7 +381,7 @@
         }
 
         .node-header:hover {
-            background: #333;
+            background: var(--border);
         }
 
         .tag {
@@ -417,7 +448,7 @@
         }
 
         .tab-btn {
-            background: #333;
+            background: var(--input-bg);
             color: #AAA;
             padding: 10px 20px;
         }
@@ -453,7 +484,7 @@
         /* Preview Pane */
         .preview-pane {
             flex: 1;
-            background: #000;
+            background: var(--preview-bg);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -751,67 +782,15 @@
         }
 
         /* Attributes Panel Styles */
-        .attr-section {
-            margin-bottom: 20px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-        }
 
-        .attr-section:last-child {
-            border-bottom: none;
-        }
-
-        .attr-title {
-            font-size: 11px;
-            text-transform: uppercase;
-            color: var(--accent);
-            margin-bottom: 10px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .attr-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .attr-row {
-            margin-bottom: 8px;
-        }
-
-        .attr-label {
-            display: block;
-            font-size: 11px;
-            color: #888;
-            margin-bottom: 4px;
-        }
-
-        .attr-input {
-            width: 100%;
-            background: #111;
-            border: 1px solid #333;
-            color: white;
-            padding: 6px;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 12px;
-        }
-
-        .attr-input:focus {
-            border-color: var(--accent);
-            outline: none;
-        }
 
         /* Box Model Visualizer */
         .box-model {
             position: relative;
             width: 100%;
             height: 120px;
-            background: #252525;
-            border: 1px dashed #444;
+            background: var(--input-bg);
+            border: 1px dashed var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -822,9 +801,9 @@
             position: absolute;
             width: 40px;
             text-align: center;
-            background: #111;
-            border: 1px solid #444;
-            color: white;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
             font-size: 10px;
             padding: 2px;
         }
@@ -856,13 +835,13 @@
         .bm-center {
             width: 60px;
             height: 40px;
-            background: #333;
+            background: var(--panel);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 10px;
-            color: #888;
-            border: 1px solid #555;
+            color: var(--text);
+            border: 1px solid var(--border);
         }
 
         /* Tree Node Selected State */
@@ -893,10 +872,16 @@
 <body>
 
     <div class="sidebar">
-        <h1 style="display: flex; align-items: center; gap: 10px;">
-            <img src="/static/logo.png" alt="Logo" style="height: 32px;">
-            SDUI Studio
-        </h1>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h1 style="display: flex; align-items: center; gap: 10px; margin: 0;">
+                <img src="/static/logo.png" alt="Logo" style="height: 32px;">
+                SDUI Studio
+            </h1>
+            <button id="themeToggle" class="action-btn" style="width: auto; padding: 6px;">
+                <span class="material-icons" id="themeIcon">light_mode</span>
+            </button>
+        </div>
+        <div style="height: 20px;"></div>
 
         <!-- Platform Selector -->
         <div style="margin-bottom: 20px;">
@@ -950,10 +935,9 @@
             <h2><span class="material-icons">rocket_launch</span> Yayınla</h2>
             <div style="display: flex; gap: 10px; flex-direction: column;">
                 <button class="btn-publish" onclick="publishSingle()">Tekil Yayınla</button>
-                <button class="btn-ab" onclick="saveToVariant('A')">Varyant A'ya Kaydet</button>
-                <button class="btn-ab" onclick="saveToVariant('B')">Varyant B'ye Kaydet</button>
-                <button class="btn-ab" onclick="publishAB()"
-                    style="background: transparent; border: 1px solid #555; color: white;">A/B Başlat</button>
+                <button class="btn-primary btn-red-gradient" onclick="saveToVariant('A')">Varyant A'ya Kaydet</button>
+                <button class="btn-primary btn-red-gradient" onclick="saveToVariant('B')">Varyant B'ye Kaydet</button>
+                <button class="btn-ab" onclick="publishAB()">A/B Başlat</button>
             </div>
         </div>
     </div>
@@ -2603,6 +2587,33 @@
             }
 
             loadFromLocalStorage();
+
+            // --- THEME LOGIC ---
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+
+            function setTheme(isLight) {
+                if (isLight) {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    themeIcon.innerText = 'dark_mode';
+                    localStorage.setItem('sdui_theme', 'light');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                    themeIcon.innerText = 'light_mode';
+                    localStorage.setItem('sdui_theme', 'dark');
+                }
+            }
+
+            // Init Theme
+            const savedTheme = localStorage.getItem('sdui_theme');
+            if (savedTheme === 'light') {
+                setTheme(true);
+            }
+
+            themeToggle.onclick = () => {
+                const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+                setTheme(!isLight);
+            };
         };
     </script>
 </body>
