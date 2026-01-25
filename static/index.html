@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SDUI Studio Pro 🚀</title>
     <!-- Favicon: Rocket Emoji -->
-    <link rel="icon" href="https://fav.farm/🚀" />
+    <link rel="icon" href="/static/logo.png" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
@@ -30,7 +30,7 @@
 
         /* Layout */
         .sidebar {
-            width: 350px;
+            width: 300px;
             background: var(--panel);
             border-right: 1px solid var(--border);
             display: flex;
@@ -38,6 +38,17 @@
             padding: 20px;
             gap: 15px;
             overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .attributes-panel {
+            width: 320px;
+            background: var(--panel);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
         }
 
         .main-content {
@@ -48,14 +59,17 @@
             gap: 20px;
             overflow: hidden;
             position: relative;
+            background-color: #000;
         }
 
         .workspace {
             display: flex;
-            gap: 20px;
+            gap: 0;
+            /* Remove gap, handle inside */
             flex: 1;
             min-height: 0;
             position: relative;
+            height: 100%;
         }
 
         h2 {
@@ -66,6 +80,71 @@
             align-items: center;
             gap: 8px;
         }
+
+        /* Material UI Polish */
+        .attr-section {
+            background: #252526;
+            margin-bottom: 2px;
+            padding: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .attr-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .attr-row {
+            margin-bottom: 8px;
+        }
+
+        .attr-label {
+            display: block;
+            font-size: 12px;
+            color: #bbb;
+            margin-bottom: 4px;
+        }
+
+        .attr-input {
+            width: 100%;
+            background: #333;
+            border: 1px solid transparent;
+            color: #eee;
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            box-sizing: border-box;
+            transition: 0.2s;
+        }
+
+        .attr-input:focus {
+            background: #3c3c3c;
+            border-color: var(--accent);
+            outline: none;
+        }
+
+        .action-btn {
+            background: #3c4043;
+            border: none;
+            color: #e8eaed;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: background 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #4c5054;
+        }
+
 
         /* Inputs & Controls */
         textarea#promptInput {
@@ -373,15 +452,14 @@
 
         /* Preview Pane */
         .preview-pane {
-            width: 420px;
-            min-width: 420px;
+            flex: 1;
             background: #000;
-            border-left: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            position: relative;
         }
 
         .mobile-frame {
@@ -671,13 +749,154 @@
                 transform: translateY(-10px);
             }
         }
+
+        /* Attributes Panel Styles */
+        .attr-section {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+
+        .attr-section:last-child {
+            border-bottom: none;
+        }
+
+        .attr-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .attr-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .attr-row {
+            margin-bottom: 8px;
+        }
+
+        .attr-label {
+            display: block;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .attr-input {
+            width: 100%;
+            background: #111;
+            border: 1px solid #333;
+            color: white;
+            padding: 6px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 12px;
+        }
+
+        .attr-input:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+
+        /* Box Model Visualizer */
+        .box-model {
+            position: relative;
+            width: 100%;
+            height: 120px;
+            background: #252525;
+            border: 1px dashed #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .bm-input {
+            position: absolute;
+            width: 40px;
+            text-align: center;
+            background: #111;
+            border: 1px solid #444;
+            color: white;
+            font-size: 10px;
+            padding: 2px;
+        }
+
+        .bm-top {
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .bm-bottom {
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .bm-left {
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .bm-right {
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .bm-center {
+            width: 60px;
+            height: 40px;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #888;
+            border: 1px solid #555;
+        }
+
+        /* Tree Node Selected State */
+        .tree-node .node-header.selected {
+            background: rgba(187, 134, 252, 0.2);
+            border: 1px solid var(--accent);
+        }
+
+        /* Preview Highlight Selected */
+        .preview-selected {
+            outline: 2px solid var(--accent);
+            position: relative;
+        }
+
+        .preview-selected::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(187, 134, 252, 0.1);
+            pointer-events: none;
+        }
     </style>
 </head>
 
 <body>
 
     <div class="sidebar">
-        <h1>🧪 SDUI Studio</h1>
+        <h1 style="display: flex; align-items: center; gap: 10px;">
+            <img src="/static/logo.png" alt="Logo" style="height: 32px;">
+            SDUI Studio
+        </h1>
 
         <!-- Platform Selector -->
         <div style="margin-bottom: 20px;">
@@ -739,41 +958,54 @@
         </div>
     </div>
 
-    <div class="main-content">
-        <div class="tabs-header">
-            <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('tree')">🌳 Görsel Ağaç</button>
-                <button class="tab-btn" onclick="switchTab('json')">{} Ham JSON</button>
-            </div>
-            <button id="fsBtn" class="action-btn" onclick="toggleFullscreen()" style="display:none;">
-                <span class="material-icons">open_in_full</span> Tam Ekran
-            </button>
-        </div>
-
-        <div class="workspace">
-            <div id="treeContainer" class="tree-view">
-                <div class="empty-state">
-                    <span class="material-icons">dashboard_customize</span>
-                    <p>Henüz bir tasarım üretilmedi</p>
-                    <small>Sol taraftan bir resim yükleyin veya prompt yazıp "Üret" diyin.</small>
+    <div class="workspace">
+        <!-- LEFT: Tree & JSON (Now part of workspace, not main-content wrapper) -->
+        <div class="sidebar" style="border-right: 1px solid #333; width: 280px; padding: 0;">
+            <div class="tabs-header" style="padding: 10px; border-bottom: 1px solid #333; margin: 0;">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('tree')"
+                        style="padding: 8px 12px; font-size: 12px;">Tree</button>
+                    <button class="tab-btn" onclick="switchTab('json')"
+                        style="padding: 8px 12px; font-size: 12px;">JSON</button>
                 </div>
             </div>
 
-            <textarea id="jsonEditor" style="display: none;" oninput="syncJsonToTree()"></textarea>
+            <div id="treeContainer" class="tree-view" style="border: none; border-radius: 0;">
+                <div class="empty-state">
+                    <span class="material-icons">dashboard_customize</span>
+                    <p>No Data</p>
+                </div>
+            </div>
+            <textarea id="jsonEditor" style="display: none; border: none; border-radius: 0;"
+                oninput="syncJsonToTree()"></textarea>
+        </div>
 
-            <!-- Preview Pane -->
-            <div class="preview-pane">
+        <!-- CENTER: Preview -->
+        <div class="main-content" style="padding: 0;">
+            <div class="preview-pane" style="width: 100%; height: 100%;">
                 <div class="device-toggle">
                     <button class="active" onclick="setDevice('ios')" id="btn-ios">iOS</button>
                     <button onclick="setDevice('android')" id="btn-android">Android</button>
                     <button onclick="setDevice('web')" id="btn-web">Web</button>
                 </div>
-                <h3 style="margin-bottom: 10px; color: #666; font-size: 14px;">CANLI ÖNİZLEME</h3>
                 <div class="mobile-frame">
                     <div class="notch"></div>
                     <div id="appPreview" class="app-content"></div>
-                    <!-- Toast Container for Preview -->
                     <div id="toast-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Attributes Panel -->
+        <div class="attributes-panel">
+            <div
+                style="padding: 10px; border-bottom: 1px solid #333; background: #252525; font-weight: bold; font-size: 12px; color: #AAA; letter-spacing: 1px;">
+                ATTRIBUTES
+            </div>
+            <div id="attrContainer" style="padding: 15px;">
+                <div class="empty-state" style="border: none; opacity: 0.5;">
+                    <span class="material-icons" style="font-size: 32px;">touch_app</span>
+                    <p style="font-size: 13px;">Select a component</p>
                 </div>
             </div>
         </div>
@@ -1519,7 +1751,7 @@
                 if (p.padding) {
                     if (typeof p.padding === 'number') s.padding = p.padding + 'px';
                     else {
-                        const parts = p.padding.split(',').map(x => x.trim() + 'px');
+                        const parts = p.padding.split(',').map(x => toPx(x));
                         if (parts.length === 1) s.padding = parts[0];
                         else if (parts.length === 2) s.padding = `${parts[0]} ${parts[1]}`;
                         else if (parts.length === 4) s.padding = `${parts[0]} ${parts[1]} ${parts[2]} ${parts[3]}`;
@@ -1693,35 +1925,540 @@
             }
         }
 
-        function highlightTreeNode(id) {
-            // Tab switch
-            switchTab('tree');
+        // --- ATTRIBUTES PANEL LOGIC ---
+        let selectedNodeId = null;
 
-            // Find Node
+        function selectNode(id) {
+            selectedNodeId = id;
+
+            // 1. Highlight in Tree
+            document.querySelectorAll('.node-header').forEach(el => el.classList.remove('selected'));
+            const treeNode = document.querySelector(`.tree-node[data-id="${id}"] > .node-header`);
+            if (treeNode) {
+                treeNode.classList.add('selected');
+                // Ensure visible
+                // Logic to expand parents is already in highlightTreeNode, reusing it partly?
+                // Actually highlightTreeNode does scrollIntoView. Let's rely on that if needed, 
+                // but here we just toggle class for instant feedback.
+            }
+
+            // 2. Highlight in Preview
+            document.querySelectorAll('.preview-selected').forEach(el => el.classList.remove('preview-selected'));
+            const previewEl = document.querySelector(`[data-id="${id}"]`);
+            if (previewEl) {
+                previewEl.classList.add('preview-selected');
+                // Optional: Scroll preview to element? Maybe too jumpy.
+            }
+
+            // 3. Render Attributes
+            const node = findNodeById(currentData.layout, id);
+            if (node) {
+                renderAttributesPanel(node);
+            }
+        }
+
+        function findNodeById(node, id) {
+            if (!node) return null;
+            if (node._id === id) return node;
+            if (node.children) {
+                for (let child of node.children) {
+                    const found = findNodeById(child, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        function findParentAndIndex(root, id) {
+            if (!root || !root.children) return null;
+            for (let i = 0; i < root.children.length; i++) {
+                if (root.children[i]._id === id) {
+                    return { parent: root, index: i };
+                }
+                const found = findParentAndIndex(root.children[i], id);
+                if (found) return found;
+            }
+            return null;
+        }
+
+        function renderAttributesPanel(node) {
+            const container = document.getElementById('attrContainer');
+            container.innerHTML = '';
+
+            // Track rendered props to avoid duplicates in 'Extra Props'
+            const renderedProps = new Set(['_id', 'type', 'children']); // Ignore internal fields
+
+            const createSection = (title) => {
+                const div = document.createElement('div');
+                div.className = 'attr-section';
+                div.innerHTML = `<div class="attr-title">${title}</div>`;
+                return div;
+            };
+
+            const createInput = (label, value, onChange, type = 'text', propKey = null) => {
+                if (propKey) renderedProps.add(propKey);
+
+                const row = document.createElement('div');
+                row.className = 'attr-row';
+                row.innerHTML = `<label class="attr-label">${label}</label>`;
+                const input = document.createElement('input');
+                input.className = 'attr-input';
+                input.value = value || '';
+                input.type = type;
+                if (type === 'color') {
+                    // Make it look decent
+                    input.style.height = '30px';
+                    input.style.padding = '0';
+                }
+
+                input.oninput = (e) => onChange(e.target.value);
+                row.appendChild(input);
+                return row;
+            };
+
+            const createSelect = (label, value, options, onChange, propKey = null) => {
+                if (propKey) renderedProps.add(propKey);
+                const row = document.createElement('div');
+                row.className = 'attr-row';
+                row.innerHTML = `<label class="attr-label">${label}</label>`;
+                const select = document.createElement('select');
+                select.className = 'attr-input'; // Reuse style
+
+                options.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt;
+                    option.text = opt;
+                    if (value === opt) option.selected = true;
+                    select.appendChild(option);
+                });
+
+                select.onchange = (e) => onChange(e.target.value);
+                row.appendChild(select);
+                return row;
+            };
+
+            // AUTO SAVE HELPER
+            const updateProp = (key, val) => {
+                if (!node.props) node.props = {};
+                node.props[key] = val;
+
+                // Sync everything
+                const jsonEditor = document.getElementById('jsonEditor');
+                if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
+                updatePreview(currentData);
+                saveToLocalStorage(currentData);
+
+                // Keep tree structure updated (names might change)
+                // But avoid full re-render of tree to keep selection state simpler if possible.
+                // Actually full re-render is safest for now to show updates.
+                // We'll just re-highlight.
+                // document.getElementById('treeContainer').innerHTML = ''; 
+                // container.appendChild(renderNode(currentData.layout, currentData.layout));
+                // RE-RENDER TREE but keep logic detached to avoid recursion hell
+                // Quick hack: update the text in tree if it exists
+                if (key === 'text') {
+                    const treeHeaderSpan = document.querySelector(`.tree-node[data-id="${node._id}"] .tag`);
+                    // Actually text is usually not in tag, it depends.
+                }
+            };
+
+            // --- 1. LAYOUT CONSTRAINTS (Box Model) ---
+            const layoutSec = createSection('Layout & Constraints');
+
+            // Dimensions
+            const dimGrid = document.createElement('div');
+            dimGrid.className = 'attr-grid';
+
+            dimGrid.appendChild(createInput('Width', node.props.width, (v) => updateProp('width', v), 'text', 'width'));
+            dimGrid.appendChild(createInput('Height', node.props.height, (v) => updateProp('height', v), 'text', 'height'));
+            dimGrid.appendChild(createInput('Weight', node.props.weight, (v) => updateProp('weight', Number(v)), 'number', 'weight'));
+
+            // Fill Toggles
+            const checksDiv = document.createElement('div');
+            checksDiv.style.display = 'flex';
+            checksDiv.style.gap = '10px';
+            checksDiv.style.marginTop = '10px';
+
+            const createCheck = (lbl, prop) => {
+                renderedProps.add(prop);
+                const l = document.createElement('label');
+                l.style.fontSize = '11px'; l.style.color = '#ccc'; l.style.display = 'flex'; l.style.alignItems = 'center'; l.style.gap = '5px';
+                const c = document.createElement('input');
+                c.type = 'checkbox';
+                c.checked = node.props[prop] === 'true';
+                c.onchange = (e) => updateProp(prop, e.target.checked ? 'true' : 'false');
+                l.appendChild(c); l.appendChild(document.createTextNode(lbl));
+                return l;
+            }
+
+            checksDiv.appendChild(createCheck('Fill Width', 'fillWidth'));
+            checksDiv.appendChild(createCheck('Fill Max', 'fillMaxSize'));
+            checksDiv.appendChild(createCheck('Scroll', 'scroll'));
+
+            layoutSec.appendChild(dimGrid);
+            layoutSec.appendChild(checksDiv);
+
+            // PADDING VISUALIZER (Box Model)
+            renderedProps.add('padding'); // Mark padding as rendered
+            const boxModel = document.createElement('div');
+            boxModel.className = 'box-model';
+            boxModel.style.marginTop = '15px';
+
+            // Parse Padding
+            let pt = '', pb = '', pl = '', pr = '';
+            if (node.props.padding) {
+                const parts = String(node.props.padding).split(',').map(s => s.trim());
+                if (parts.length === 1) { pt = pb = pl = pr = parts[0]; }
+                else if (parts.length === 4) { pt = parts[0]; pr = parts[1]; pb = parts[2]; pl = parts[3]; }
+            }
+
+            const createBmInput = (cls, val, idx) => {
+                const inp = document.createElement('input');
+                inp.className = `bm-input ${cls}`;
+                inp.value = val;
+                inp.placeholder = '0';
+
+                // USE ONINPUT for Live Updates
+                inp.oninput = (e) => {
+                    // Reconstruct padding string
+                    let v = e.target.value;
+
+                    // Sanitize: Remove 'px' if typed
+                    v = v.replace(/px/g, '').trim();
+                    if (v === '') v = '0';
+
+                    let npt = pt || '0', npb = pb || '0', npl = pl || '0', npr = pr || '0';
+                    if (idx === 0) npt = v; if (idx === 1) npr = v; if (idx === 2) npb = v; if (idx === 3) npl = v;
+
+                    // Allow simple int if all same? Nah, explicit 4 vals is safer for editor
+                    const newVal = `${npt}, ${npr}, ${npb}, ${npl}`;
+                    updateProp('padding', newVal);
+
+                    // Update local vars for next edit without reload
+                    pt = npt; pr = npr; pb = npb; pl = npl;
+                };
+                return inp;
+            };
+
+            boxModel.appendChild(createBmInput('bm-top', pt, 0));
+            boxModel.appendChild(createBmInput('bm-right', pr, 1));
+            boxModel.appendChild(createBmInput('bm-bottom', pb, 2));
+            boxModel.appendChild(createBmInput('bm-left', pl, 3));
+
+            const centerLbl = document.createElement('div');
+            centerLbl.className = 'bm-center';
+            centerLbl.innerText = node.type;
+            boxModel.appendChild(centerLbl);
+
+            layoutSec.appendChild(document.createElement('div')).innerHTML = '<div class="attr-label" style="margin-top:10px">Padding (T, R, B, L)</div>';
+            layoutSec.appendChild(boxModel);
+
+            container.appendChild(layoutSec);
+
+
+            // --- 2. ALIGNMENT ---
+            if (node.type === 'Column' || node.type === 'Row') {
+                const alignSec = createSection('Alignment');
+
+                if (node.type === 'Column') {
+                    alignSec.appendChild(createSelect('Vertical Arrangement', node.props.verticalArrangement, ['top', 'center', 'bottom', 'spacebetween', 'spacearound'], (v) => updateProp('verticalArrangement', v), 'verticalArrangement'));
+                    alignSec.appendChild(createSelect('Horizontal Alignment', node.props.horizontalAlignment, ['start', 'center', 'end'], (v) => updateProp('horizontalAlignment', v), 'horizontalAlignment'));
+                } else {
+                    alignSec.appendChild(createSelect('Horizontal Arrangement', node.props.horizontalArrangement, ['start', 'center', 'end', 'spacebetween', 'spacearound'], (v) => updateProp('horizontalArrangement', v), 'horizontalArrangement'));
+                    alignSec.appendChild(createSelect('Vertical Alignment', node.props.verticalAlignment, ['top', 'center', 'bottom'], (v) => updateProp('verticalAlignment', v), 'verticalAlignment'));
+                }
+                container.appendChild(alignSec);
+            }
+
+            // --- 3. STYLE & CONTENT ---
+            const styleSec = createSection('Style & Content');
+
+            styleSec.appendChild(createInput('Background Color', node.props.backgroundColor, (v) => updateProp('backgroundColor', v), 'color', 'backgroundColor'));
+
+            if (node.type === 'Text' || node.type === 'Button') {
+                styleSec.appendChild(createInput('Text Content', node.props.text, (v) => updateProp('text', v), 'text', 'text'));
+                styleSec.appendChild(createInput('Text Color', node.props.color || node.props.textColor, (v) => updateProp(node.type === 'Button' ? 'textColor' : 'color', v), 'color', node.type === 'Button' ? 'textColor' : 'color'));
+
+                if (node.type === 'Text') {
+                    styleSec.appendChild(createSelect('Style', node.props.style, ['h1', 'h2', 'h3', 'body', 'caption'], (v) => updateProp('style', v), 'style'));
+                    styleSec.appendChild(createSelect('Font Weight', node.props.fontWeight, ['normal', 'medium', 'bold'], (v) => updateProp('fontWeight', v), 'fontWeight'));
+                    styleSec.appendChild(createSelect('Text Align', node.props.textAlign, ['left', 'center', 'right'], (v) => updateProp('textAlign', v), 'textAlign'));
+                }
+            }
+
+            if (node.type === 'Image') {
+                styleSec.appendChild(createInput('Image URL', node.props.url, (v) => updateProp('url', v), 'text', 'url'));
+                styleSec.appendChild(createSelect('Content Scale', node.props.contentScale, ['crop', 'fit', 'fill'], (v) => updateProp('contentScale', v), 'contentScale'));
+            }
+
+            if (node.type === 'Icon') {
+                styleSec.appendChild(createInput('Icon Name', node.props.name, (v) => updateProp('name', v), 'text', 'name'));
+                styleSec.appendChild(createInput('Size', node.props.size, (v) => updateProp('size', Number(v)), 'number', 'size'));
+                styleSec.appendChild(createInput('Color', node.props.color, (v) => updateProp('color', v), 'color', 'color'));
+            }
+
+            styleSec.appendChild(createInput('Corner Radius', node.props.corner, (v) => updateProp('corner', v), 'number', 'corner'));
+            styleSec.appendChild(createInput('Elevation / Shadow', node.props.elevation, (v) => updateProp('elevation', v), 'number', 'elevation'));
+
+            container.appendChild(styleSec);
+
+            // --- STRUCTURE ACTIONS ---
+            const structSec = createSection('Structure');
+            let hasStructActions = false;
+
+            // A. Insert Spacer After
+            const parentInfo = findParentAndIndex(currentData.layout, node._id);
+            if (parentInfo) {
+                const addSpacerBtn = document.createElement('button');
+                addSpacerBtn.className = 'action-btn';
+                addSpacerBtn.style.width = '100%';
+                addSpacerBtn.style.marginBottom = '8px';
+                addSpacerBtn.innerText = '+ Insert Spacer After';
+                addSpacerBtn.onclick = () => {
+                    const spacer = {
+                        type: 'Spacer',
+                        _id: Math.random().toString(36).substr(2, 9),
+                        props: { width: 16, height: 16 }
+                    };
+
+                    if (parentInfo.parent.type === 'Row') spacer.props = { width: 16 };
+                    else if (parentInfo.parent.type === 'Column') spacer.props = { height: 16 };
+
+                    parentInfo.parent.children.splice(parentInfo.index + 1, 0, spacer);
+
+                    const jsonEditor = document.getElementById('jsonEditor');
+                    if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
+                    updateEditors(currentData);
+                    selectNode(spacer._id);
+                };
+                structSec.appendChild(addSpacerBtn);
+                hasStructActions = true;
+            }
+
+            // B. Add Spacer Child (for Containers)
+            if (node.type === 'Column' || node.type === 'Row') {
+                const appendSpacerBtn = document.createElement('button');
+                appendSpacerBtn.className = 'action-btn';
+                appendSpacerBtn.style.width = '100%';
+                appendSpacerBtn.innerText = '+ Add Spacer Child';
+                appendSpacerBtn.onclick = () => {
+                    const spacer = {
+                        type: 'Spacer',
+                        _id: Math.random().toString(36).substr(2, 9),
+                        props: {}
+                    };
+                    if (node.type === 'Row') spacer.props = { width: 16 };
+                    else spacer.props = { height: 16 };
+
+                    if (!node.children) node.children = [];
+                    node.children.push(spacer);
+
+                    const jsonEditor = document.getElementById('jsonEditor');
+                    if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
+                    updateEditors(currentData);
+                    selectNode(spacer._id);
+                };
+                structSec.appendChild(appendSpacerBtn);
+                hasStructActions = true;
+            }
+
+            if (hasStructActions) {
+                container.appendChild(structSec);
+            }
+
+            // --- 4. RAW PROPS (Fallback) ---
+            const rawSec = createSection('Extra Props');
+            Object.keys(node.props).forEach(k => {
+                // If not already rendered, show it here
+                if (!renderedProps.has(k)) {
+                    const row = createInput(k, node.props[k], (v) => updateProp(k, v), 'text', k);
+
+                    // Add Delete Button to row
+                    const delBtn = document.createElement('span');
+                    delBtn.className = 'material-icons';
+                    delBtn.innerText = 'remove_circle_outline';
+                    delBtn.style.fontSize = '14px';
+                    delBtn.style.color = '#FF5252';
+                    delBtn.style.marginLeft = '5px';
+                    delBtn.style.cursor = 'pointer';
+                    delBtn.onclick = () => {
+                        if (confirm(`Delete property: ${k}?`)) {
+                            delete node.props[k];
+                            updateEditors(currentData);
+                            renderAttributesPanel(node);
+                        }
+                    };
+
+                    // Flex the input part to make space for delete
+                    row.style.display = 'flex';
+                    row.style.alignItems = 'center';
+                    // Re-arrange structure: Label is block, input is block. 
+                    // To add delete btn beside input, we need input wrapper?
+                    // Quick hack: Just append delBtn to row (which is block), but styling might break.
+                    // Better: createInput returns a block with Label + Input.
+                    // Let's wrap input+btn in a flex div.
+
+                    // REFACTOR: Actually createInput returns a .attr-row (block) with label and input.
+                    // We can just append the button there and CSS flex it or position absolute.
+                    // Let's modify the row to be relative and put button top right? 
+                    // Or cleaner: row is flex col usually?
+                    // .attr-row { margin-bottom: 8px; } -> block.
+                    // Let's just append delBtn. It will appear below input.
+                    // To make it side-by-side with label?
+                    const label = row.querySelector('label');
+                    label.style.display = 'flex';
+                    label.style.justifyContent = 'space-between';
+                    label.appendChild(delBtn);
+
+                    rawSec.appendChild(row);
+                }
+            });
+
+            // Available Props for Dropdown
+            const availableProps = [
+                'padding', 'margin', 'marginTop', 'marginBottom',
+                'width', 'height', 'weight', 'fillWidth', 'fillMaxSize',
+                'backgroundColor', 'color', 'textColor', 'corner', 'elevation',
+                'horizontalArrangement', 'verticalAlignment', 'horizontalAlignment', 'verticalArrangement',
+                'scroll', 'contentScale', 'style', 'fontWeight', 'textAlign', 'onClick', 'url', 'name', 'size'
+            ];
+
+            const addContainer = document.createElement('div');
+            addContainer.style.display = 'flex';
+            addContainer.style.gap = '5px';
+
+            const addSelect = document.createElement('select');
+            addSelect.className = 'attr-input';
+            addSelect.style.flex = '1';
+
+            const defOpt = document.createElement('option');
+            defOpt.text = "+ Add Property...";
+            defOpt.value = "";
+            addSelect.appendChild(defOpt);
+
+            availableProps.sort().forEach(p => {
+                if (!node.props || !node.props.hasOwnProperty(p)) {
+                    const opt = document.createElement('option');
+                    opt.value = p;
+                    opt.text = p;
+                    addSelect.appendChild(opt);
+                }
+            });
+
+            // Custom Option
+            const custOpt = document.createElement('option');
+            custOpt.value = "CUSTOM";
+            custOpt.text = "Custom...";
+            custOpt.style.fontStyle = 'italic';
+            addSelect.appendChild(custOpt);
+
+            addSelect.onchange = (e) => {
+                const val = e.target.value;
+                if (!val) return;
+
+                if (val === 'CUSTOM') {
+                    const key = prompt("Enter property name:");
+                    if (key) {
+                        const v = prompt("Enter property value:");
+                        updateProp(key, v);
+                        renderAttributesPanel(node);
+                    }
+                } else {
+                    // Add default value logic
+                    let def = "";
+                    if (val.includes('olor')) def = "#000000";
+                    if (val === 'fillWidth' || val === 'fillMaxSize') def = "true";
+                    if (val === 'weight') def = "1";
+
+                    updateProp(val, def);
+                    renderAttributesPanel(node);
+                }
+                // Reset
+                addSelect.value = "";
+            };
+
+            addContainer.appendChild(addSelect);
+            rawSec.appendChild(addContainer);
+
+            container.appendChild(rawSec);
+        }
+
+        // Modified renderNode to remove inline edits and handle selection
+        function renderNode(node, parentRef) {
+            if (!node) return document.createElement('div');
+            const div = document.createElement('div');
+            div.className = 'tree-node';
+            if (node._id) div.setAttribute('data-id', node._id);
+
+            const header = document.createElement('div');
+            header.className = 'node-header';
+
+            let nodeType = node.type || 'Unknown';
+            let colorClass = 'tag-col';
+            if (nodeType === 'Row') colorClass = 'tag-row';
+            if (nodeType === 'Image') colorClass = 'tag-img';
+            if (nodeType === 'Text') colorClass = 'tag-txt';
+
+            // Selection Handler
+            header.onclick = (e) => {
+                e.preventDefault();
+                selectNode(node._id);
+            };
+
+            // Toggle Children
+            const toggleIcon = document.createElement('span');
+            toggleIcon.className = 'material-icons';
+            toggleIcon.style.fontSize = '16px';
+            toggleIcon.style.color = '#888';
+            toggleIcon.style.marginRight = '5px';
+            toggleIcon.innerText = (node.children && node.children.length) ? 'expand_more' : 'fiber_manual_record';
+
+            toggleIcon.onclick = (e) => {
+                e.stopPropagation(); // Avoid selecting node when just toggling
+                const childrenDiv = div.querySelector('.children-container');
+                if (childrenDiv) {
+                    const isHidden = childrenDiv.style.display === 'none';
+                    childrenDiv.style.display = isHidden ? 'block' : 'none';
+                    toggleIcon.innerText = isHidden ? 'expand_more' : 'chevron_right';
+                }
+            }
+
+            header.appendChild(toggleIcon);
+            header.innerHTML += `<span class="tag ${colorClass}">${nodeType}</span>`;
+            if (node.props.text) {
+                header.innerHTML += `<span style="font-size:10px; color:#888; margin-left:5px; white-space:nowrap; overflow:hidden; max-width:100px; text-overflow:ellipsis;">"${node.props.text}"</span>`;
+            }
+
+            div.appendChild(header);
+
+            if (node.children && Array.isArray(node.children)) {
+                const childrenContainer = document.createElement('div');
+                childrenContainer.className = 'children-container';
+                node.children.forEach(child => { if (child) childrenContainer.appendChild(renderNode(child, node)); });
+                div.appendChild(childrenContainer);
+            }
+            return div;
+        }
+
+        function highlightTreeNode(id) {
+            // Reusing this for "Scroll to view" logic mostly
+            selectNode(id);
+
+            // Scroll logic
             setTimeout(() => {
                 const treeNode = document.querySelector(`.tree-node[data-id="${id}"]`);
                 if (treeNode) {
-                    // Expand Parents
+                    // Expand parents...
                     let parent = treeNode.parentElement;
                     while (parent && parent.className !== 'tree-view') {
                         if (parent.classList.contains('children-container')) {
                             parent.style.display = 'block';
-                            // Icon update
-                            const header = parent.parentElement.querySelector('.node-header .material-icons');
-                            if (header) header.innerText = 'expand_more';
                         }
                         parent = parent.parentElement;
                     }
-
-                    // Scroll into view
                     treeNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-                    // Highlight effect
-                    const header = treeNode.querySelector('.node-header');
-                    header.classList.add('highlight');
-                    setTimeout(() => header.classList.remove('highlight'), 2000);
                 }
-            }, 100);
+            }, 50);
         }
 
         // --- PUBLISH ACTIONS ---
@@ -1825,6 +2562,14 @@
 
         // --- INIT ---
         // --- INIT ---
+        // --- PREVIEW RENDERER HELPERS ---
+        function toPx(val) {
+            if (!val) return '0px';
+            const s = String(val).trim();
+            if (s.endsWith('px')) return s;
+            return s + 'px';
+        }
+
         window.onload = () => {
             // Restore Platform
             const savedPlatform = localStorage.getItem('sdui_platform_mode');
