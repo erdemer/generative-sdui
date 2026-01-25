@@ -1722,8 +1722,15 @@
                 // Boyutlar
                 if (p.fillMaxSize === 'true') { s.width = '100%'; s.minHeight = '100%'; }
                 if (p.fillWidth === 'true') s.width = '100%';
-                if (p.width) s.width = typeof p.width === 'number' ? p.width + 'px' : p.width;
-                if (p.height) s.height = typeof p.height === 'number' ? p.height + 'px' : p.height;
+                // Helper for size
+                const toSize = (v) => {
+                    const str = String(v);
+                    if (str.endsWith('%') || str.endsWith('px') || str.endsWith('vh') || str.endsWith('vw')) return str;
+                    return str + 'px';
+                };
+
+                if (p.width) s.width = toSize(p.width);
+                if (p.height) s.height = toSize(p.height);
                 if (p.weight) s.flex = p.weight;
 
                 // Renkler
