@@ -1810,12 +1810,11 @@
                 // Bottom Navigation Bar - fixed to bottom, fills full width
                 el = document.createElement('div');
                 el.classList.add('sdui-bottom-bar');
-                // Core positioning - fixed to bottom edge
-                el.style.position = 'absolute';
-                el.style.bottom = '0';
-                el.style.left = '0';
-                el.style.right = '0';
-                // Flexbox layout
+                // Flex layout - naturally sits at bottom if sibling has weight:1
+                el.style.width = '100%';
+                el.style.flexShrink = '0'; // Never shrink
+
+                // Flexbox layout properties
                 el.style.display = 'flex';
                 el.style.flexDirection = 'row';
                 el.style.alignItems = 'center';
