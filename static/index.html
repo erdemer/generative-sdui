@@ -1809,27 +1809,40 @@
             } else if (node.type === 'BottomBar') {
                 // Bottom Navigation Bar - fixed to bottom, fills full width
                 el = document.createElement('div');
-                el.classList.add('sdui-row', 'sdui-bottom-bar');
-                // Default bottom bar styling
+                el.classList.add('sdui-bottom-bar');
+                // Core positioning - fixed to bottom edge
                 el.style.position = 'absolute';
                 el.style.bottom = '0';
                 el.style.left = '0';
                 el.style.right = '0';
-                el.style.width = '100%';
-                el.style.backgroundColor = node.props?.backgroundColor || '#FFFFFF';
+                // Flexbox layout
                 el.style.display = 'flex';
+                el.style.flexDirection = 'row';
                 el.style.alignItems = 'center';
-                el.style.justifyContent = node.props?.horizontalArrangement === 'spaceevenly' ? 'space-evenly' :
-                    node.props?.horizontalArrangement === 'spacebetween' ? 'space-between' :
-                        node.props?.horizontalArrangement === 'spacearound' ? 'space-around' :
-                            node.props?.horizontalArrangement === 'center' ? 'center' : 'space-evenly';
-                el.style.padding = node.props?.padding || '12px 0';
                 el.style.boxSizing = 'border-box';
-                // Safe area padding for bottom
-                el.style.paddingBottom = 'max(12px, env(safe-area-inset-bottom, 12px))';
-                // Optional shadow
+                // Horizontal arrangement
+                const hArr = node.props?.horizontalArrangement;
+                if (hArr === 'spaceevenly') el.style.justifyContent = 'space-evenly';
+                else if (hArr === 'spacebetween') el.style.justifyContent = 'space-between';
+                else if (hArr === 'spacearound') el.style.justifyContent = 'space-around';
+                else if (hArr === 'center') el.style.justifyContent = 'center';
+                else el.style.justifyContent = 'space-evenly'; // default
+                // Parse padding (handle comma-separated format)
+                if (node.props?.padding) {
+                    const parts = String(node.props.padding).split(',').map(x => x.trim() + 'px');
+                    if (parts.length === 4) {
+                        el.style.padding = `${parts[0]} ${parts[1]} ${parts[2]} ${parts[3]}`;
+                    } else if (parts.length === 1) {
+                        el.style.padding = parts[0];
+                    }
+                } else {
+                    el.style.padding = '12px 16px';
+                }
+                // Background
+                el.style.backgroundColor = node.props?.backgroundColor || '#FFFFFF';
+                // Shadow
                 if (node.props?.elevation) {
-                    el.style.boxShadow = `0 -2px ${node.props.elevation * 2}px rgba(0,0,0,0.1)`;
+                    el.style.boxShadow = `0 -2px ${node.props.elevation * 2}px rgba(0,0,0,0.15)`;
                 } else {
                     el.style.boxShadow = '0 -2px 8px rgba(0,0,0,0.08)';
                 }
