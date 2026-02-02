@@ -639,15 +639,16 @@
 
         .app-content {
             flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
+            overflow: hidden;
+            /* Fixed viewport behavior */
             position: relative;
             background-color: #FFF;
             /* Default bg */
             font-family: 'Roboto', sans-serif;
             padding-top: 36px;
             /* Notch area */
-            min-height: 100%;
+            height: 100%;
+            /* Fill frame exactly */
             display: flex;
             flex-direction: column;
         }
@@ -655,13 +656,17 @@
         /* Global Reset for Preview */
         .app-content * {
             box-sizing: border-box;
+            /* Ensure scrollbars are visible when needed */
+            scrollbar-width: thin;
         }
 
         /* Make root layout fill available space */
         .app-content>.sdui-col,
         .app-content>.sdui-row {
             flex: 1;
-            min-height: 100%;
+            height: 100%;
+            overflow: hidden;
+            /* Let children handle scroll unless specified */
         }
 
         /* Generated Elements Helper Classes */
