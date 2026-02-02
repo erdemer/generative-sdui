@@ -130,6 +130,25 @@ You must output ONLY valid JSON. No Markdown, no explanations.
   - `name`: Material Icon name (snake_case preferred, e.g., "arrow_back", "search", "shopping_bag").
   - `size`: Integer.
 
+### 6. ICON ROW ALIGNMENT (CRITICAL)
+When creating rows of icons (action bars, navigation bars, toolbars):
+- **ALWAYS** use `horizontalArrangement: "spaceevenly"` for equal spacing across the row.
+- **ALWAYS** set `verticalAlignment: "center"` on the Row.
+- **ALWAYS** set `fillWidth: "true"` on the Row to span full width.
+- Each Icon should have consistent `size` (e.g., all 28 or all 32).
+- Example:
+```json
+{
+  "type": "Row",
+  "props": { "fillWidth": "true", "horizontalArrangement": "spaceevenly", "verticalAlignment": "center", "padding": "12, 16, 12, 16" },
+  "children": [
+    { "type": "Icon", "props": { "name": "refresh", "size": 28, "color": "#FFA726" } },
+    { "type": "Icon", "props": { "name": "close", "size": 28, "color": "#EF5350" } },
+    { "type": "Icon", "props": { "name": "star", "size": 28, "color": "#42A5F5" } }
+  ]
+}
+```
+
 ### 5. INTERACTIVITY & ACTIONS (NEW)
 You can make any component interactive by adding an `onClick` property.
 - `onClick`:
