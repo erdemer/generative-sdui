@@ -1750,9 +1750,14 @@
                 el = document.createElement('span');
                 el.classList.add('material-icons');
                 el.innerText = node.props.name || "help";
-            } else if (node.type === 'Box' || node.type === 'Card') {
+            } else if (node.type === 'Box') {
                 el = document.createElement('div');
                 el.classList.add('sdui-col');
+            } else if (node.type === 'Card') {
+                el = document.createElement('div');
+                el.classList.add('sdui-col');
+                // Cards should clip content to corners
+                el.style.overflow = 'hidden';
             } else if (node.type === 'Button') {
                 el = document.createElement('div');
                 el.innerText = node.props.text || "Button";
@@ -1920,6 +1925,13 @@
                 // BorderRadius
                 if (p.corner) s.borderRadius = p.corner + 'px';
 
+                // Elevation (Shadow)
+                if (p.elevation) {
+                    const e = parseInt(p.elevation);
+                    // Simulating Material elevation
+                    s.boxShadow = `0 ${Math.floor(e / 2)}px ${e * 2}px rgba(0,0,0,${0.1 + (e * 0.02)})`;
+                }
+
                 // Flex Hizalama
                 if (node.type === 'Column') {
                     if (p.verticalArrangement === 'center') s.justifyContent = 'center';
@@ -1936,7 +1948,7 @@
                     if (p.horizontalArrangement === 'spaceevenly') s.justifyContent = 'space-evenly';
                     if (p.horizontalArrangement === 'spacearound') s.justifyContent = 'space-around';
                     if (p.horizontalArrangement && p.horizontalArrangement.startsWith('spacedby:')) {
-                        s.gap = p.horizontalArrangement.split(':')[1] + 'px';
+                        s.gap = p.horizontalArrangement.split(':')[1].trim() + 'px';
                     }
 
                     if (p.verticalAlignment === 'center') s.alignItems = 'center';
