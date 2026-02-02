@@ -1874,6 +1874,8 @@
                     if (p.horizontalArrangement === 'center') s.justifyContent = 'center';
                     if (p.horizontalArrangement === 'end') s.justifyContent = 'flex-end';
                     if (p.horizontalArrangement === 'spacebetween') s.justifyContent = 'space-between';
+                    if (p.horizontalArrangement === 'spaceevenly') s.justifyContent = 'space-evenly';
+                    if (p.horizontalArrangement === 'spacearound') s.justifyContent = 'space-around';
                     if (p.horizontalArrangement && p.horizontalArrangement.startsWith('spacedby:')) {
                         s.gap = p.horizontalArrangement.split(':')[1] + 'px';
                     }
