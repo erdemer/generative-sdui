@@ -2416,7 +2416,7 @@
 
             header.appendChild(toggleIcon);
             header.innerHTML += `<span class="tag ${colorClass}">${nodeType}</span>`;
-            if (node.props.text) {
+            if (node.props && node.props.text) {
                 header.innerHTML += `<span style="font-size:10px; color:#888; margin-left:5px; white-space:nowrap; overflow:hidden; max-width:100px; text-overflow:ellipsis;">"${node.props.text}"</span>`;
             }
 
