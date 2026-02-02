@@ -2278,9 +2278,11 @@
                         props.forEach(p => updateProp(p, 'center'));
                     } else {
                         props.forEach(p => delete node.props[p]);
-                        updatePreview(currentData);
-                        saveToLocalStorage(currentData);
                     }
+                    const jsonEditor = document.getElementById('jsonEditor');
+                    if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
+                    updatePreview(currentData);
+                    saveToLocalStorage(currentData);
                     renderAttributesPanel(node);
                 };
                 l.appendChild(c); l.appendChild(document.createTextNode(lbl));
