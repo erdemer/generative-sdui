@@ -678,6 +678,11 @@
             max-width: 100%;
         }
 
+        .sdui-bottom-bar {
+            z-index: 100;
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
         /* Scroll hide */
         .app-content::-webkit-scrollbar {
             width: 0;
@@ -1793,6 +1798,33 @@
                 }
 
                 return wrapper;
+            } else if (node.type === 'BottomBar') {
+                // Bottom Navigation Bar - fixed to bottom, fills full width
+                el = document.createElement('div');
+                el.classList.add('sdui-row', 'sdui-bottom-bar');
+                // Default bottom bar styling
+                el.style.position = 'absolute';
+                el.style.bottom = '0';
+                el.style.left = '0';
+                el.style.right = '0';
+                el.style.width = '100%';
+                el.style.backgroundColor = node.props?.backgroundColor || '#FFFFFF';
+                el.style.display = 'flex';
+                el.style.alignItems = 'center';
+                el.style.justifyContent = node.props?.horizontalArrangement === 'spaceevenly' ? 'space-evenly' :
+                    node.props?.horizontalArrangement === 'spacebetween' ? 'space-between' :
+                        node.props?.horizontalArrangement === 'spacearound' ? 'space-around' :
+                            node.props?.horizontalArrangement === 'center' ? 'center' : 'space-evenly';
+                el.style.padding = node.props?.padding || '12px 0';
+                el.style.boxSizing = 'border-box';
+                // Safe area padding for bottom
+                el.style.paddingBottom = 'max(12px, env(safe-area-inset-bottom, 12px))';
+                // Optional shadow
+                if (node.props?.elevation) {
+                    el.style.boxShadow = `0 -2px ${node.props.elevation * 2}px rgba(0,0,0,0.1)`;
+                } else {
+                    el.style.boxShadow = '0 -2px 8px rgba(0,0,0,0.08)';
+                }
             } else if (node.type === 'Spacer') {
                 el = document.createElement('div');
             } else {
