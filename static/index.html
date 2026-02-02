@@ -647,13 +647,21 @@
             font-family: 'Roboto', sans-serif;
             padding-top: 36px;
             /* Notch area */
-            padding-bottom: 40px;
-            /* Safe area & corners */
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
         }
 
         /* Global Reset for Preview */
         .app-content * {
             box-sizing: border-box;
+        }
+
+        /* Make root layout fill available space */
+        .app-content>.sdui-col,
+        .app-content>.sdui-row {
+            flex: 1;
+            min-height: 100%;
         }
 
         /* Generated Elements Helper Classes */
@@ -1860,7 +1868,7 @@
 
                 // Boyutlar
                 // Boyutlar
-                if (p.fillMaxSize === 'true') { s.width = '100%'; s.minHeight = '100%'; }
+                if (p.fillMaxSize === 'true') { s.width = '100%'; s.height = '100%'; }
                 if (p.fillWidth === 'true') s.width = '100%';
                 // Helper for size
                 const toSize = (v) => {

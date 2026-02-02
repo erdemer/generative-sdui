@@ -113,6 +113,10 @@ You must output ONLY valid JSON. No Markdown, no explanations.
 - **Row**: `horizontalArrangement` (starts, center, end, spacebetween, spacedby:N), `verticalAlignment` (top, center, bottom).
 - **Box**: Basic container. Good for distinct background blocks or overlays.
 - **Spacer**: `height`, `width`.
+- **BottomBar**: Fixed bottom navigation. Positioned at screen bottom, fills full width. Use for tab bars/navigation.
+  - Props: `backgroundColor`, `horizontalArrangement` (spaceevenly, spacebetween, center), `padding`, `elevation`.
+  - Children: Usually Icons with onClick handlers.
+
 
 #### Content
 - **Text**:
