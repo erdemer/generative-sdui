@@ -2259,6 +2259,38 @@
 
             // --- 4. RAW PROPS (Fallback) ---
             const rawSec = createSection('Extra Props');
+
+            // Centering Checkboxes (simplified alignment controls)
+            const centerDiv = document.createElement('div');
+            centerDiv.style.display = 'flex';
+            centerDiv.style.gap = '10px';
+            centerDiv.style.marginBottom = '10px';
+
+            const createCenterCheck = (lbl, props) => {
+                props.forEach(p => renderedProps.add(p));
+                const l = document.createElement('label');
+                l.style.fontSize = '11px'; l.style.color = '#ccc'; l.style.display = 'flex'; l.style.alignItems = 'center'; l.style.gap = '5px';
+                const c = document.createElement('input');
+                c.type = 'checkbox';
+                c.checked = props.some(p => node.props[p] === 'center');
+                c.onchange = (e) => {
+                    if (e.target.checked) {
+                        props.forEach(p => updateProp(p, 'center'));
+                    } else {
+                        props.forEach(p => delete node.props[p]);
+                        updatePreview(currentData);
+                        saveToLocalStorage(currentData);
+                    }
+                    renderAttributesPanel(node);
+                };
+                l.appendChild(c); l.appendChild(document.createTextNode(lbl));
+                return l;
+            };
+
+            centerDiv.appendChild(createCenterCheck('Center H', ['horizontalAlignment', 'horizontalArrangement']));
+            centerDiv.appendChild(createCenterCheck('Center V', ['verticalAlignment', 'verticalArrangement']));
+            rawSec.appendChild(centerDiv);
+
             Object.keys(node.props).forEach(k => {
                 // If not already rendered, show it here
                 if (!renderedProps.has(k)) {
