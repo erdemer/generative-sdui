@@ -866,6 +866,63 @@
             background: rgba(187, 134, 252, 0.1);
             pointer-events: none;
         }
+
+        /* --- Material 3 Bottom Sheet --- */
+        .sdui-bottom-sheet {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1C1B1F;
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
+            box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4),
+                0 -1px 8px rgba(0, 0, 0, 0.2);
+            padding-top: 0;
+            padding-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+            max-height: 85%;
+            overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sdui-bottom-sheet-handle {
+            width: 32px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 2px;
+            margin: 16px auto 8px;
+            flex-shrink: 0;
+        }
+
+        .sdui-bottom-sheet-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0 24px 16px;
+        }
+
+        .sdui-bottom-sheet-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sdui-bottom-sheet-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+
+        /* Modal Bottom Sheet Overlay */
+        .sdui-bottom-sheet-scrim {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 49;
+        }
     </style>
 </head>
 
@@ -1685,6 +1742,55 @@
                 el.style.justifyContent = 'center';
                 el.style.cursor = 'pointer';
                 if (!node.props.padding) el.style.padding = '12px 24px'; // Default padding if not set
+            } else if (node.type === 'BottomSheet') {
+                // Material 3 Bottom Sheet Container
+                const wrapper = document.createElement('div');
+                wrapper.style.position = 'relative';
+                wrapper.style.width = '100%';
+                wrapper.style.height = '100%';
+
+                // Scrim (optional, for modal variant)
+                if (node.props.modal === 'true') {
+                    const scrim = document.createElement('div');
+                    scrim.classList.add('sdui-bottom-sheet-scrim');
+                    wrapper.appendChild(scrim);
+                }
+
+                // Bottom Sheet
+                el = document.createElement('div');
+                el.classList.add('sdui-bottom-sheet');
+
+                // Drag Handle
+                const handle = document.createElement('div');
+                handle.classList.add('sdui-bottom-sheet-handle');
+                el.appendChild(handle);
+
+                // Content Container
+                const content = document.createElement('div');
+                content.classList.add('sdui-bottom-sheet-content');
+
+                // Children will be rendered into content
+                if (node.children && Array.isArray(node.children)) {
+                    node.children.forEach(child => {
+                        const childEl = renderPreview(child);
+                        if (childEl) content.appendChild(childEl);
+                    });
+                }
+
+                el.appendChild(content);
+                wrapper.appendChild(el);
+
+                // Apply custom props
+                if (node.props) {
+                    if (node.props.backgroundColor) el.style.background = node.props.backgroundColor;
+                    if (node.props.height) el.style.height = node.props.height + (String(node.props.height).includes('%') || String(node.props.height).includes('px') ? '' : 'px');
+                    if (node.props.corner) {
+                        el.style.borderTopLeftRadius = node.props.corner + 'px';
+                        el.style.borderTopRightRadius = node.props.corner + 'px';
+                    }
+                }
+
+                return wrapper;
             } else if (node.type === 'Spacer') {
                 el = document.createElement('div');
             } else {
