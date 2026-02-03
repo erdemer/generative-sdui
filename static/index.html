@@ -2661,21 +2661,18 @@
             // A. Insert Spacer After
             const parentInfo = findParentAndIndex(currentData.layout, node._id);
             if (parentInfo) {
-                const addSpacerBtn = document.createElement('button');
-                addSpacerBtn.className = 'action-btn';
-                addSpacerBtn.style.width = '100%';
-                addSpacerBtn.style.marginBottom = '8px';
-                addSpacerBtn.innerText = '+ Insert Spacer After';
-                addSpacerBtn.onclick = () => {
+                const addSpacerBtnH = document.createElement('button');
+                addSpacerBtnH.className = 'action-btn';
+                addSpacerBtnH.style.width = '48%';
+                addSpacerBtnH.style.flex = '1';
+                addSpacerBtnH.innerHTML = '<span class="material-icons" style="font-size:14px">hdr_strong</span> H-Spacer';
+                addSpacerBtnH.title = 'Insert Horizontal Spacer (Width 16)';
+                addSpacerBtnH.onclick = () => {
                     const spacer = {
                         type: 'Spacer',
                         _id: Math.random().toString(36).substr(2, 9),
-                        props: { width: 16, height: 16 }
+                        props: { width: 16 }
                     };
-
-                    if (parentInfo.parent.type === 'Row') spacer.props = { width: 16 };
-                    else if (parentInfo.parent.type === 'Column') spacer.props = { height: 16 };
-
                     parentInfo.parent.children.splice(parentInfo.index + 1, 0, spacer);
 
                     const jsonEditor = document.getElementById('jsonEditor');
@@ -2683,7 +2680,35 @@
                     updateEditors(currentData);
                     selectNode(spacer._id);
                 };
-                structSec.appendChild(addSpacerBtn);
+
+                const addSpacerBtnV = document.createElement('button');
+                addSpacerBtnV.className = 'action-btn';
+                addSpacerBtnV.style.width = '48%';
+                addSpacerBtnV.style.flex = '1';
+                addSpacerBtnV.innerHTML = '<span class="material-icons" style="font-size:14px">height</span> V-Spacer';
+                addSpacerBtnV.title = 'Insert Vertical Spacer (Height 16)';
+                addSpacerBtnV.onclick = () => {
+                    const spacer = {
+                        type: 'Spacer',
+                        _id: Math.random().toString(36).substr(2, 9),
+                        props: { height: 16 }
+                    };
+                    parentInfo.parent.children.splice(parentInfo.index + 1, 0, spacer);
+
+                    const jsonEditor = document.getElementById('jsonEditor');
+                    if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
+                    updateEditors(currentData);
+                    selectNode(spacer._id);
+                };
+
+                const btnGroup = document.createElement('div');
+                btnGroup.style.display = 'flex';
+                btnGroup.style.gap = '8px';
+                btnGroup.style.marginBottom = '8px';
+                btnGroup.appendChild(addSpacerBtnH);
+                btnGroup.appendChild(addSpacerBtnV);
+
+                structSec.appendChild(btnGroup);
                 hasStructActions = true;
             }
 
