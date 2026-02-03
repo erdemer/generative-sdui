@@ -144,8 +144,19 @@ When creating rows of icons (action bars, navigation bars, toolbars):
 - **ALWAYS** use `horizontalArrangement: "spaceevenly"` for equal spacing across the row.
 - **ALWAYS** set `verticalAlignment: "center"` on the Row.
 - **ALWAYS** set `fillWidth: "true"` on the Row to span full width.
-- Each Icon should have consistent `size` (e.g., all 28 or all 32).
+### 7. MENU GRIDS (e.g., Dashboard Buttons)
+When creating a row of equal-width buttons (e.g., "Bildirimler", "Cüzdanım", "Siparişlerim"):
+- **CRITICAL**: EVERY child in the Row MUST have `"weight": 1`.
+- This ensures they are perfectly equal width, regardless of text length.
 - Example:
+  ```json
+  { "type": "Row", "children": [
+      { "type": "Card", "props": { "weight": 1, ... } },
+      { "type": "Card", "props": { "weight": 1, ... } }
+  ]}
+  ```
+
+### 8. COMPONENT SPECIFICS
 ```json
 {
   "type": "Row",

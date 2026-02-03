@@ -1955,7 +1955,10 @@
 
                 if (p.width) s.width = toSize(p.width);
                 if (p.height) s.height = toSize(p.height);
-                if (p.weight) s.flex = p.weight;
+                if (p.weight) {
+                    s.flex = `${p.weight} ${p.weight} 0px`;
+                    s.minWidth = '0'; // Prevent content blowout
+                }
 
                 // Renkler
                 if (p.backgroundColor) s.background = p.backgroundColor; // Support Gradients
