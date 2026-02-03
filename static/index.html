@@ -693,7 +693,55 @@
 
         .sdui-bottom-bar {
             z-index: 100;
+            background: #FFFFFF;
+            /* Default */
             border-top: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+            /* Soft shadow */
+        }
+
+        /* Default Card Styling */
+        .sdui-card {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            /* Smooth corners */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            /* Modern shadow */
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        /* Modern Text Defaults */
+        .sdui-text-h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .sdui-text-h2 {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            line-height: 1.3;
+        }
+
+        .sdui-text-h3 {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .sdui-text-body {
+            font-size: 14px;
+            color: #444;
+            line-height: 1.5;
+        }
+
+        .sdui-text-caption {
+            font-size: 12px;
+            color: #888;
+            line-height: 1.4;
         }
 
         /* Scroll hide */
@@ -1742,6 +1790,10 @@
             } else if (node.type === 'Text') {
                 el = document.createElement('div');
                 el.innerText = node.props.text || "";
+
+                // Default Style Class
+                let style = node.props.style || 'body';
+                el.classList.add(`sdui-text-${style}`);
             } else if (node.type === 'Image') {
                 el = document.createElement('img');
                 el.classList.add('sdui-img');
@@ -1755,9 +1807,11 @@
                 el.classList.add('sdui-col');
             } else if (node.type === 'Card') {
                 el = document.createElement('div');
-                el.classList.add('sdui-col');
-                // Cards should clip content to corners
-                el.style.overflow = 'hidden';
+                el.classList.add('sdui-col', 'sdui-card');
+                // Default background if not set
+                if (!node.props || !node.props.backgroundColor) {
+                    el.style.backgroundColor = '#FFFFFF';
+                }
             } else if (node.type === 'Button') {
                 el = document.createElement('div');
                 el.innerText = node.props.text || "Button";
@@ -1925,11 +1979,11 @@
                 // BorderRadius
                 if (p.corner) s.borderRadius = p.corner + 'px';
 
-                // Elevation (Shadow)
+                // Elevation (Shadow) - IMPROVED
                 if (p.elevation) {
                     const e = parseInt(p.elevation);
-                    // Simulating Material elevation
-                    s.boxShadow = `0 ${Math.floor(e / 2)}px ${e * 2}px rgba(0,0,0,${0.1 + (e * 0.02)})`;
+                    // Modern, diffused shadow
+                    s.boxShadow = `0 ${Math.floor(e / 2) + 2}px ${e * 3}px rgba(0,0,0,${0.05 + (e * 0.015)})`;
                 }
 
                 // Flex Hizalama
@@ -1937,6 +1991,9 @@
                     if (p.verticalArrangement === 'center') s.justifyContent = 'center';
                     if (p.verticalArrangement === 'bottom') s.justifyContent = 'flex-end';
                     if (p.verticalArrangement === 'spacebetween') s.justifyContent = 'space-between';
+                    if (p.verticalArrangement && typeof p.verticalArrangement === 'string' && p.verticalArrangement.startsWith('spacedby:')) {
+                        s.gap = p.verticalArrangement.split(':')[1].trim() + 'px';
+                    }
 
                     if (p.horizontalAlignment === 'center') s.alignItems = 'center';
                     if (p.horizontalAlignment === 'end') s.alignItems = 'flex-end';
@@ -1955,15 +2012,20 @@
                     if (p.verticalAlignment === 'bottom') s.alignItems = 'flex-end';
                 }
 
-                // Text Stilleri
+                // Text Stilleri - Enhanced
                 if (node.type === 'Text') {
-                    if (p.style === 'h1') { s.fontSize = '24px'; s.fontWeight = 'bold'; }
-                    if (p.style === 'h2') { s.fontSize = '20px'; s.fontWeight = 'bold'; }
-                    if (p.style === 'h3') { s.fontSize = '18px'; s.fontWeight = '600'; }
-                    if (p.style === 'caption') { s.fontSize = '12px'; s.color = '#888'; }
+                    // Font sizes handled by CSS classes (sdui-text-h1 etc), but allow overrides:
+                    if (p.style === 'h1' && !s.fontSize) { s.fontWeight = '700'; }
+                    if (p.style === 'h2' && !s.fontSize) { s.fontWeight = '600'; }
 
-                    if (p.fontWeight === 'bold') s.fontWeight = 'bold';
+                    if (p.fontWeight === 'bold') s.fontWeight = '700';
+                    if (p.fontWeight === 'medium') s.fontWeight = '500';
+                    if (p.fontWeight === 'normal') s.fontWeight = '400';
+
                     if (p.textAlign) s.textAlign = p.textAlign;
+
+                    // Line height fix
+                    if (!s.lineHeight) s.lineHeight = '1.4';
                 }
 
                 // Icon Size

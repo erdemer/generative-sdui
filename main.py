@@ -109,7 +109,7 @@ You must output ONLY valid JSON. No Markdown, no explanations.
 ### 4. COMPONENT REGISTRY
 
 #### Structure
-- **Column**: `verticalArrangement` (top, bottom, center, spacebetween), `horizontalAlignment` (start, center, end).
+- **Column**: `verticalArrangement` (top, bottom, center, spacebetween, spacedby:N), `horizontalAlignment` (start, center, end).
 - **Row**: `horizontalArrangement` (starts, center, end, spacebetween, spacedby:N), `verticalAlignment` (top, center, bottom).
 - **Box**: Basic container. Good for distinct background blocks or overlays.
 - **Spacer**: `height`, `width`.
@@ -133,6 +133,11 @@ You must output ONLY valid JSON. No Markdown, no explanations.
 - **Icon**:
   - `name`: Material Icon name (snake_case preferred, e.g., "arrow_back", "search", "shopping_bag").
   - `size`: Integer.
+
+### 5. LIST & SETTINGS PATTERNS (CRITICAL)
+- **Settings Groups**: Wrap list items in a `Card` or `Box` with `backgroundColor: "#FFFFFF"` and `corner: 16`.
+- **List Items**: Use `Row` with `fillWidth: "true"` and `horizontalArrangement: "spacebetween"` (Left: Text, Right: Arrow Icon).
+- **Separators**: Use `horizontalArrangement: "spacedby:0"` or generic Spacers if needed, but `spacedby` on parent Column is preferred for vertical rhythm.
 
 ### 6. ICON ROW ALIGNMENT (CRITICAL)
 When creating rows of icons (action bars, navigation bars, toolbars):
