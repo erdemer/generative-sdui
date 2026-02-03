@@ -991,6 +991,24 @@
             background: rgba(0, 0, 0, 0.5);
             z-index: 49;
         }
+
+        /* Drag & Drop Visuals */
+        .node-header.drag-over-top {
+            border-top: 2px solid var(--success) !important;
+        }
+
+        .node-header.drag-over-bottom {
+            border-bottom: 2px solid var(--success) !important;
+        }
+
+        .node-header.drag-over-inside {
+            background: rgba(3, 218, 198, 0.2) !important;
+            border: 1px dashed var(--success) !important;
+        }
+
+        .tree-node.dragging {
+            opacity: 0.5;
+        }
     </style>
 </head>
 
@@ -1418,7 +1436,18 @@
             if (!node) return document.createElement('div');
             const div = document.createElement('div');
             div.className = 'tree-node';
-            if (node._id) div.setAttribute('data-id', node._id);
+            if (node._id) {
+                div.setAttribute('data-id', node._id);
+                // DRAG & DROP HANDLERS
+                div.draggable = true;
+                div.ondragstart = (e) => handleDragStart(e, node._id);
+                div.ondragover = (e) => handleDragOver(e, div);
+                div.ondragleave = (e) => handleDragLeave(e, div);
+                // Need to attach drop to the HEADER or the whole div?
+                // Attaching to div allows dropping into children container too. 
+                // But let's handle drop on the div.
+                div.ondrop = (e) => handleDrop(e, node._id);
+            }
 
             const header = document.createElement('div');
             header.className = 'node-header';
@@ -2158,6 +2187,165 @@
             if (node.children && Array.isArray(node.children)) {
                 node.children.forEach(child => tagDataWithIds(child));
             }
+        }
+
+        // --- DRAG & DROP LOGIC ---
+        let draggedNodeId = null;
+
+        function handleDragStart(e, id) {
+            draggedNodeId = id;
+            e.dataTransfer.effectAllowed = 'move';
+            e.stopPropagation(); // Only drag specific node
+
+            // Visual feedback
+            setTimeout(() => {
+                const el = document.querySelector(`.tree-node[data-id="${id}"]`);
+                if (el) el.classList.add('dragging');
+            }, 0);
+        }
+
+        function handleDragOver(e, targetEl) {
+            e.preventDefault(); // Necessary for allow drop
+            e.stopPropagation();
+
+            if (!targetEl) return;
+            const header = targetEl.querySelector('.node-header');
+            if (!header) return;
+
+            // Calculate Position
+            const rect = header.getBoundingClientRect();
+            const y = e.clientY - rect.top;
+            const height = rect.height;
+
+            // Clean classes
+            header.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-inside');
+
+            // Thresholds (25% top, 50% middle, 25% bottom)
+            const relY = y / height;
+
+            // If it's a container (Row/Column/Box/Card), allow inside drop
+            const isContainer = targetEl.querySelector('.children-container') != null;
+
+            if (relY < 0.25) {
+                header.classList.add('drag-over-top');
+            } else if (relY > 0.75) {
+                header.classList.add('drag-over-bottom');
+            } else if (isContainer) {
+                header.classList.add('drag-over-inside');
+            } else {
+                // If not container but in middle, default to bottom
+                header.classList.add('drag-over-bottom');
+            }
+        }
+
+        function handleDragLeave(e, targetEl) {
+            e.stopPropagation();
+            if (!targetEl) return;
+            const header = targetEl.querySelector('.node-header');
+            if (header) header.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-inside');
+        }
+
+        function handleDrop(e, targetId) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const targetEl = document.querySelector(`.tree-node[data-id="${targetId}"]`);
+            if (targetEl) targetEl.classList.remove('dragging');
+
+            // Clean visuals
+            document.querySelectorAll('.node-header').forEach(el =>
+                el.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-inside', 'dragging')
+            );
+
+            if (draggedNodeId === targetId) return; // Dropped on self
+
+            // Determine Drop Mode based on mouse pos relative to target header
+            const header = targetEl.querySelector('.node-header');
+            const rect = header.getBoundingClientRect();
+            const y = e.clientY - rect.top;
+            const relY = y / rect.height;
+
+            let mode = 'inside';
+            if (relY < 0.25) mode = 'before';
+            else if (relY > 0.75) mode = 'after';
+            else {
+                // Check if actually container
+                // We can check node type from data?
+                // Or just assume if it has children prop? 
+                // Let's use the helper to find node in data
+                const tNode = findNodeById(currentData.layout, targetId);
+                const canHaveChildren = tNode && (tNode.children !== undefined); // Simple check
+                if (!canHaveChildren) mode = 'after';
+            }
+
+            // Perform Move
+            moveNode(draggedNodeId, targetId, mode);
+        }
+
+        function moveNode(sourceId, targetId, mode) {
+            // 1. Find Source and remove it
+            const sourceInfo = findParentAndIndex(currentData.layout, sourceId);
+            if (!sourceInfo) return;
+
+            const sourceNode = sourceInfo.parent.children[sourceInfo.index];
+
+            // Prevent dropping parent into child (Cycle detection)
+            if (containsNode(sourceNode, targetId)) {
+                alert("Cannot drop a parent into its own child!");
+                return;
+            }
+
+            // Remove from old location
+            sourceInfo.parent.children.splice(sourceInfo.index, 1);
+
+            // 2. Find Target (Refind because removal might have shifted indices if same parent)
+            let targetInfo = findParentAndIndex(currentData.layout, targetId);
+
+            // Special Root case or not found
+            if (!targetInfo && currentData.layout._id === targetId) {
+                // Dropped on Root?
+                // Root can usually only have children if it's a Column/Row.
+                // If mode is inside and root is container
+                if (mode === 'inside') {
+                    if (!currentData.layout.children) currentData.layout.children = [];
+                    currentData.layout.children.push(sourceNode);
+                } else {
+                    // Cannot insert before/after root. Revert?
+                    // Put back
+                    sourceInfo.parent.children.splice(sourceInfo.index, 0, sourceNode);
+                    return;
+                }
+            } else if (targetInfo) {
+                // Normal Case
+                if (mode === 'before') {
+                    targetInfo.parent.children.splice(targetInfo.index, 0, sourceNode);
+                } else if (mode === 'after') {
+                    targetInfo.parent.children.splice(targetInfo.index + 1, 0, sourceNode);
+                } else if (mode === 'inside') {
+                    const tNode = targetInfo.parent.children[targetInfo.index];
+                    if (!tNode.children) tNode.children = [];
+                    tNode.children.push(sourceNode);
+                }
+            } else {
+                // Error? Put back
+                sourceInfo.parent.children.splice(sourceInfo.index, 0, sourceNode);
+                return;
+            }
+
+            // Update UI
+            const jsonEditor = document.getElementById('jsonEditor');
+            if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
+            updateEditors(currentData);
+        }
+
+        function containsNode(parent, childId) {
+            if (parent._id === childId) return true;
+            if (parent.children) {
+                for (let c of parent.children) {
+                    if (containsNode(c, childId)) return true;
+                }
+            }
+            return false;
         }
 
         // --- ATTRIBUTES PANEL LOGIC ---
