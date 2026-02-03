@@ -1040,7 +1040,9 @@
 
         <div>
             <h2><span class="material-icons">image</span> Referans Görsel</h2>
-            <div class="file-upload" onclick="document.getElementById('imgInput').click()">
+            <div class="file-upload" onclick="document.getElementById('imgInput').click()"
+                ondragover="handleFileDragOver(event)" ondrop="handleFileDrop(event)"
+                ondragleave="handleFileDragLeave(event)">
                 <input type="file" id="imgInput" hidden accept="image/*" onchange="previewFile()">
                 <span id="uploadText">Resim Seç veya Sürükle</span>
                 <img id="imgPreview" class="preview-img">
@@ -1287,6 +1289,33 @@
             document.getElementById('fsBtn').style.display = tab === 'json' ? 'flex' : 'none';
 
             if (tab === 'tree') syncJsonToTree();
+        }
+
+        // --- FILE DRAG & DROP ---
+        function handleFileDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.classList.add('hover');
+        }
+
+        function handleFileDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.classList.remove('hover');
+        }
+
+        function handleFileDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.classList.remove('hover');
+
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files && files.length > 0) {
+                document.getElementById('imgInput').files = files;
+                previewFile();
+            }
         }
 
         function previewFile() {
