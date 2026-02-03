@@ -1878,6 +1878,8 @@
                 el.style.alignItems = 'center';
                 el.style.justifyContent = 'center';
                 el.style.cursor = 'pointer';
+                el.style.whiteSpace = 'nowrap'; // Prevent text wrap
+                el.style.width = 'fit-content'; // Shrink to fit content
                 if (!node.props.padding) el.style.padding = '12px 24px'; // Default padding if not set
             } else if (node.type === 'BottomSheet') {
                 // Material 3 Bottom Sheet Container
