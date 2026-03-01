@@ -8,6 +8,7 @@
     <!-- Favicon: Rocket Emoji -->
     <link rel="icon" href="/static/logo.png" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --bg: #121212;
@@ -1396,8 +1397,65 @@
 
                 document.getElementById('promptInput').value = ''; // Clean up after gen
 
-                currentData = data;
-                updateEditors(data);
+                // --- PHASE 2: UI VERIFICATION ---
+                loadingTitle.innerText = "UI Doğrulanıyor ✅";
+                loadingDesc.innerText = "Yapay zeka önizlemeyi görsel olarak kontrol ediyor...";
+
+                // Render preview off-screen to capture screenshot
+                const previewContainer = document.getElementById('appPreview');
+                // Temporarily render the generated data
+                if (data && data.layout) {
+                    if (data.layout) tagDataWithIds(data.layout);
+                    previewContainer.innerHTML = '';
+                    if (data.layout.props && data.layout.props.backgroundColor) {
+                        previewContainer.style.background = data.layout.props.backgroundColor;
+                    } else {
+                        previewContainer.style.background = '#FFFFFF';
+                    }
+                    const rootEl = renderPreview(data.layout);
+                    if (rootEl) previewContainer.appendChild(rootEl);
+                }
+
+                // Wait a moment for images to start loading, then capture screenshot
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                try {
+                    const canvas = await html2canvas(previewContainer, {
+                        backgroundColor: null,
+                        scale: 1,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false
+                    });
+
+                    // Convert canvas to blob
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+
+                    // Send JSON + screenshot to /verify
+                    const verifyForm = new FormData();
+                    verifyForm.append('json_data', JSON.stringify(data));
+                    verifyForm.append('screenshot', blob, 'preview.png');
+
+                    const verifyRes = await fetch('/verify', { method: 'POST', body: verifyForm });
+                    const verifiedData = await verifyRes.json();
+
+                    if (verifiedData && verifiedData.layout) {
+                        currentData = verifiedData;
+                        updateEditors(verifiedData);
+                        console.log('✅ UI verification completed');
+                    } else {
+                        // Verification returned invalid data, use original
+                        currentData = data;
+                        updateEditors(data);
+                        console.warn('⚠️ Verification returned invalid data, using original');
+                    }
+                } catch (verifyErr) {
+                    console.warn('⚠️ UI verification failed, using original:', verifyErr);
+                    // Fail-open: use original data
+                    currentData = data;
+                    updateEditors(data);
+                }
+
             } catch (e) {
                 alert("Hata: " + e);
             } finally {

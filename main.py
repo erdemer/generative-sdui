@@ -1,5 +1,6 @@
 import os
 import io
+import json
 import uuid
 import socket
 import json_repair
@@ -349,6 +350,44 @@ SMART_CROP_PROMPT = """
 - This allows the system to slice the original image and server them as high-quality assets.
 """
 
+UI_VERIFY_PROMPT = """
+You are an expert UI Quality Assurance reviewer. You will receive:
+1. An SDUI JSON layout definition
+2. A screenshot of how this JSON renders visually
+
+Your job is to compare the rendered screenshot against the JSON and identify ANY visual or structural issues.
+
+### VISUAL ISSUES TO CHECK:
+- **Padding/Margin**: Elements too cramped or too spread out. Text touching edges without padding.
+- **Colors**: Poor contrast (e.g., light text on light background), inconsistent color scheme, unreadable text.
+- **Alignment**: Misaligned elements, uneven spacing between similar items.
+- **Layout**: Overlapping elements, content cut off or overflowing, empty gaps where content should be.
+- **Images**: Missing images, broken aspect ratios, images too small or too large for their container.
+- **Typography**: Text too small to read, inconsistent font sizes for similar elements.
+- **Overall Polish**: Does it look like a professional, well-designed app screen?
+
+### STRUCTURAL JSON ISSUES TO CHECK:
+- `scroll: "true"` on a container whose children have `weight` (causes infinite size error).
+- Missing `fillWidth: "true"` on containers that should span full width.
+- Missing `fillMaxSize: "true"` on root containers.
+- Image components without `height` specified inside cards/lists (causes collapse).
+- Empty `children` arrays.
+- Missing `contentScale` on Image components.
+- Rows without proper `horizontalArrangement` or `verticalAlignment`.
+
+### RESPONSE FORMAT:
+You must output ONLY valid JSON. No Markdown, no explanations, no commentary.
+
+If issues are found:
+- Fix ALL issues in the JSON and return the COMPLETE corrected JSON.
+- Ensure the fix addresses both visual AND structural problems.
+
+If no issues are found:
+- Return the original JSON exactly as-is.
+
+### CURRENT SDUI JSON:
+"""
+
 
 # --- RESİM KESME VE URL GÜNCELLEME ---
 def process_crops(ui_data, original_image: Image.Image):
@@ -478,6 +517,51 @@ async def generate_ui(
     except Exception as e:
         print(f"🔥 HATA: {e}")
         return {"detail": str(e), "layout": None}
+
+
+@app.post("/verify")
+async def verify_ui(
+        json_data: str = Form(...),
+        screenshot: UploadFile = File(...)
+):
+    """Verify and fix SDUI JSON by analyzing both the JSON structure and a visual screenshot."""
+    try:
+        print("🔍 UI Doğrulama başlatılıyor...")
+
+        # Parse the incoming JSON
+        original_json = json_repair.loads(json_data)
+
+        # Read the screenshot image
+        img_bytes = await screenshot.read()
+        pil_screenshot = Image.open(io.BytesIO(img_bytes))
+
+        # Build the verification prompt with the JSON embedded
+        verify_input = [
+            UI_VERIFY_PROMPT,
+            json.dumps(original_json, indent=2, ensure_ascii=False) if hasattr(json, 'dumps') else str(original_json),
+            "\n\n### RENDERED SCREENSHOT (analyze this visually):",
+            pil_screenshot
+        ]
+
+        # Call Gemini Vision
+        response = model.generate_content(verify_input)
+        verified_json = json_repair.loads(response.text)
+
+        # Check if changes were made
+        if verified_json != original_json:
+            print("✅ UI Doğrulama: Sorunlar bulundu ve düzeltildi!")
+        else:
+            print("✅ UI Doğrulama: Tasarım sorunsuz.")
+
+        return verified_json
+
+    except Exception as e:
+        print(f"⚠️ UI Doğrulama hatası (orijinal JSON döndürülüyor): {e}")
+        # Fail-open: return original JSON if verification fails
+        try:
+            return json_repair.loads(json_data)
+        except:
+            return {"detail": str(e), "layout": None}
 
 
 @app.post("/update_layout")
