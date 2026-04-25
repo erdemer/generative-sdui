@@ -11,7 +11,7 @@ function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt 
   return (
     <div className="topbar">
       <div className="topbar-left">
-        <div className="brand-mark" style={{ display: 'grid', placeItems: 'center', padding: 0 }}><Icon name="vodafone" size={22} /></div>
+        <div className="brand-mark" style={{ display: 'grid', placeItems: 'center', padding: 0, background: 'transparent', border: 'none' }}><img src="/static/logo.png" alt="Vodafone" style={{ width: 28, height: 28 }}/></div>
         <div className="brand-name">
           SDUI <em>Studio</em>
         </div>
