@@ -1029,64 +1029,74 @@
 
         <!-- Files Manager -->
         <div style="display: flex; flex-direction: column; gap: 10px;">
-            <h2><span class="material-icons">folder</span> Dosyalar</h2>
+            <h2><span class="material-icons">folder</span> <span data-i18n="dosyalar">Dosyalar</span></h2>
             <div id="filesContainer" class="tree-view" style="display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 8px; padding: 0; min-height: 200px; max-height: 300px; background: var(--input-bg);"></div>
         </div>
         <hr style="width: 100%; border-color: #333; margin: 15px 0;">
 
-        <!-- Platform Selector -->
-        <div style="margin-bottom: 20px;">
-            <div class="device-toggle" style="margin-bottom: 5px;">
-                <button class="active" onclick="setPlatform('mobile')" id="plat-mobile" style="flex: 1;">Mobile
-                    App</button>
-                <button onclick="setPlatform('web')" id="plat-web" style="flex: 1;">Web App</button>
+        <!-- Platform & Language Selector -->
+        <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+            <div style="flex: 1;">
+                <div class="device-toggle" style="margin-bottom: 5px;">
+                    <button class="active" onclick="setPlatform('mobile')" id="plat-mobile" style="flex: 1;">Mobile App</button>
+                    <button onclick="setPlatform('web')" id="plat-web" style="flex: 1;">Web App</button>
+                </div>
+                <div style="font-size: 11px; color: #666; text-align: center;" data-i18n="mobile_hint">
+                    * Mobile: iOS/Android native | Web: Responsive
+                </div>
             </div>
-            <div style="font-size: 11px; color: #666; text-align: center;">
-                * Mobile: iOS/Android native | Web: Responsive
+            <div style="flex: 1;">
+                <div class="device-toggle" style="margin-bottom: 5px;">
+                    <button class="active" onclick="setLanguage('tr')" id="lang-tr" style="flex: 1;">TR</button>
+                    <button onclick="setLanguage('en')" id="lang-en" style="flex: 1;">EN</button>
+                </div>
+                <div style="font-size: 11px; color: #666; text-align: center;" data-i18n="lang_hint">
+                    * Arayüz & Yapay Zeka dili
+                </div>
             </div>
         </div>
 
         <div>
-            <h2><span class="material-icons">image</span> Referans Görsel</h2>
+            <h2><span class="material-icons">image</span> <span data-i18n="referans_gorsel">Referans Görsel</span></h2>
             <div class="file-upload" onclick="document.getElementById('imgInput').click()"
                 ondragover="handleFileDragOver(event)" ondrop="handleFileDrop(event)"
                 ondragleave="handleFileDragLeave(event)">
                 <input type="file" id="imgInput" hidden accept="image/*" onchange="previewFile()">
-                <span id="uploadText">Resim Seç veya Sürükle</span>
+                <span id="uploadText" data-i18n="resim_sec">Resim Seç veya Sürükle</span>
                 <img id="imgPreview" class="preview-img">
             </div>
 
             <div style="margin-top: 10px;">
                 <label class="toggle-container">
                     <input type="checkbox" id="smartCropToggle">
-                    <span class="toggle-text">Resimden Parça Kes (Smart Crop)</span>
+                    <span class="toggle-text" data-i18n="smart_crop">Resimden Parça Kes (Smart Crop)</span>
                 </label>
-                <div style="font-size: 11px; color: #666; margin-top: 5px; margin-left: 5px;">
+                <div style="font-size: 11px; color: #666; margin-top: 5px; margin-left: 5px;" data-i18n="unsplash_hint">
                     * Seçili değilse Unsplash resimleri kullanılır.
                 </div>
             </div>
         </div>
 
         <div>
-            <h2><span class="material-icons">edit</span> Prompt</h2>
+            <h2><span class="material-icons">edit</span> <span data-i18n="prompt_title">Prompt</span></h2>
             <textarea id="promptInput" disabled
                 placeholder="Lütfen önce Files sekmesinden bir dosya açın veya oluşturun..."></textarea>
         </div>
 
         <button id="btnGenerate" class="generate-btn secondary" onclick="generate()"
             style="margin-top: 10px;" disabled>
-            <span class="material-icons">auto_awesome</span> TASARIMI GÜNCELLE
+            <span class="material-icons">auto_awesome</span> <span data-i18n="tasarimi_guncelle">TASARIMI GÜNCELLE</span>
         </button>
 
         <hr style="width: 100%; border-color: #333;">
 
         <div>
-            <h2><span class="material-icons">rocket_launch</span> Yayınla</h2>
+            <h2><span class="material-icons">rocket_launch</span> <span data-i18n="yayinla">Yayınla</span></h2>
             <div style="display: flex; gap: 10px; flex-direction: column;">
-                <button class="btn-publish" onclick="publishSingle()">Tekil Yayınla</button>
-                <button class="btn-primary btn-red-gradient" onclick="saveToVariant('A')">Varyant A'ya Kaydet</button>
-                <button class="btn-primary btn-red-gradient" onclick="saveToVariant('B')">Varyant B'ye Kaydet</button>
-                <button class="btn-ab" onclick="publishAB()">A/B Başlat</button>
+                <button class="btn-publish" onclick="publishSingle()" data-i18n="tekil_yayinla">Tekil Yayınla</button>
+                <button class="btn-primary btn-red-gradient" onclick="saveToVariant('A')" data-i18n="varyant_a">Varyant A'ya Kaydet</button>
+                <button class="btn-primary btn-red-gradient" onclick="saveToVariant('B')" data-i18n="varyant_b">Varyant B'ye Kaydet</button>
+                <button class="btn-ab" onclick="publishAB()" data-i18n="ab_baslat">A/B Başlat</button>
             </div>
         </div>
     </div>
@@ -1168,6 +1178,108 @@
 
         let pMode = 'mobile'; // 'mobile' or 'web'
 
+        const i18n = {
+            tr: {
+                dosyalar: "Dosyalar",
+                mobile_hint: "* Mobile: iOS/Android native | Web: Responsive",
+                lang_hint: "* Arayüz & Yapay Zeka dili",
+                referans_gorsel: "Referans Görsel",
+                resim_sec: "Resim Seç veya Sürükle",
+                smart_crop: "Resimden Parça Kes (Smart Crop)",
+                unsplash_hint: "* Seçili değilse Unsplash resimleri kullanılır.",
+                prompt_title: "Prompt",
+                tasarimi_guncelle: "TASARIMI GÜNCELLE",
+                yayinla: "Yayınla",
+                tekil_yayinla: "Tekil Yayınla",
+                varyant_a: "Varyant A'ya Kaydet",
+                varyant_b: "Varyant B'ye Kaydet",
+                ab_baslat: "A/B Başlat",
+                platform_warning: "Platform değiştirildiğinde mevcut çalışma temizlenecektir. Devam etmek istiyor musunuz?",
+                file_open_warning: "Lütfen önce bir dosya açın veya oluşturun.",
+                prompt_warning: "Lütfen prompt yazın veya resim yükleyin.",
+                loading_update: "Tasarım Güncelleniyor ✏️",
+                loading_desc: "Yapay zeka mevcut tasarım üzerinde değişiklik yapıyor...",
+                loading_verify: "UI Doğrulanıyor ✅",
+                loading_verify_desc: "Yapay zeka önizlemeyi görsel olarak kontrol ediyor...",
+                move_failed: "Taşıma başarısız: ",
+                file_prompt: "Dosya adı (uzantısız):",
+                delete_confirm: "Silmek istediğinize emin misiniz: ",
+                workspace_empty: "Workspace is empty",
+                prompt_placeholder_active: "Örn: Bu görseldeki renkleri kullanarak modern bir profil sayfası yap...",
+                prompt_placeholder_disabled: "Lütfen önce Files sekmesinden bir dosya açın veya oluşturun...",
+                exit_fullscreen: "Çıkış (ESC)"
+            },
+            en: {
+                dosyalar: "Files",
+                mobile_hint: "* Mobile: iOS/Android native | Web: Responsive",
+                lang_hint: "* UI & AI generation language",
+                referans_gorsel: "Reference Image",
+                resim_sec: "Select or Drag Image",
+                smart_crop: "Smart Crop Image",
+                unsplash_hint: "* If not selected, Unsplash images are used.",
+                prompt_title: "Prompt",
+                tasarimi_guncelle: "UPDATE DESIGN",
+                yayinla: "Publish",
+                tekil_yayinla: "Publish Single",
+                varyant_a: "Save to Variant A",
+                varyant_b: "Save to Variant B",
+                ab_baslat: "Start A/B Test",
+                platform_warning: "Changing platform will clear current work. Do you want to continue?",
+                file_open_warning: "Please open or create a file first.",
+                prompt_warning: "Please write a prompt or upload an image.",
+                loading_update: "Updating Design ✏️",
+                loading_desc: "AI is modifying the existing design...",
+                loading_verify: "Verifying UI ✅",
+                loading_verify_desc: "AI is visually checking the preview...",
+                move_failed: "Move failed: ",
+                file_prompt: "File name (without .json):",
+                delete_confirm: "Are you sure you want to delete ",
+                workspace_empty: "Workspace is empty",
+                prompt_placeholder_active: "E.g.: Create a modern profile page using these colors...",
+                prompt_placeholder_disabled: "Please open or create a file from the Files tab first...",
+                exit_fullscreen: "Exit (ESC)"
+            }
+        };
+
+        let currentLang = localStorage.getItem('sdui_lang') || 'tr';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('sdui_lang', lang);
+            
+            // Update UI buttons
+            const langTrBtn = document.getElementById('lang-tr');
+            const langEnBtn = document.getElementById('lang-en');
+            if (langTrBtn) langTrBtn.classList.toggle('active', lang === 'tr');
+            if (langEnBtn) langEnBtn.classList.toggle('active', lang === 'en');
+            
+            // Update translatable texts
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang][key]) {
+                    el.innerText = i18n[lang][key];
+                }
+            });
+
+            // Update specific elements like placeholders
+            const promptInput = document.getElementById('promptInput');
+            if (promptInput) {
+                if (promptInput.disabled) {
+                    promptInput.placeholder = i18n[lang].prompt_placeholder_disabled;
+                } else {
+                    promptInput.placeholder = i18n[lang].prompt_placeholder_active;
+                }
+            }
+            const exitBtn = document.getElementById('exitFullscreenBtn');
+            if (exitBtn) {
+                exitBtn.innerText = i18n[lang].exit_fullscreen;
+            }
+        }
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            setLanguage(currentLang);
+        });
+
 
         // --- PLATFORM LOGIC ---
         function setPlatform(mode) {
@@ -1175,7 +1287,7 @@
             if (pMode === mode) return;
 
             // Warn if we have data
-            if (currentData && !confirm("Platform değiştirildiğinde mevcut çalışma temizlenecektir. Devam etmek istiyor musunuz?")) {
+            if (currentData && !confirm(i18n[currentLang].platform_warning)) {
                 return;
             }
 
@@ -1331,25 +1443,26 @@
 
         // --- GENERATE ---
         async function generate() {
-            if (!currentFilePath) return alert("Lütfen önce bir dosya açın veya oluşturun.");
+            if (!currentFilePath) return alert(i18n[currentLang].file_open_warning);
 
             const prompt = document.getElementById('promptInput').value;
             const fileInput = document.getElementById('imgInput');
             const smartCrop = document.getElementById('smartCropToggle').checked;
 
-            if (!prompt && !fileInput.files[0]) return alert("Lütfen prompt yazın veya resim yükleyin.");
+            if (!prompt && !fileInput.files[0]) return alert(i18n[currentLang].prompt_warning);
 
             // LOADING MESAJINI AYARLA
             const loadingTitle = document.getElementById('loadingTitle');
             const loadingDesc = document.getElementById('loadingDesc');
             document.getElementById('loading').style.display = 'flex';
 
-            loadingTitle.innerText = "Tasarım Güncelleniyor ✏️";
-            loadingDesc.innerText = "Yapay zeka mevcut tasarım üzerinde değişiklik yapıyor...";
+            loadingTitle.innerText = i18n[currentLang].loading_update;
+            loadingDesc.innerText = i18n[currentLang].loading_desc;
 
             const formData = new FormData();
             formData.append('prompt', prompt);
             formData.append('platform', pMode); // Add Platform
+            formData.append('language', currentLang); // Add Language
             formData.append('smart_crop', smartCrop); // Checkbox değerini gönder
             if (fileInput.files[0]) formData.append('image', fileInput.files[0]);
 
@@ -1367,8 +1480,8 @@
                 document.getElementById('promptInput').value = ''; // Clean up after gen
 
                 // --- PHASE 2: UI VERIFICATION ---
-                loadingTitle.innerText = "UI Doğrulanıyor ✅";
-                loadingDesc.innerText = "Yapay zeka önizlemeyi görsel olarak kontrol ediyor...";
+                loadingTitle.innerText = i18n[currentLang].loading_verify;
+                loadingDesc.innerText = i18n[currentLang].loading_verify_desc;
 
                 // Render preview off-screen to capture screenshot
                 const previewContainer = document.getElementById('appPreview');
@@ -3222,7 +3335,7 @@
             }
 
             if (!tree || tree.length === 0) {
-                if (isRoot) container.innerHTML = `<div class="empty-state" style="opacity: 0.5; height: 100%; border: none;"><p>Workspace is empty</p></div>`;
+                if (isRoot) container.innerHTML = `<div class="empty-state" style="opacity: 0.5; height: 100%; border: none;"><p>${i18n[currentLang].workspace_empty}</p></div>`;
                 return;
             }
 
@@ -3313,7 +3426,7 @@
                     fetchFsTree();
                 } else {
                     const data = await res.json();
-                    alert("Taşıma başarısız: " + data.detail);
+                    alert(i18n[currentLang].move_failed + data.detail);
                 }
             } catch (e) {
                 console.error("Move error:", e);
@@ -3322,7 +3435,7 @@
 
         async function createNewFolder(parentPath, e) {
             if (e) e.stopPropagation();
-            const name = prompt("Folder name:");
+            const name = prompt(i18n[currentLang].folder_prompt);
             if (!name) return;
             const path = parentPath ? `${parentPath}/${name}` : name;
             await fetch(`/api/fs/folder?path=${encodeURIComponent(path)}`, { method: 'POST' });
@@ -3331,7 +3444,7 @@
 
         async function createNewFile(parentPath, e) {
             if (e) e.stopPropagation();
-            const name = prompt("File name (without .json):");
+            const name = prompt(i18n[currentLang].file_prompt);
             if (!name) return;
             const path = parentPath ? `${parentPath}/${name}.json` : `${name}.json`;
             await fetch(`/api/fs/file?path=${encodeURIComponent(path)}`, { method: 'POST' });
@@ -3371,7 +3484,7 @@
 
         async function deleteFsItem(path, e) {
             if (e) e.stopPropagation();
-            if (!confirm(`Are you sure you want to delete ${path}?`)) return;
+            if (!confirm(i18n[currentLang].delete_confirm + path + "?")) return;
             await fetch(`/api/fs/item?path=${encodeURIComponent(path)}`, { method: 'DELETE' });
             if (currentFilePath === path) {
                 currentFilePath = null;

@@ -449,7 +449,8 @@ async def generate_ui(
         image: UploadFile = File(None),
         current_json: str = Form(None),
         smart_crop: bool = Form(False),
-        platform: str = Form("mobile")
+        platform: str = Form("mobile"),
+        language: str = Form("tr")
 ):
     try:
         parsed_json = None
@@ -495,6 +496,12 @@ async def generate_ui(
                 input_content.append(REFINE_PROMPT)
             else:
                 input_content.append(prompt)
+                
+            # Language Instruction
+            if language == "en":
+                input_content.append("IMPORTANT: Write all generated user interface text, titles, buttons, and content in English.")
+            else:
+                input_content.append("IMPORTANT: Write all generated user interface text, titles, buttons, and content in Turkish.")
 
             if pil_image:
                 if smart_crop:
