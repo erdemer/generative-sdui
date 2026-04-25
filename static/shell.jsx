@@ -11,10 +11,9 @@ function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt 
   return (
     <div className="topbar">
       <div className="topbar-left">
-        <div className="brand-mark">S</div>
-        <div className="brand-name" style={{display: 'flex', alignItems: 'center', gap: 6}}>
+        <div className="brand-mark" style={{ display: 'grid', placeItems: 'center', padding: 0 }}><Icon name="vodafone" size={22} /></div>
+        <div className="brand-name">
           SDUI <em>Studio</em>
-          <Icon name="vodafone" size={14} />
         </div>
         {breadcrumb && (
           <div className="crumb">
@@ -251,14 +250,14 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
         {toolbarRight}
       </div>
 
-      <div className="device-stage" style={{ pointerEvents: interactive ? 'auto' : 'none' }}>
+      <div className="device-stage">
         {hideShell ? (
-          <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s', width: '100%', height: '100%' }}>
+          <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s', width: '100%', height: '100%', pointerEvents: interactive ? 'auto' : 'none' }}>
             {children}
           </div>
         ) : (
           <div className="device-shell" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s' }}>
-            <div className="device-screen">
+            <div className="device-screen" style={{ pointerEvents: interactive ? 'auto' : 'none' }}>
               {children}
             </div>
           </div>

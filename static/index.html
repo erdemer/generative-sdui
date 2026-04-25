@@ -560,16 +560,21 @@ function App() {
 
   // ── Publish ─────────────────────────────────────────────────────────────
   const handlePublish = async () => {
-    if (!currentJson) return;
+    if (!currentJson) {
+      alert(lang === 'tr' ? 'Yayınlanacak bir tasarım yok. Önce bir tasarım üretin.' : 'No design to publish. Generate a design first.');
+      return;
+    }
     try {
-      await fetch('/update_layout', {
+      const res = await fetch('/update_layout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ layout: currentJson, platform }),
       });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       setSavedAt(Date.now());
+      alert(lang === 'tr' ? '✅ Tasarım başarıyla yayınlandı!' : '✅ Design published successfully!');
     } catch (err) {
-      alert('Publish failed: ' + err.message);
+      alert((lang === 'tr' ? 'Yayınlama başarısız: ' : 'Publish failed: ') + err.message);
     }
   };
 
