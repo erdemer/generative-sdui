@@ -644,7 +644,9 @@ async def get_current_ui(platform: str = "mobile"):
                 "fillMaxSize": "true",
                 "verticalArrangement": "center",
                 "horizontalAlignment": "center",
-                "backgroundColor": "#FAFAFA"
+                "backgroundColor": "#FAFAFA",
+                "paddingTop": 48,
+                "paddingBottom": 34
             },
             "children": [
                 {

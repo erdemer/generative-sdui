@@ -313,6 +313,25 @@ function findPath(node, targetId, path = []) {
   return null;
 }
 
+function findIndexPath(node, targetId, path = []) {
+  if (node._id === targetId) return path;
+  let children = node.children || [];
+  for (let i = 0; i < children.length; i++) {
+    const r = findIndexPath(children[i], targetId, [...path, i]);
+    if (r) return r;
+  }
+  return null;
+}
+
+function getNodeByIndexPath(node, path) {
+  let curr = node;
+  for (const idx of path) {
+    if (!curr || !curr.children || !curr.children[idx]) return null;
+    curr = curr.children[idx];
+  }
+  return curr;
+}
+
 function findById(node, id) {
   if (!node) return null;
   if (node._id === id) return node;
@@ -570,9 +589,26 @@ function App() {
               if (!vRes.ok) return;
               const verified = await vRes.json();
               if (verified?.layout) {
-                _uid = 0; tagIds(verified.layout);
-                setCurrentJson(verified);
-                console.log('✅ Auditor: UI verified and improved');
+                // Determine structural path of currently selected node (if any)
+                // We use a functional state update to access the latest selectedId without closure staleness
+                setSelectedId(currentSelId => {
+                  let pathIndex = null;
+                  setCurrentJson(currentLayout => {
+                    if (currentSelId && currentLayout?.layout) {
+                      pathIndex = findIndexPath(currentLayout.layout, currentSelId);
+                    }
+                    _uid = 0; 
+                    tagIds(verified.layout);
+                    console.log('✅ Auditor: UI verified and improved');
+                    return verified;
+                  });
+                  // If we had a path, try to find the equivalent node in the verified layout
+                  if (pathIndex) {
+                    const restoredNode = getNodeByIndexPath(verified.layout, pathIndex);
+                    if (restoredNode) return restoredNode._id;
+                  }
+                  return currentSelId;
+                });
 
                 // Auto-save improved version
                 if (currentFilePath) {
