@@ -1,0 +1,472 @@
+/* SDUI Studio — Shared shell components
+   Topbar, panes, tree node, device frame, prompt panel, etc.
+*/
+
+const { useState, useMemo, useEffect } = React;
+
+const t = (lang, key) => (window.I18N[lang] && window.I18N[lang][key]) || key;
+
+/* =================== TOPBAR =================== */
+function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt = "1m", showAB = false }) {
+  return (
+    <div className="topbar">
+      <div className="topbar-left">
+        <div className="brand-mark">S</div>
+        <div className="brand-name">SDUI <em>Studio</em></div>
+        {breadcrumb && (
+          <div className="crumb">
+            <Icon name="folder" size={12}/>
+            <span>{breadcrumb.folder}</span>
+            <Icon name="chev-r" size={11} stroke={2}/>
+            <b>{breadcrumb.file}</b>
+          </div>
+        )}
+      </div>
+      <div className="topbar-center">
+        <div className="seg">
+          <button className="on"><Icon name="device-mobile" size={13}/> {t(lang,"mobile")}</button>
+          <button><Icon name="device-desktop" size={13}/> {t(lang,"web")}</button>
+        </div>
+        <div className="seg" style={{ marginLeft: 4 }}>
+          <button className={lang==='tr'?'on':''} onClick={()=>onToggleLang && onToggleLang('tr')}>TR</button>
+          <button className={lang==='en'?'on':''} onClick={()=>onToggleLang && onToggleLang('en')}>EN</button>
+        </div>
+      </div>
+      <div className="topbar-right">
+        <div className="chip ok" style={{ marginRight: 4 }}>
+          <Icon name="check" size={11} stroke={2.4}/> {t(lang,"saved")} · {savedAt}
+        </div>
+        {showAB && <div className="chip brand"><Icon name="git-branch" size={11}/> {t(lang,"abInProgress")}</div>}
+        <button className="icon-btn" onClick={onToggleTheme} title={lang==='tr'?'Tema değiştir':'Cycle theme'}>
+          <Icon name={theme && theme.indexOf('dark')>=0 ? 'moon' : 'sun'} size={15}/>
+        </button>
+        <button className="icon-btn"><Icon name="users" size={15}/></button>
+        <div style={{ display: 'flex', marginLeft: 4 }}>
+          <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'oklch(0.65 0.15 25)', border: '2px solid var(--panel)', color: '#fff', fontSize: 10, fontWeight: 600, display: 'grid', placeItems: 'center' }}>EA</div>
+          <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'oklch(0.62 0.13 240)', border: '2px solid var(--panel)', color: '#fff', fontSize: 10, fontWeight: 600, display: 'grid', placeItems: 'center', marginLeft: -8 }}>MK</div>
+        </div>
+        <button className="btn primary"><Icon name="rocket" size={13}/> {t(lang,"publish")}</button>
+      </div>
+    </div>
+  );
+}
+
+/* =================== LEFT PANE: Files + Settings + Reference + Prompt + Publish =================== */
+function FilesPane({ lang, files = [], selectedId, onSelect, density = "default" }) {
+  return (
+    <div className="pane">
+      <div className="pane-header">
+        <h3>{t(lang,"files")}</h3>
+        <div className="actions">
+          <button className="icon-btn" title={t(lang,"newProject")}><Icon name="plus" size={14}/></button>
+          <button className="icon-btn"><Icon name="search" size={14}/></button>
+          <button className="icon-btn"><Icon name="more-h" size={14}/></button>
+        </div>
+      </div>
+      <div className="pane-body" style={{ padding: 0 }}>
+        {/* Search */}
+        <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>
+          <div style={{ position: 'relative' }}>
+            <Icon name="search" size={13} className="" style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: 'var(--fg-3)' }}/>
+            <input className="input" style={{ paddingLeft: 28, height: 28 }} placeholder={lang==='tr'?'Dosyalarda ara…':'Search files…'}/>
+          </div>
+        </div>
+
+        {/* File tree */}
+        <div style={{ padding: '8px 6px' }}>
+          {files.length === 0 ? (
+            <EmptyFiles lang={lang}/>
+          ) : (
+            files.map((f, i) => (
+              <FileRow key={i} {...f} selected={f.id === selectedId} onClick={() => onSelect && onSelect(f.id)} lang={lang}/>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmptyFiles({ lang }) {
+  return (
+    <div style={{ padding: '20px 12px', textAlign: 'center', color: 'var(--fg-3)' }}>
+      <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--panel-2)', margin: '0 auto 10px', display: 'grid', placeItems: 'center', color: 'var(--fg-mute)' }}>
+        <Icon name="folder" size={18}/>
+      </div>
+      <div style={{ fontSize: 12, color: 'var(--fg-2)', fontWeight: 500, marginBottom: 4 }}>{t(lang,"workspaceEmpty")}</div>
+      <div style={{ fontSize: 11, lineHeight: 1.5, marginBottom: 12 }}>
+        {lang==='tr' ? 'Dosya oluştur ya da hazır şablondan başla.' : 'Create a file or start from a template.'}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <button className="btn" style={{ width: '100%', justifyContent: 'center' }}>
+          <Icon name="plus" size={13}/> {t(lang,"newFile")}
+        </button>
+        <button className="btn ghost" style={{ width: '100%', justifyContent: 'center' }}>
+          <Icon name="layers" size={13}/> {t(lang,"templates")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FileRow({ name, type = "file", level = 0, selected, open, lang, onClick, badge, modified }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 6,
+        height: 28,
+        padding: `0 8px 0 ${8 + level * 12}px`,
+        borderRadius: 6,
+        cursor: 'pointer',
+        background: selected ? 'var(--brand-soft)' : 'transparent',
+        color: selected ? 'var(--brand)' : 'var(--fg)',
+        fontWeight: selected ? 600 : 400,
+        fontSize: 12.5,
+        position: 'relative',
+      }}
+      onMouseEnter={e => !selected && (e.currentTarget.style.background = 'var(--hover)')}
+      onMouseLeave={e => !selected && (e.currentTarget.style.background = 'transparent')}
+    >
+      {type === 'folder' ? (
+        <>
+          <Icon name={open ? "chev-d" : "chev-r"} size={11} stroke={2}/>
+          <Icon name="folder" size={13} style={{ color: selected ? 'var(--brand)' : 'oklch(0.65 0.13 60)' }}/>
+        </>
+      ) : (
+        <>
+          <span style={{ width: 11 }}/>
+          <Icon name="file" size={13} style={{ color: 'var(--fg-3)' }}/>
+        </>
+      )}
+      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
+      {modified && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--brand)' }}/>}
+      {badge && <span className="chip" style={{ height: 16, fontSize: 9, padding: '0 5px' }}>{badge}</span>}
+    </div>
+  );
+}
+
+/* =================== TREE PANE =================== */
+function TreePane({ lang, view = "tree", onView, hasSelection = true, tree, selectedPath = [], onSelectNode, breadcrumb }) {
+  return (
+    <div className="pane">
+      <div className="pane-header">
+        <div className="seg" style={{ height: 24 }}>
+          <button className={view==='tree'?'on':''} onClick={()=>onView && onView('tree')} style={{ height: 18 }}>
+            <Icon name="layers" size={11}/> {t(lang,"tree")}
+          </button>
+          <button className={view==='json'?'on':''} onClick={()=>onView && onView('json')} style={{ height: 18 }}>
+            <Icon name="code" size={11}/> {t(lang,"json")}
+          </button>
+        </div>
+        <div className="actions">
+          <button className="icon-btn"><Icon name="plus" size={14}/></button>
+          <button className="icon-btn"><Icon name="more-h" size={14}/></button>
+        </div>
+      </div>
+
+      {/* Breadcrumb of selection */}
+      {breadcrumb && (
+        <div style={{ height: 28, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 4, borderBottom: '1px solid var(--line)', overflow: 'hidden', fontSize: 11, color: 'var(--fg-3)' }}>
+          {breadcrumb.map((c, i) => (
+            <React.Fragment key={i}>
+              <span style={{ color: i === breadcrumb.length-1 ? 'var(--fg)' : 'var(--fg-3)', fontWeight: i === breadcrumb.length-1 ? 600 : 400 }}>{c}</span>
+              {i < breadcrumb.length-1 && <Icon name="chev-r" size={10} stroke={2.2}/>}
+            </React.Fragment>
+          ))}
+        </div>
+      )}
+
+      <div className="pane-body" style={{ padding: 4 }}>
+        {!tree ? (
+          <div style={{ padding: '20px 12px', textAlign: 'center', color: 'var(--fg-3)', fontSize: 11.5, lineHeight: 1.6 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--panel-2)', margin: '0 auto 10px', display: 'grid', placeItems: 'center' }}>
+              <Icon name="layers" size={16}/>
+            </div>
+            {lang==='tr' ? 'Bir dosya açtığında bileşen ağacı burada görünür.' : 'Open a file to see the component tree here.'}
+          </div>
+        ) : (
+          <div className="tree">
+            {tree.map((n, i) => <TreeNode key={i} node={n} level={0} selectedPath={selectedPath} onSelect={onSelectNode} />)}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TreeNode({ node, level, selectedPath, onSelect, path = [] }) {
+  const myPath = [...path, node.id];
+  const selected = selectedPath && selectedPath.join('/') === myPath.join('/');
+  const open = node.open !== false;
+  const indent = level * 14;
+  return (
+    <>
+      <div
+        className={"tree-node" + (selected ? " selected" : "")}
+        style={{ paddingLeft: 6 + indent }}
+        onClick={() => onSelect && onSelect(myPath)}
+      >
+        {node.children?.length ? <Icon name={open?"chev-d":"chev-r"} size={11} stroke={2.2} className="chev"/> : <span style={{ width: 14 }}/>}
+        <span className={`type-tag tt-${node.type.toLowerCase()}`}>{node.type}</span>
+        <span className="name">{node.name || node.label || ""}</span>
+        {node.children?.length ? <span style={{ fontSize: 10, color: 'var(--fg-3)' }}>{node.children.length}</span> : null}
+      </div>
+      {open && node.children?.map((c, i) => (
+        <TreeNode key={i} node={c} level={level+1} selectedPath={selectedPath} onSelect={onSelect} path={myPath}/>
+      ))}
+    </>
+  );
+}
+
+/* =================== DEVICE STAGE =================== */
+function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, showGrid = true, toolbarRight, footer, hideShell = false }) {
+  return (
+    <div className="pane canvas">
+      <div className="canvas-toolbar">
+        <div className="seg" style={{ height: 26 }}>
+          <button className={device==='iphone'?'on':''} onClick={()=>onDevice && onDevice('iphone')} style={{ height: 20 }}>
+            <Icon name="device-mobile" size={12}/> iOS
+          </button>
+          <button className={device==='pixel'?'on':''} onClick={()=>onDevice && onDevice('pixel')} style={{ height: 20 }}>
+            <Icon name="device-mobile" size={12}/> Android
+          </button>
+          <button className={device==='web'?'on':''} onClick={()=>onDevice && onDevice('web')} style={{ height: 20 }}>
+            <Icon name="globe" size={12}/> Web
+          </button>
+        </div>
+        <span style={{ width: 1, height: 16, background: 'var(--line)' }}/>
+        <button className="icon-btn" title={t(lang,"interactive")}><Icon name="play" size={12}/></button>
+        <button className="icon-btn"><Icon name="eye" size={13}/></button>
+        <span style={{ width: 1, height: 16, background: 'var(--line)' }}/>
+        <span style={{ fontSize: 11, color: 'var(--fg-3)', padding: '0 6px' }}>{t(lang,"livePreview")}</span>
+        {toolbarRight}
+      </div>
+
+      <div className="device-stage">
+        {hideShell ? children : (
+          <div className="device-shell">
+            <div className="device-screen">
+              {children}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="canvas-zoom">
+        <button><Icon name="x" size={11}/></button>
+        <span className="val">{zoom}%</span>
+        <button><Icon name="plus" size={11}/></button>
+      </div>
+
+      {footer}
+    </div>
+  );
+}
+
+/* =================== ATTRIBUTES PANE =================== */
+function AttributesPane({ lang, selection }) {
+  return (
+    <div className="pane">
+      <div className="pane-header">
+        <h3>{t(lang,"attributes")}</h3>
+        <div className="actions">
+          <button className="icon-btn"><Icon name="duplicate" size={13}/></button>
+          <button className="icon-btn"><Icon name="trash" size={13}/></button>
+          <button className="icon-btn"><Icon name="more-h" size={14}/></button>
+        </div>
+      </div>
+      <div className="pane-body">
+        {!selection ? (
+          <div style={{ padding: '32px 16px 16px', textAlign: 'center' }}>
+            <div style={{ width: 56, height: 56, borderRadius: 14, background: 'var(--panel-2)', margin: '0 auto 14px', display: 'grid', placeItems: 'center', color: 'var(--fg-mute)' }}>
+              <Icon name="grid" size={22} stroke={1.5}/>
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg)', marginBottom: 6 }}>{t(lang,"selectComponent")}</div>
+            <div style={{ fontSize: 12, color: 'var(--fg-3)', lineHeight: 1.55 }}>{t(lang,"selectComponentHint")}</div>
+            <div style={{ marginTop: 16, padding: 10, background: 'var(--panel-2)', borderRadius: 8, fontSize: 11, color: 'var(--fg-3)', textAlign: 'left', lineHeight: 1.5 }}>
+              <div style={{ fontWeight: 600, color: 'var(--fg-2)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Icon name="lightning" size={11}/> {t(lang,"quickActions")}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{lang==='tr'?'Çoğalt':'Duplicate'}</span><span className="kbd">⌘D</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{lang==='tr'?'Sil':'Delete'}</span><span className="kbd">⌫</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{lang==='tr'?'Üret':'Generate'}</span><span className="kbd">⌘↵</span></div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <SelectedAttributes selection={selection} lang={lang}/>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AttrSection({ title, children, defaultOpen = true }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="section">
+      <div className={"section-head " + (open?"open":"")} onClick={()=>setOpen(!open)}>
+        <span className="label">{title}</span>
+        <Icon name="chev-r" size={11} stroke={2.2} className="chev"/>
+      </div>
+      {open && <div className="section-body">{children}</div>}
+    </div>
+  );
+}
+
+function AttrRow({ label, children }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '78px 1fr', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+      <label style={{ fontSize: 11, color: 'var(--fg-3)' }}>{label}</label>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+function NumInput({ value, unit = "px" }) {
+  return (
+    <div style={{ position: 'relative' }}>
+      <input className="input" defaultValue={value} style={{ height: 26, paddingRight: 26, fontSize: 12, fontFamily: 'var(--font-mono)' }}/>
+      <span style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: 'var(--fg-3)', fontFamily: 'var(--font-mono)' }}>{unit}</span>
+    </div>
+  );
+}
+
+function ColorRow({ value }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, height: 26, padding: '0 4px 0 6px', border: '1px solid var(--input-line)', borderRadius: 6, background: 'var(--input)' }}>
+      <span style={{ width: 16, height: 16, borderRadius: 4, background: value, border: '1px solid var(--line)' }}/>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5, color: 'var(--fg)', flex: 1 }}>{value}</span>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--fg-3)' }}>100%</span>
+    </div>
+  );
+}
+
+function SelectedAttributes({ selection, lang }) {
+  // selection = { type, name, props: {...} }
+  const p = selection.props || {};
+  return (
+    <div style={{ margin: '-12px' }}>
+      {/* selected header */}
+      <div style={{ padding: '12px', borderBottom: '1px solid var(--line)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+          <span className={`type-tag tt-${selection.type.toLowerCase()}`}>{selection.type}</span>
+          <input
+            defaultValue={selection.name}
+            style={{ flex: 1, background: 'transparent', border: 0, outline: 'none', fontWeight: 600, fontSize: 13, color: 'var(--fg)' }}
+          />
+        </div>
+        <div style={{ fontSize: 10.5, color: 'var(--fg-3)', fontFamily: 'var(--font-mono)' }}>{selection.path || "/"}</div>
+      </div>
+
+      <AttrSection title={t(lang,"layout")}>
+        <AttrRow label={t(lang,"width")}>
+          <div className="seg" style={{ height: 26, width: '100%' }}>
+            <button className="on" style={{ height: 20, flex: 1, justifyContent: 'center' }}>{t(lang,"fill")}</button>
+            <button style={{ height: 20, flex: 1, justifyContent: 'center' }}>{t(lang,"auto")}</button>
+            <button style={{ height: 20, flex: 1, justifyContent: 'center' }}>{t(lang,"fixed")}</button>
+          </div>
+        </AttrRow>
+        <AttrRow label={t(lang,"height")}><NumInput value={p.height || 64}/></AttrRow>
+        <AttrRow label={t(lang,"padding")}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+            <NumInput value={p.padX || 16}/>
+            <NumInput value={p.padY || 12}/>
+          </div>
+        </AttrRow>
+        <AttrRow label={t(lang,"align")}>
+          <div className="seg" style={{ height: 26, width: '100%' }}>
+            <button style={{ height: 20, flex: 1, justifyContent: 'center', fontFamily: 'var(--font-mono)', fontSize: 11 }}>L</button>
+            <button className="on" style={{ height: 20, flex: 1, justifyContent: 'center', fontFamily: 'var(--font-mono)', fontSize: 11 }}>C</button>
+            <button style={{ height: 20, flex: 1, justifyContent: 'center', fontFamily: 'var(--font-mono)', fontSize: 11 }}>R</button>
+          </div>
+        </AttrRow>
+      </AttrSection>
+
+      {selection.type === 'Text' && (
+        <AttrSection title={t(lang,"typography")}>
+          <AttrRow label={t(lang,"fontSize")}><NumInput value={p.fontSize || 16}/></AttrRow>
+          <AttrRow label={t(lang,"fontWeight")}>
+            <select className="select" style={{ height: 26, fontSize: 12 }} defaultValue={p.fontWeight || "600"}>
+              <option value="400">Regular · 400</option>
+              <option value="500">Medium · 500</option>
+              <option value="600">Semibold · 600</option>
+              <option value="700">Bold · 700</option>
+            </select>
+          </AttrRow>
+          <AttrRow label={t(lang,"color")}><ColorRow value={p.color || "#0F1115"}/></AttrRow>
+        </AttrSection>
+      )}
+
+      <AttrSection title={t(lang,"appearance")}>
+        <AttrRow label={t(lang,"background")}><ColorRow value={p.bg || "#FFFFFF"}/></AttrRow>
+        <AttrRow label={t(lang,"radius")}><NumInput value={p.radius || 12}/></AttrRow>
+        <AttrRow label={lang==='tr'?'Gölge':'Shadow'}>
+          <select className="select" style={{ height: 26, fontSize: 12 }} defaultValue="sm">
+            <option value="none">None</option>
+            <option value="sm">Soft · sm</option>
+            <option value="md">Medium · md</option>
+            <option value="lg">Elevated · lg</option>
+          </select>
+        </AttrRow>
+      </AttrSection>
+
+      <AttrSection title={t(lang,"interactions")} defaultOpen={false}>
+        <AttrRow label={t(lang,"onTap")}>
+          <select className="select" style={{ height: 26, fontSize: 12 }} defaultValue="navigate">
+            <option value="none">{t(lang,"none")}</option>
+            <option value="navigate">{t(lang,"navigate")}</option>
+            <option value="track">{t(lang,"track")}</option>
+          </select>
+        </AttrRow>
+        <AttrRow label={lang==='tr'?'Hedef':'Target'}>
+          <input className="input" style={{ height: 26, fontSize: 12, fontFamily: 'var(--font-mono)' }} defaultValue="/product/123"/>
+        </AttrRow>
+      </AttrSection>
+
+      <div style={{ padding: 12, borderTop: '1px solid var(--line)', display: 'flex', gap: 6 }}>
+        <button className="btn" style={{ flex: 1, justifyContent: 'center' }}>
+          <Icon name="sparkle" size={11}/> {lang==='tr'?'AI ile İyileştir':'Refine with AI'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* =================== MINIMAP =================== */
+function Minimap({ tree, selectedPath }) {
+  // Render tree as little stacked blocks
+  const flat = [];
+  const walk = (n, d = 0, idx = []) => {
+    flat.push({ type: n.type, depth: d, path: [...idx, n.id] });
+    n.children?.forEach((c, i) => walk(c, d+1, [...idx, n.id]));
+  };
+  tree?.forEach((n, i) => walk(n, 0, []));
+  return (
+    <div style={{ background: 'var(--panel-2)', border: '1px solid var(--line)', borderRadius: 8, padding: 8, fontSize: 10, color: 'var(--fg-3)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+        <span style={{ textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600, fontSize: 9.5 }}>Minimap</span>
+        <Icon name="grid" size={10}/>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {flat.map((n, i) => {
+          const sel = selectedPath && selectedPath.join('/') === n.path.join('/');
+          return (
+            <div key={i} style={{
+              height: 4,
+              marginLeft: n.depth * 6,
+              background: sel ? 'var(--brand)' : 'var(--line-strong)',
+              borderRadius: 2,
+              opacity: sel ? 1 : 0.6,
+              width: `${Math.max(20, 90 - n.depth * 8)}%`
+            }}/>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+window.SDUI = { TopBar, FilesPane, FileRow, TreePane, CanvasPane, AttributesPane, Minimap, t, Icon };

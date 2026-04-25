@@ -1,3504 +1,775 @@
-<!DOCTYPE html>
-<html lang="tr">
-
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SDUI Studio Pro 🚀</title>
-    <!-- Favicon: Rocket Emoji -->
-    <link rel="icon" href="/static/logo.png" />
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        :root {
-            --bg: #121212;
-            --panel: #1E1E1E;
-            --border: #333;
-            --text: #E0E0E0;
-            --accent: #BB86FC;
-            --success: #03DAC6;
-            --input-bg: #2C2C2C;
-            --tree-bg: #000000;
-            --preview-bg: #000000;
-            --code-bg: #0d0d0d;
-            --btn-bg: #3c4043;
-        }
-
-        [data-theme="light"] {
-            --bg: #FFFFFF;
-            --panel: #F4F4F4;
-            --border: #E0E0E0;
-            --text: #333333;
-            --accent: #E60000;
-            /* Vodafone Red */
-            --success: #007C5A;
-            --input-bg: #FFFFFF;
-            --tree-bg: #FFFFFF;
-            --preview-bg: #E5E5E5;
-            --code-bg: #FAFAFA;
-            --btn-bg: #666666;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Layout */
-        .sidebar {
-            width: 300px;
-            background: var(--panel);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            gap: 15px;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-
-        .attributes-panel {
-            width: 320px;
-            background: var(--panel);
-            border-left: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            gap: 20px;
-            overflow: hidden;
-            position: relative;
-            background-color: var(--preview-bg);
-        }
-
-        .workspace {
-            display: flex;
-            gap: 0;
-            /* Remove gap, handle inside */
-            flex: 1;
-            min-height: 0;
-            position: relative;
-            height: 100%;
-        }
-
-        h2 {
-            margin: 0 0 10px 0;
-            font-size: 1rem;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Material UI Polish */
-        .attr-section {
-            background: var(--bg);
-            margin-bottom: 2px;
-            padding: 10px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .attr-title {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text);
-            opacity: 0.7;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            letter-spacing: 0.5px;
-        }
-
-        .attr-row {
-            margin-bottom: 8px;
-        }
-
-        .attr-label {
-            display: block;
-            font-size: 12px;
-            color: var(--text);
-            opacity: 0.8;
-            margin-bottom: 4px;
-        }
-
-        .attr-input {
-            width: 100%;
-            background: var(--input-bg);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 6px 8px;
-            border-radius: 4px;
-            font-size: 13px;
-            box-sizing: border-box;
-            transition: 0.2s;
-        }
-
-        .attr-input:focus {
-            background: var(--input-bg);
-            border-color: var(--accent);
-            outline: none;
-        }
-
-        .action-btn {
-            background: var(--btn-bg);
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: background 0.2s;
-        }
-
-        .action-btn:hover {
-            background: #4c5054;
-        }
-
-
-        /* Inputs & Controls */
-        textarea#promptInput {
-            background: var(--input-bg);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 10px;
-            border-radius: 8px;
-            resize: none;
-            height: 80px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--input-bg);
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            cursor: pointer;
-        }
-
-        .toggle-container:hover {
-            border-color: var(--accent);
-        }
-
-        .toggle-container input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: var(--accent);
-        }
-
-        .toggle-text {
-            font-size: 0.9rem;
-            color: #CCC;
-        }
-
-        /* Empty State Styling */
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: var(--text);
-            opacity: 0.6;
-            text-align: center;
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-        }
-
-        .empty-state .material-icons {
-            font-size: 64px;
-            margin-bottom: 10px;
-            opacity: 0.5;
-        }
-
-        .empty-state p {
-            margin: 0;
-            font-size: 1.1rem;
-        }
-
-        .empty-state small {
-            font-size: 0.9rem;
-            margin-top: 5px;
-            opacity: 0.7;
-        }
-
-        /* JSON Editor */
-        textarea#jsonEditor {
-            background: var(--code-bg);
-            border: 1px solid var(--border);
-            color: var(--success);
-            /* Keep green logic? Or variable? Let's assume green is nice for code */
-            padding: 15px;
-            border-radius: 8px;
-            resize: none;
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        textarea#jsonEditor.fullscreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 9999;
-            border: none;
-            padding: 40px;
-            font-size: 16px;
-        }
-
-        /* File Upload */
-        .file-upload {
-            border: 2px dashed var(--border);
-            padding: 20px;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.2s;
-            position: relative;
-        }
-
-        .file-upload:hover {
-            border-color: var(--accent);
-            background: rgba(187, 134, 252, 0.05);
-        }
-
-        .preview-img {
-            max-width: 100%;
-            max-height: 150px;
-            border-radius: 8px;
-            display: none;
-            margin-top: 10px;
-            object-fit: cover;
-        }
-
-        /* Buttons */
-        button {
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: black;
-            width: 100%;
-        }
-
-        .btn-primary:hover {
-            opacity: 0.9;
-        }
-
-        .btn-publish {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-ab {
-            background: transparent;
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-
-        .btn-red-gradient {
-            background: linear-gradient(135deg, #E60000, #B30000);
-            color: white;
-            border: none;
-        }
-
-        .action-btn {
-            background: var(--btn-bg);
-            color: white;
-            width: auto;
-            padding: 8px 12px;
-            font-size: 12px;
-        }
-
-        #exitFullscreenBtn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            background: rgba(255, 0, 0, 0.7);
-            color: white;
-            display: none;
-        }
-
-        /* Tree */
-        .tree-view {
-            flex: 1;
-            background: var(--tree-bg);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            overflow: auto;
-            padding: 10px;
-            height: 100%;
-            box-sizing: border-box;
-        }
-
-        .tree-node {
-            margin-left: 15px;
-            border-left: 1px solid var(--border);
-            padding-left: 10px;
-            margin-top: 5px;
-        }
-
-        .node-header {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-        }
-
-        .node-header:hover {
-            background: var(--border);
-        }
-
-        .tag {
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
-        .tag-col {
-            background: #E91E63;
-            color: white;
-        }
-
-        .tag-row {
-            background: #2196F3;
-            color: white;
-        }
-
-        .tag-img {
-            background: #FF9800;
-            color: black;
-        }
-
-        .tag-txt {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .edit-input {
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid #555;
-            color: #BBB;
-            font-family: monospace;
-            width: 120px;
-        }
-
-        .prop-row {
-            display: flex;
-            gap: 8px;
-            font-size: 12px;
-            margin-left: 20px;
-            color: #888;
-            align-items: center;
-            margin-bottom: 2px;
-        }
-
-        .prop-key {
-            color: var(--accent);
-        }
-
-        /* Tabs */
-        .tabs-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-        }
-
-        .tab-btn {
-            background: var(--input-bg);
-            color: #AAA;
-            padding: 10px 20px;
-        }
-
-        .tab-btn.active {
-            background: var(--accent);
-            color: black;
-        }
-
-        /* Loading */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-            color: white;
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .loading-steps {
-            margin-top: 15px;
-            color: #AAA;
-            font-size: 0.9rem;
-        }
-
-        /* Preview Pane */
-        .preview-pane {
-            flex: 1;
-            background: var(--preview-bg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            position: relative;
-        }
-
-        .mobile-frame {
-            width: 360px;
-            height: 760px;
-            background: #111;
-            border-radius: 40px;
-            border: 12px solid #333;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .notch {
-            width: 150px;
-            height: 25px;
-            background: #333;
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-            z-index: 100;
-        }
-
-        /* Toggle Device */
-        .device-toggle {
-            display: flex;
-            background: #222;
-            border-radius: 20px;
-            padding: 4px;
-            margin-bottom: 15px;
-            border: 1px solid #444;
-        }
-
-        .device-toggle button {
-            background: transparent;
-            color: #888;
-            border-radius: 16px;
-            padding: 6px 16px;
-            font-size: 12px;
-        }
-
-        .device-toggle button.active {
-            background: #444;
-            color: white;
-        }
-
-        /* Android Frame */
-        .mobile-frame.android {
-            border-radius: 20px;
-            /* Sharper corners */
-            border-width: 8px;
-        }
-
-        .mobile-frame.android .notch {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            left: 20px;
-            top: 12px;
-            transform: none;
-            /* Punch hole left */
-            background: #000;
-        }
-
-        /* Web Frame */
-        .preview-pane.wide-mode {
-            flex: 2;
-            min-width: 600px;
-            transition: 0.3s;
-        }
-
-        .mobile-frame.web {
-            width: 100%;
-            height: 95%;
-            max-width: 100%;
-            border: 1px solid #444;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .generate-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(187, 134, 252, 0.3);
-        }
-
-        .generate-btn.secondary {
-            background: #333;
-            color: #aaa;
-            cursor: not-allowed;
-            opacity: 0.6;
-            transition: all 0.3s;
-        }
-
-        .generate-btn.secondary.active {
-            background: #2e7d32;
-            /* Green for go */
-            color: white;
-            cursor: pointer;
-            opacity: 1;
-            animation: pulse-green 2s infinite;
-            border: 1px solid #4CAF50;
-        }
-
-        @keyframes pulse-green {
-            0% {
-                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
-            }
-
-            70% {
-                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
-            }
-        }
-
-        .drop-zone {
-            border: 2px dashed #555;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            color: #888;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .drop-zone.hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        .mobile-frame.web .notch {
-            display: none;
-        }
-
-        .mobile-frame.web .app-content {
-            padding-top: 0;
-            padding-bottom: 0;
-        }
-
-        .app-content {
-            flex: 1;
-            overflow: hidden;
-            /* Fixed viewport behavior */
-            position: relative;
-            background-color: #FFF;
-            /* Default bg */
-            font-family: 'Roboto', sans-serif;
-            padding-top: 36px;
-            /* Notch area */
-            height: 100%;
-            /* Fill frame exactly */
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Global Reset for Preview */
-        .app-content * {
-            box-sizing: border-box;
-            /* Ensure scrollbars are visible when needed */
-            scrollbar-width: thin;
-        }
-
-        /* Make root layout fill available space */
-        .app-content>.sdui-col,
-        .app-content>.sdui-row {
-            flex: 1;
-            height: 100%;
-            overflow: hidden;
-            /* Let children handle scroll unless specified */
-        }
-
-        /* Generated Elements Helper Classes */
-        .sdui-col {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            max-width: 100%;
-        }
-
-        .sdui-row {
-            display: flex;
-            flex-direction: row;
-            width: 100%;
-            max-width: 100%;
-            box-sizing: border-box;
-            flex-shrink: 0;
-        }
-
-        .sdui-img {
-            display: block;
-            max-width: 100%;
-        }
-
-        .sdui-bottom-bar {
-            z-index: 100;
-            background: #FFFFFF;
-            /* Default */
-            border-top: 1px solid rgba(0, 0, 0, 0.08);
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
-            /* Soft shadow */
-        }
-
-        /* Default Card Styling */
-        .sdui-card {
-            background-color: #FFFFFF;
-            border-radius: 12px;
-            /* Smooth corners */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            /* Modern shadow */
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        /* Modern Text Defaults */
-        .sdui-text-h1 {
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            line-height: 1.2;
-        }
-
-        .sdui-text-h2 {
-            font-size: 20px;
-            font-weight: 600;
-            letter-spacing: -0.3px;
-            line-height: 1.3;
-        }
-
-        .sdui-text-h3 {
-            font-size: 18px;
-            font-weight: 600;
-            line-height: 1.4;
-        }
-
-        .sdui-text-body {
-            font-size: 14px;
-            color: #444;
-            line-height: 1.5;
-        }
-
-        .sdui-text-caption {
-            font-size: 12px;
-            color: #888;
-            line-height: 1.4;
-        }
-
-        /* Scroll hide */
-        .app-content::-webkit-scrollbar {
-            width: 0;
-        }
-
-        /* Interaction Highlight */
-        .highlight {
-            animation: highlightFade 2s forwards;
-            border: 2px solid var(--accent) !important;
-        }
-
-        @keyframes highlightFade {
-            0% {
-                background-color: rgba(187, 134, 252, 0.4);
-            }
-
-            100% {
-                background-color: transparent;
-            }
-        }
-
-        /* --- RIPPLE EFFECT --- */
-        .ripple-container {
-            position: relative;
-            overflow: hidden;
-            transform: translate3d(0, 0, 0);
-        }
-
-        .ripple-effect {
-            position: absolute;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.3);
-            width: 100px;
-            height: 100px;
-            margin-top: -50px;
-            margin-left: -50px;
-            animation: ripple-anim 0.6s linear;
-            pointer-events: none;
-            opacity: 0;
-        }
-
-        @keyframes ripple-anim {
-            0% {
-                transform: scale(0);
-                opacity: 0.5;
-            }
-
-            100% {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-
-        /* --- TOAST --- */
-        #toast-container {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 9999;
-            pointer-events: none;
-            width: 90%;
-            align-items: center;
-        }
-
-        .toast-msg {
-            background: rgba(40, 40, 40, 0.95);
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 24px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            font-size: 14px;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: toast-in-out 3s forwards;
-            backdrop-filter: blur(4px);
-            border: 1px solid #444;
-            text-align: center;
-        }
-
-        @keyframes toast-in-out {
-            0% {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            10% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-
-            90% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-
-            100% {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-        }
-
-        /* Attributes Panel Styles */
-
-
-        /* Box Model Visualizer */
-        .box-model {
-            position: relative;
-            width: 100%;
-            height: 120px;
-            background: var(--input-bg);
-            border: 1px dashed var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 15px;
-        }
-
-        .bm-input {
-            position: absolute;
-            width: 40px;
-            text-align: center;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            color: var(--text);
-            font-size: 10px;
-            padding: 2px;
-        }
-
-        .bm-top {
-            top: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .bm-bottom {
-            bottom: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .bm-left {
-            left: 5px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .bm-right {
-            right: 5px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .bm-center {
-            width: 60px;
-            height: 40px;
-            background: var(--panel);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-
-        /* Tree Node Selected State */
-        .tree-node .node-header.selected {
-            background: rgba(187, 134, 252, 0.2);
-            border: 1px solid var(--accent);
-        }
-
-        /* Preview Highlight Selected */
-        .preview-selected {
-            outline: 2px solid var(--accent);
-            position: relative;
-        }
-
-        .preview-selected::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(187, 134, 252, 0.1);
-            pointer-events: none;
-        }
-
-        /* --- Material 3 Bottom Sheet --- */
-        .sdui-bottom-sheet {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #1C1B1F;
-            border-top-left-radius: 28px;
-            border-top-right-radius: 28px;
-            box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4),
-                0 -1px 8px rgba(0, 0, 0, 0.2);
-            padding-top: 0;
-            padding-bottom: 16px;
-            display: flex;
-            flex-direction: column;
-            z-index: 50;
-            max-height: 85%;
-            overflow: hidden;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .sdui-bottom-sheet-handle {
-            width: 32px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 2px;
-            margin: 16px auto 8px;
-            flex-shrink: 0;
-        }
-
-        .sdui-bottom-sheet-content {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 0 24px 16px;
-        }
-
-        .sdui-bottom-sheet-content::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .sdui-bottom-sheet-content::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 2px;
-        }
-
-        /* Modal Bottom Sheet Overlay */
-        .sdui-bottom-sheet-scrim {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 49;
-        }
-
-        /* Drag & Drop Visuals */
-        .node-header.drag-over-top {
-            border-top: 2px solid var(--success) !important;
-        }
-
-        .node-header.drag-over-bottom {
-            border-bottom: 2px solid var(--success) !important;
-        }
-
-        .node-header.drag-over-inside {
-            background: rgba(3, 218, 198, 0.2) !important;
-            border: 1px dashed var(--success) !important;
-        }
-
-        .tree-node.dragging {
-            opacity: 0.5;
-        }
-    </style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>SDUI Studio</title>
+  <link rel="icon" href="/static/logo.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css"/>
+  <style>
+    html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+    #root { height: 100%; }
+    /* Override fixed 1440×900 to fill viewport */
+    .studio { width: 100vw !important; height: 100vh !important; border-radius: 0 !important; border: none !important; }
+    /* Ensure canvas pane is positioned for absolute children (toolbar/zoom) */
+    .pane.canvas { position: relative; }
+    /* SDUI preview inside device screen — scroll if content overflows */
+    .sdui-device-content { width: 100%; height: 100%; overflow-y: auto; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; -webkit-font-smoothing: antialiased; }
+    .sdui-device-content::-webkit-scrollbar { display: none; }
+    /* Skeleton shimmer used in empty state */
+    .m-skeleton { background: linear-gradient(90deg,oklch(0.94 0.005 250) 0%,oklch(0.97 0.005 250) 50%,oklch(0.94 0.005 250) 100%); background-size:200% 100%; animation:shimmer 1.6s infinite; border-radius:6px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    /* JSON pane code view */
+    .json-pane pre { margin:0; padding:12px; font-size:10px; font-family:var(--font-mono); color:var(--fg); overflow:auto; white-space:pre-wrap; word-break:break-all; height:100%; box-sizing:border-box; }
+    /* AI confidence bar animation */
+    @keyframes progress-in { from{width:0} }
+  </style>
 </head>
-
 <body>
+<div id="root"></div>
 
-    <div class="sidebar">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-            <h1 style="display: flex; align-items: center; gap: 10px; margin: 0;">
-                <img src="/static/logo.png" alt="Logo" style="height: 32px;">
-                SDUI Studio
-            </h1>
-            <button id="themeToggle" class="action-btn" style="width: auto; padding: 6px;">
-                <span class="material-icons" id="themeIcon">light_mode</span>
-            </button>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="/static/i18n.js"></script>
+<script type="text/babel" src="/static/shell.jsx"></script>
+<script type="text/babel" src="/static/mocks.jsx"></script>
+<script type="text/babel" src="/static/left-rail.jsx"></script>
+<script type="text/babel" src="/static/tweaks-panel.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SDUI RENDERER — renders SDUI JSON inside the device preview
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function computeSDUIStyle(node, p) {
+  const s = {};
+  const type = node.type;
+
+  // Container layout
+  if (type === 'Column') {
+    s.display = 'flex'; s.flexDirection = 'column';
+  } else if (type === 'Row') {
+    s.display = 'flex'; s.flexDirection = 'row';
+  } else if (type === 'Card') {
+    s.display = 'flex'; s.flexDirection = 'column';
+    if (!p.backgroundColor) s.backgroundColor = '#ffffff';
+    s.borderRadius = (p.cornerRadius ?? 12) + 'px';
+    if (!p.elevation) s.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+  } else if (type === 'Box') {
+    s.position = 'relative';
+  } else if (type === 'BottomSheet') {
+    s.display = 'flex'; s.flexDirection = 'column';
+    s.position = 'absolute'; s.bottom = 0; s.left = 0; s.right = 0;
+    s.borderRadius = '20px 20px 0 0';
+    if (!p.backgroundColor) s.backgroundColor = '#ffffff';
+  }
+
+  // Size
+  if (p.fillWidth === 'true' || p.fillWidth === true) s.width = '100%';
+  else if (p.width != null) s.width = typeof p.width === 'number' ? p.width + 'px' : p.width;
+
+  if (p.fillHeight === 'true' || p.fillHeight === true) s.flex = '1';
+  else if (p.height != null) s.height = typeof p.height === 'number' ? p.height + 'px' : p.height;
+
+  if (p.minHeight != null) s.minHeight = p.minHeight + 'px';
+  if (p.maxHeight != null) s.maxHeight = p.maxHeight + 'px';
+
+  // Colors
+  if (p.backgroundColor && type !== 'Card') s.backgroundColor = p.backgroundColor;
+  if (p.color) s.color = p.color;
+
+  // Padding
+  const px = (v) => v != null ? v + 'px' : undefined;
+  if (p.padding != null) s.padding = px(p.padding);
+  if (p.horizontalPadding != null) { s.paddingLeft = px(p.horizontalPadding); s.paddingRight = px(p.horizontalPadding); }
+  if (p.verticalPadding != null) { s.paddingTop = px(p.verticalPadding); s.paddingBottom = px(p.verticalPadding); }
+  if (p.paddingTop != null) s.paddingTop = px(p.paddingTop);
+  if (p.paddingBottom != null) s.paddingBottom = px(p.paddingBottom);
+  if (p.paddingStart != null) s.paddingLeft = px(p.paddingStart);
+  if (p.paddingEnd != null) s.paddingRight = px(p.paddingEnd);
+  if (p.paddingLeft != null) s.paddingLeft = px(p.paddingLeft);
+  if (p.paddingRight != null) s.paddingRight = px(p.paddingRight);
+
+  // Border radius
+  if (p.cornerRadius != null && type !== 'Card') s.borderRadius = p.cornerRadius + 'px';
+
+  // Typography
+  if (p.fontSize != null) s.fontSize = p.fontSize + 'px';
+  if (p.fontWeight === 'bold') s.fontWeight = '700';
+  else if (p.fontWeight === 'semibold') s.fontWeight = '600';
+  else if (p.fontWeight === 'medium') s.fontWeight = '500';
+  else if (p.fontWeight === 'normal') s.fontWeight = '400';
+  else if (p.fontWeight) s.fontWeight = p.fontWeight;
+  if (p.textAlign) s.textAlign = p.textAlign;
+  if (p.lineHeight) s.lineHeight = p.lineHeight;
+  if (p.letterSpacing) s.letterSpacing = p.letterSpacing;
+
+  // Column alignment
+  if (type === 'Column') {
+    const va = p.verticalArrangement;
+    if (va === 'center') s.justifyContent = 'center';
+    else if (va === 'bottom') s.justifyContent = 'flex-end';
+    else if (va === 'spacebetween') s.justifyContent = 'space-between';
+    else if (va === 'spaceevenly') s.justifyContent = 'space-evenly';
+    else if (va === 'spacearound') s.justifyContent = 'space-around';
+    else if (va && va.startsWith('spacedby:')) s.gap = va.split(':')[1].trim() + 'px';
+    const ha = p.horizontalAlignment;
+    if (ha === 'center') s.alignItems = 'center';
+    else if (ha === 'end') s.alignItems = 'flex-end';
+  }
+
+  // Row alignment
+  if (type === 'Row') {
+    const ha = p.horizontalArrangement;
+    if (ha === 'center') s.justifyContent = 'center';
+    else if (ha === 'end') s.justifyContent = 'flex-end';
+    else if (ha === 'spacebetween') s.justifyContent = 'space-between';
+    else if (ha === 'spaceevenly') s.justifyContent = 'space-evenly';
+    else if (ha === 'spacearound') s.justifyContent = 'space-around';
+    else if (ha && ha.startsWith('spacedby:')) s.gap = ha.split(':')[1].trim() + 'px';
+    const va = p.verticalAlignment;
+    if (va === 'center') s.alignItems = 'center';
+    else if (va === 'bottom') s.alignItems = 'flex-end';
+    else if (va === 'top') s.alignItems = 'flex-start';
+  }
+
+  // Elevation / shadow
+  if (p.elevation != null) {
+    const e = parseInt(p.elevation);
+    if (e > 0) s.boxShadow = `0 ${Math.floor(e / 2) + 2}px ${e * 3}px rgba(0,0,0,${Math.min(0.25, 0.05 + e * 0.015)})`;
+  }
+
+  // Image
+  if (type === 'Image') {
+    s.objectFit = p.contentScale === 'fit' ? 'contain' : 'cover';
+    if (!p.width) s.width = '100%';
+    s.display = 'block';
+  }
+
+  // Spacer: default flex:1
+  if (type === 'Spacer') {
+    if (s.flex == null && s.height == null) s.flex = '1';
+  }
+
+  // Scroll
+  if (p.scroll === 'true' || p.scroll === true) {
+    s.overflow = 'auto';
+    s.WebkitOverflowScrolling = 'touch';
+  }
+
+  // Border
+  if (p.borderWidth != null && p.borderColor) {
+    s.border = `${p.borderWidth}px solid ${p.borderColor}`;
+  }
+
+  // Opacity
+  if (p.alpha != null) s.opacity = p.alpha;
+
+  return s;
+}
+
+function SDUINode({ node, selectedId, onSelectId }) {
+  if (!node) return null;
+  const p = node.props || {};
+  const isSelected = node._id === selectedId;
+  const baseStyle = computeSDUIStyle(node, p);
+
+  const selStyle = isSelected ? {
+    outline: '2px solid var(--brand)',
+    outlineOffset: 1,
+    position: 'relative',
+    zIndex: 1,
+  } : {};
+
+  const style = { ...baseStyle, ...selStyle };
+
+  const onClick = (e) => {
+    e.stopPropagation();
+    onSelectId && onSelectId(node._id);
+  };
+
+  const children = (node.children || []).map((c, i) => (
+    <SDUINode key={i} node={c} selectedId={selectedId} onSelectId={onSelectId}/>
+  ));
+
+  switch (node.type) {
+    case 'Text':
+      return (
+        <div onClick={onClick} style={style}>
+          {p.text || ''}
         </div>
-        <div style="height: 20px;"></div>
+      );
 
-        <!-- Files Manager -->
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-            <h2><span class="material-icons">folder</span> <span data-i18n="dosyalar">Dosyalar</span></h2>
-            <div id="filesContainer" class="tree-view" style="display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 8px; padding: 0; min-height: 200px; max-height: 300px; background: var(--input-bg);"></div>
-        </div>
-        <hr style="width: 100%; border-color: #333; margin: 15px 0;">
+    case 'Image': {
+      const src = p.url || '';
+      const handleErr = (e) => {
+        if (!e.target.src.includes('picsum')) {
+          e.target.src = `https://picsum.photos/seed/${Math.floor(Math.random()*9999)}/300/200`;
+        }
+      };
+      return (
+        <img onClick={onClick} style={style} src={src} alt={p.contentDescription || ''} onError={handleErr}/>
+      );
+    }
 
-        <!-- Platform & Language Selector -->
-        <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-            <div style="flex: 1;">
-                <div class="device-toggle" style="margin-bottom: 5px;">
-                    <button class="active" onclick="setPlatform('mobile')" id="plat-mobile" style="flex: 1;">Mobile App</button>
-                    <button onclick="setPlatform('web')" id="plat-web" style="flex: 1;">Web App</button>
-                </div>
-                <div style="font-size: 11px; color: #666; text-align: center;" data-i18n="mobile_hint">
-                    * Mobile: iOS/Android native | Web: Responsive
-                </div>
-            </div>
-            <div style="flex: 1;">
-                <div class="device-toggle" style="margin-bottom: 5px;">
-                    <button class="active" onclick="setLanguage('tr')" id="lang-tr" style="flex: 1;">TR</button>
-                    <button onclick="setLanguage('en')" id="lang-en" style="flex: 1;">EN</button>
-                </div>
-                <div style="font-size: 11px; color: #666; text-align: center;" data-i18n="lang_hint">
-                    * Arayüz & Yapay Zeka dili
-                </div>
-            </div>
-        </div>
+    case 'Button': {
+      const btnStyle = {
+        ...style,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: p.textAlign === 'start' ? 'flex-start' : (p.textAlign === 'end' ? 'flex-end' : 'center'),
+        cursor: 'pointer',
+        userSelect: 'none',
+        border: 0,
+        fontFamily: 'inherit',
+        fontWeight: style.fontWeight || '600',
+      };
+      return (
+        <div onClick={onClick} style={btnStyle}>{p.text || ''}</div>
+      );
+    }
 
-        <div>
-            <h2><span class="material-icons">image</span> <span data-i18n="referans_gorsel">Referans Görsel</span></h2>
-            <div class="file-upload" onclick="document.getElementById('imgInput').click()"
-                ondragover="handleFileDragOver(event)" ondrop="handleFileDrop(event)"
-                ondragleave="handleFileDragLeave(event)">
-                <input type="file" id="imgInput" hidden accept="image/*" onchange="previewFile()">
-                <span id="uploadText" data-i18n="resim_sec">Resim Seç veya Sürükle</span>
-                <img id="imgPreview" class="preview-img">
-            </div>
+    case 'Icon': {
+      const iconStyle = { ...style, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' };
+      if (p.size) iconStyle.fontSize = p.size + 'px';
+      return (
+        <span onClick={onClick} style={iconStyle} className="material-icons" aria-hidden="true">
+          {p.name || '◆'}
+        </span>
+      );
+    }
 
-            <div style="margin-top: 10px;">
-                <label class="toggle-container">
-                    <input type="checkbox" id="smartCropToggle">
-                    <span class="toggle-text" data-i18n="smart_crop">Resimden Parça Kes (Smart Crop)</span>
-                </label>
-                <div style="font-size: 11px; color: #666; margin-top: 5px; margin-left: 5px;" data-i18n="unsplash_hint">
-                    * Seçili değilse Unsplash resimleri kullanılır.
-                </div>
-            </div>
-        </div>
+    case 'Spacer':
+      return <div onClick={onClick} style={style}/>;
 
-        <div>
-            <h2><span class="material-icons">edit</span> <span data-i18n="prompt_title">Prompt</span></h2>
-            <textarea id="promptInput" disabled
-                placeholder="Lütfen önce Files sekmesinden bir dosya açın veya oluşturun..."></textarea>
-        </div>
+    case 'Box':
+      return <div onClick={onClick} style={{ ...style, position: 'relative' }}>{children}</div>;
 
-        <button id="btnGenerate" class="generate-btn secondary" onclick="generate()"
-            style="margin-top: 10px;" disabled>
-            <span class="material-icons">auto_awesome</span> <span data-i18n="tasarimi_guncelle">TASARIMI GÜNCELLE</span>
-        </button>
+    case 'BottomSheet':
+      return <div onClick={onClick} style={style}>{children}</div>;
 
-        <hr style="width: 100%; border-color: #333;">
+    default:
+      return <div onClick={onClick} style={style}>{children}</div>;
+  }
+}
 
-        <div>
-            <h2><span class="material-icons">rocket_launch</span> <span data-i18n="yayinla">Yayınla</span></h2>
-            <div style="display: flex; gap: 10px; flex-direction: column;">
-                <button class="btn-publish" onclick="publishSingle()" data-i18n="tekil_yayinla">Tekil Yayınla</button>
-                <button class="btn-primary btn-red-gradient" onclick="saveToVariant('A')" data-i18n="varyant_a">Varyant A'ya Kaydet</button>
-                <button class="btn-primary btn-red-gradient" onclick="saveToVariant('B')" data-i18n="varyant_b">Varyant B'ye Kaydet</button>
-                <button class="btn-ab" onclick="publishAB()" data-i18n="ab_baslat">A/B Başlat</button>
-            </div>
-        </div>
+function SDUIRenderer({ layout, selectedId, onSelectId }) {
+  if (!layout) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, color: 'var(--fg-3)', fontSize: 12, textAlign: 'center', padding: 24 }}>
+      <Icon name="sparkle" size={24} stroke={1.4}/>
+      <span>{window.I18N ? window.I18N.en.selectComponent : 'No layout'}</span>
     </div>
-
-    <div class="workspace">
-        <!-- LEFT: Tree & JSON (Now part of workspace, not main-content wrapper) -->
-        <div class="sidebar" style="border-right: 1px solid #333; width: 280px; padding: 0;">
-            <div class="tabs-header" style="padding: 10px; border-bottom: 1px solid #333; margin: 0;">
-                <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('tree')"
-                        style="padding: 8px 12px; font-size: 12px;">Tree</button>
-                    <button class="tab-btn" onclick="switchTab('json')"
-                        style="padding: 8px 12px; font-size: 12px;">JSON</button>
-                </div>
-            </div>
-
-            <div id="treeContainer" class="tree-view" style="border: none; border-radius: 0;">
-                <div class="empty-state">
-                    <span class="material-icons">dashboard_customize</span>
-                    <p>No Data</p>
-                </div>
-            </div>
-            <textarea id="jsonEditor" style="display: none; border: none; border-radius: 0;"
-                oninput="syncJsonToTree()"></textarea>
-        </div>
-
-        <!-- CENTER: Preview -->
-        <div class="main-content" style="padding: 0;">
-            <div class="preview-pane" style="width: 100%; height: 100%;">
-                <div class="device-toggle">
-                    <button class="active" onclick="setDevice('ios')" id="btn-ios">iOS</button>
-                    <button onclick="setDevice('android')" id="btn-android">Android</button>
-                    <button onclick="setDevice('web')" id="btn-web">Web</button>
-                </div>
-                <div class="mobile-frame">
-                    <div class="notch"></div>
-                    <div id="appPreview" class="app-content"></div>
-                    <div id="toast-container"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- RIGHT: Attributes Panel -->
-        <div class="attributes-panel">
-            <div
-                style="padding: 10px; border-bottom: 1px solid #333; background: #252525; font-weight: bold; font-size: 12px; color: #AAA; letter-spacing: 1px;">
-                ATTRIBUTES
-            </div>
-            <div id="attrContainer" style="padding: 15px;">
-                <div class="empty-state" style="border: none; opacity: 0.5;">
-                    <span class="material-icons" style="font-size: 32px;">touch_app</span>
-                    <p style="font-size: 13px;">Select a component</p>
-                </div>
-            </div>
-        </div>
+  );
+  return (
+    <div className="sdui-device-content">
+      <SDUINode node={layout} selectedId={selectedId} onSelectId={onSelectId}/>
     </div>
+  );
+}
 
-    <button id="exitFullscreenBtn" onclick="toggleFullscreen()">Çıkış (ESC)</button>
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITY — node ID tagging, tree building, path finding
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-    <div id="loading" class="loading-overlay">
-        <span class="material-icons"
-            style="font-size: 48px; animation: spin 1s infinite linear; color: var(--accent);">autorenew</span>
-        <h3 id="loadingTitle" style="margin-top: 20px;">Yapay Zeka Çalışıyor...</h3>
-        <p id="loadingDesc" class="loading-steps">Tasarım analiz ediliyor...</p>
+let _uid = 0;
+
+function tagIds(node) {
+  if (!node) return;
+  node._id = ++_uid;
+  (node.children || []).forEach(tagIds);
+}
+
+function buildTreeNode(node) {
+  if (!node) return null;
+  const p = node.props || {};
+  const name = p.text?.slice(0, 22)
+    || p.contentDescription?.slice(0, 22)
+    || p.url?.split('/').pop()?.slice(0, 22)
+    || '';
+  return {
+    id: node._id,
+    type: node.type,
+    name,
+    open: true,
+    children: (node.children || []).map(buildTreeNode).filter(Boolean),
+  };
+}
+
+function findPath(node, targetId, path = []) {
+  const myPath = [...path, node._id];
+  if (node._id === targetId) return myPath;
+  for (const c of (node.children || [])) {
+    const r = findPath(c, targetId, myPath);
+    if (r) return r;
+  }
+  return null;
+}
+
+function findById(node, id) {
+  if (!node) return null;
+  if (node._id === id) return node;
+  for (const c of (node.children || [])) {
+    const r = findById(c, id);
+    if (r) return r;
+  }
+  return null;
+}
+
+function flattenFsTree(nodes, level = 0) {
+  const result = [];
+  for (const n of (nodes || [])) {
+    result.push({ name: n.name, path: n.path, type: n.is_dir ? 'folder' : 'file', level, open: level === 0 });
+    if (n.is_dir && n.children) result.push(...flattenFsTree(n.children, level + 1));
+  }
+  return result;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EMPTY HERO — shown when no layout is loaded
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function EmptyHero({ lang, onStart }) {
+  const I = window.I18N[lang];
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', maxWidth: 480, gap: 28, padding: 32 }}>
+      <div style={{ width: 72, height: 72, borderRadius: 20, background: 'var(--bg-elev)', border: '1px solid var(--line)', display: 'grid', placeItems: 'center', position: 'relative', boxShadow: 'var(--shadow-md)' }}>
+        <Icon name="sparkle" size={32} stroke={1.4} style={{ color: 'var(--brand)' }}/>
+        <span style={{ position: 'absolute', top: -4, right: -4, width: 18, height: 18, borderRadius: 9, background: 'var(--brand)', color: '#fff', fontSize: 9, fontWeight: 700, display: 'grid', placeItems: 'center' }}>AI</span>
+      </div>
+      <div>
+        <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 6 }}>{I.starterEmptyTitle}</div>
+        <div style={{ fontSize: 13, color: 'var(--fg-3)', lineHeight: 1.55, maxWidth: 380, margin: '0 auto' }}>{I.starterEmptySub}</div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, width: '100%' }}>
+        {[
+          { icon: 'wand',   label: I.fromPrompt, sub: lang === 'tr' ? 'Yazıdan başla' : 'Describe it',     primary: true },
+          { icon: 'image',  label: I.fromImage,  sub: lang === 'tr' ? 'Tasarımı yükle' : 'Upload mockup' },
+          { icon: 'layers', label: I.fromTemplate,sub: lang === 'tr' ? '24+ hazır şablon' : '24+ ready'  },
+          { icon: 'file',   label: I.blank,      sub: lang === 'tr' ? 'Sıfırdan kur' : 'Start clean'      },
+        ].map((c, i) => (
+          <div key={i} onClick={onStart} style={{
+            padding: 14,
+            background: c.primary ? 'var(--brand-soft)' : 'var(--bg-elev)',
+            border: c.primary ? '1px solid var(--brand)' : '1px solid var(--line)',
+            borderRadius: 10, textAlign: 'left', cursor: 'pointer',
+            display: 'flex', flexDirection: 'column', gap: 4,
+          }}>
+            <div style={{ width: 30, height: 30, borderRadius: 8, background: c.primary ? 'var(--brand)' : 'var(--panel-2)', color: c.primary ? '#fff' : 'var(--fg)', display: 'grid', placeItems: 'center', marginBottom: 6 }}>
+              <Icon name={c.icon} size={14}/>
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: c.primary ? 'var(--brand)' : 'var(--fg)' }}>{c.label}</div>
+            <div style={{ fontSize: 11, color: 'var(--fg-3)' }}>{c.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ width: '100%' }}>
+        <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--fg-3)', textAlign: 'left', marginBottom: 8 }}>{I.suggested}</div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {(lang === 'tr'
+            ? ['Ürün detay', 'Ödeme', 'Profil', 'Onboarding', 'Sepet', 'Akış']
+            : ['Product detail', 'Checkout', 'Profile', 'Onboarding', 'Cart', 'Feed']
+          ).map((s, i) => (
+            <span key={i} className="chip" style={{ cursor: 'pointer' }} onClick={onStart}>
+              <Icon name="sparkle" size={10}/> {s}
+            </span>
+          ))}
+        </div>
+      </div>
     </div>
+  );
+}
 
-    <style>
-        @keyframes spin {
-            100% {
-                transform: rotate(360deg);
-            }
+/* ═══════════════════════════════════════════════════════════════════════════
+   JSON PANE — alternative tree pane view showing raw JSON
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function JsonPane({ lang, json, onView }) {
+  const t = window.SDUI.t;
+  return (
+    <div className="pane">
+      <div className="pane-header">
+        <div className="seg" style={{ height: 24 }}>
+          <button style={{ height: 18 }} onClick={() => onView('tree')}>
+            <Icon name="layers" size={11}/> {t(lang, 'tree')}
+          </button>
+          <button className="on" style={{ height: 18 }}>
+            <Icon name="code" size={11}/> {t(lang, 'json')}
+          </button>
+        </div>
+        <div className="actions">
+          <button className="icon-btn" title="Copy" onClick={() => navigator.clipboard?.writeText(JSON.stringify(json, null, 2))}>
+            <Icon name="duplicate" size={13}/>
+          </button>
+        </div>
+      </div>
+      <div className="pane-body flush" style={{ overflow: 'hidden' }}>
+        <div className="json-pane" style={{ height: '100%', overflow: 'auto' }}>
+          <pre>{json ? JSON.stringify(json, null, 2) : ''}</pre>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MAIN APP
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function pickLang() {
+  try { return navigator.language?.toLowerCase().startsWith('tr') ? 'tr' : 'en'; } catch { return 'en'; }
+}
+function pickTheme() {
+  try { return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; } catch { return 'light'; }
+}
+function formatRelTime(date, lang) {
+  if (!date) return lang === 'tr' ? 'Kaydedilmedi' : 'Unsaved';
+  const s = Math.round((Date.now() - date) / 1000);
+  if (s < 10) return lang === 'tr' ? 'az önce' : 'just now';
+  if (s < 60) return s + (lang === 'tr' ? 'sn' : 's');
+  return Math.round(s / 60) + (lang === 'tr' ? ' dk' : 'm');
+}
+
+function App() {
+  // ── Core state ─────────────────────────────────────────────────────────
+  const [appState, setAppState] = useState('empty'); // 'empty' | 'streaming' | 'editing'
+  const [currentJson, setCurrentJson] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+
+  // ── UI preferences ──────────────────────────────────────────────────────
+  const [lang, setLang] = useState(pickLang);
+  const [theme, setTheme] = useState(pickTheme);
+  const [leftTab, setLeftTab] = useState('generate');
+  const [treeView, setTreeView] = useState('tree');
+  const [device, setDevice] = useState('iphone');
+
+  // ── Generate inputs ─────────────────────────────────────────────────────
+  const [promptText, setPromptText] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [smartCrop, setSmartCrop] = useState(false);
+  const [platform, setPlatform] = useState('mobile');
+
+  // ── Publish / A/B ───────────────────────────────────────────────────────
+  const [abActive, setAbActive] = useState(false);
+  const [abVariantA, setAbVariantA] = useState(null);
+  const [abVariantB, setAbVariantB] = useState(null);
+  const [version, setVersion] = useState(1);
+  const [savedAt, setSavedAt] = useState(null);
+
+  // ── File system ─────────────────────────────────────────────────────────
+  const [files, setFiles] = useState([]);
+  const [currentFilePath, setCurrentFilePath] = useState(null);
+
+  // Force re-render for live "X min ago" display
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 30000);
+    return () => clearInterval(id);
+  }, []);
+
+  // ── Boot: load current layout + file tree ───────────────────────────────
+  useEffect(() => {
+    fetch(`/current-ui?platform=${platform}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.layout) {
+          _uid = 0; tagIds(data.layout);
+          setCurrentJson(data);
+          setAppState('editing');
         }
-    </style>
-
-    <script>
-        let currentData = null;
-        let variantA = null;
-        let variantB = null;
-
-        let pMode = 'mobile'; // 'mobile' or 'web'
-
-        const i18n = {
-            tr: {
-                dosyalar: "Dosyalar",
-                mobile_hint: "* Mobile: iOS/Android native | Web: Responsive",
-                lang_hint: "* Arayüz & Yapay Zeka dili",
-                referans_gorsel: "Referans Görsel",
-                resim_sec: "Resim Seç veya Sürükle",
-                smart_crop: "Resimden Parça Kes (Smart Crop)",
-                unsplash_hint: "* Seçili değilse Unsplash resimleri kullanılır.",
-                prompt_title: "Prompt",
-                tasarimi_guncelle: "TASARIMI GÜNCELLE",
-                yayinla: "Yayınla",
-                tekil_yayinla: "Tekil Yayınla",
-                varyant_a: "Varyant A'ya Kaydet",
-                varyant_b: "Varyant B'ye Kaydet",
-                ab_baslat: "A/B Başlat",
-                platform_warning: "Platform değiştirildiğinde mevcut çalışma temizlenecektir. Devam etmek istiyor musunuz?",
-                file_open_warning: "Lütfen önce bir dosya açın veya oluşturun.",
-                prompt_warning: "Lütfen prompt yazın veya resim yükleyin.",
-                loading_update: "Tasarım Güncelleniyor ✏️",
-                loading_desc: "Yapay zeka mevcut tasarım üzerinde değişiklik yapıyor...",
-                loading_verify: "UI Doğrulanıyor ✅",
-                loading_verify_desc: "Yapay zeka önizlemeyi görsel olarak kontrol ediyor...",
-                move_failed: "Taşıma başarısız: ",
-                file_prompt: "Dosya adı (uzantısız):",
-                delete_confirm: "Silmek istediğinize emin misiniz: ",
-                workspace_empty: "Workspace is empty",
-                prompt_placeholder_active: "Örn: Bu görseldeki renkleri kullanarak modern bir profil sayfası yap...",
-                prompt_placeholder_disabled: "Lütfen önce Files sekmesinden bir dosya açın veya oluşturun...",
-                exit_fullscreen: "Çıkış (ESC)"
-            },
-            en: {
-                dosyalar: "Files",
-                mobile_hint: "* Mobile: iOS/Android native | Web: Responsive",
-                lang_hint: "* UI & AI generation language",
-                referans_gorsel: "Reference Image",
-                resim_sec: "Select or Drag Image",
-                smart_crop: "Smart Crop Image",
-                unsplash_hint: "* If not selected, Unsplash images are used.",
-                prompt_title: "Prompt",
-                tasarimi_guncelle: "UPDATE DESIGN",
-                yayinla: "Publish",
-                tekil_yayinla: "Publish Single",
-                varyant_a: "Save to Variant A",
-                varyant_b: "Save to Variant B",
-                ab_baslat: "Start A/B Test",
-                platform_warning: "Changing platform will clear current work. Do you want to continue?",
-                file_open_warning: "Please open or create a file first.",
-                prompt_warning: "Please write a prompt or upload an image.",
-                loading_update: "Updating Design ✏️",
-                loading_desc: "AI is modifying the existing design...",
-                loading_verify: "Verifying UI ✅",
-                loading_verify_desc: "AI is visually checking the preview...",
-                move_failed: "Move failed: ",
-                file_prompt: "File name (without .json):",
-                delete_confirm: "Are you sure you want to delete ",
-                workspace_empty: "Workspace is empty",
-                prompt_placeholder_active: "E.g.: Create a modern profile page using these colors...",
-                prompt_placeholder_disabled: "Please open or create a file from the Files tab first...",
-                exit_fullscreen: "Exit (ESC)"
-            }
-        };
-
-        let currentLang = localStorage.getItem('sdui_lang') || 'tr';
-
-        function setLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem('sdui_lang', lang);
-            
-            // Update UI buttons
-            const langTrBtn = document.getElementById('lang-tr');
-            const langEnBtn = document.getElementById('lang-en');
-            if (langTrBtn) langTrBtn.classList.toggle('active', lang === 'tr');
-            if (langEnBtn) langEnBtn.classList.toggle('active', lang === 'en');
-            
-            // Update translatable texts
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (i18n[lang][key]) {
-                    el.innerText = i18n[lang][key];
-                }
-            });
-
-            // Update specific elements like placeholders
-            const promptInput = document.getElementById('promptInput');
-            if (promptInput) {
-                if (promptInput.disabled) {
-                    promptInput.placeholder = i18n[lang].prompt_placeholder_disabled;
-                } else {
-                    promptInput.placeholder = i18n[lang].prompt_placeholder_active;
-                }
-            }
-            const exitBtn = document.getElementById('exitFullscreenBtn');
-            if (exitBtn) {
-                exitBtn.innerText = i18n[lang].exit_fullscreen;
-            }
-        }
-        
-        document.addEventListener("DOMContentLoaded", () => {
-            setLanguage(currentLang);
-        });
-
-
-        // --- PLATFORM LOGIC ---
-        function setPlatform(mode) {
-            // If try to switch to the same mode, do nothing
-            if (pMode === mode) return;
-
-            // Warn if we have data
-            if (currentData && !confirm(i18n[currentLang].platform_warning)) {
-                return;
-            }
-
-            // Clear Data
-            currentData = null;
-            variantA = null;
-            variantB = null;
-            updateEditors(null); // Clear UI
-
-            pMode = mode;
-
-            // UI Update for Platform Switch
-            document.querySelectorAll('[id^="plat-"]').forEach(b => b.classList.remove('active'));
-            document.getElementById(`plat-${mode}`).classList.add('active');
-
-            // Handle Device Buttons & Variant Buttons
-            const btnIos = document.getElementById('btn-ios');
-            const btnAndroid = document.getElementById('btn-android');
-            const btnWeb = document.getElementById('btn-web');
-            const variantBtns = document.querySelectorAll('.btn-ab'); // Variant buttons class
-
-            // Save to Local Storage
-            localStorage.setItem('sdui_platform_mode', mode);
-
-            if (mode === 'web') {
-                // WEB MODE
-                btnIos.style.display = 'none';
-                btnAndroid.style.display = 'none';
-                setDevice('web');
-
-                // Hide Variant buttons for Web (Publish Single Only)
-                variantBtns.forEach(b => b.style.display = 'none');
-            } else {
-                // MOBILE MODE
-                btnIos.style.display = 'inline-block';
-                btnAndroid.style.display = 'inline-block';
-
-                if (document.querySelector('.mobile-frame').classList.contains('web')) {
-                    setDevice('ios');
-                }
-
-                // Show Variant buttons for Mobile
-                variantBtns.forEach(b => b.style.display = 'block');
-            }
-        }
-
-        // --- UI LOGIC ---
-        function toggleFullscreen() {
-            const editor = document.getElementById('jsonEditor');
-            const exitBtn = document.getElementById('exitFullscreenBtn');
-            editor.classList.toggle('fullscreen');
-            exitBtn.style.display = editor.classList.contains('fullscreen') ? 'block' : 'none';
-        }
-
-        document.addEventListener('keydown', e => { if (e.key === "Escape") toggleFullscreen(); });
-
-        function setDevice(type) {
-            const frame = document.querySelector('.mobile-frame');
-            const previewPane = document.querySelector('.preview-pane');
-            const btnIos = document.getElementById('btn-ios');
-            const btnAndroid = document.getElementById('btn-android');
-            const btnWeb = document.getElementById('btn-web');
-
-            // Reset
-            frame.className = 'mobile-frame';
-            previewPane.classList.remove('wide-mode');
-            [btnIos, btnAndroid, btnWeb].forEach(b => b.classList.remove('active'));
-
-            if (type === 'android') {
-                frame.classList.add('android');
-                btnAndroid.classList.add('active');
-            } else if (type === 'web') {
-                frame.classList.add('web');
-                previewPane.classList.add('wide-mode');
-                btnWeb.classList.add('active');
-            } else {
-                // iOS Default
-                btnIos.classList.add('active');
-            }
-        }
-
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector(`button[onclick="switchTab('${tab}')"]`).classList.add('active');
-
-            document.getElementById('treeContainer').style.display = tab === 'tree' ? 'block' : 'none';
-            document.getElementById('jsonEditor').style.display = tab === 'json' ? 'block' : 'none';
-
-            if (tab === 'tree') syncJsonToTree();
-        }
-
-        // --- FILE DRAG & DROP ---
-        function handleFileDragOver(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.currentTarget.classList.add('hover');
-        }
-
-        function handleFileDragLeave(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.currentTarget.classList.remove('hover');
-        }
-
-        function handleFileDrop(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.currentTarget.classList.remove('hover');
-
-            const dt = e.dataTransfer;
-            const files = dt.files;
-
-            if (files && files.length > 0) {
-                document.getElementById('imgInput').files = files;
-                previewFile();
-            }
-        }
-
-        function previewFile() {
-            const file = document.getElementById('imgInput').files[0];
-            const preview = document.getElementById('imgPreview');
-            const text = document.getElementById('uploadText');
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; text.style.display = 'none'; };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function syncJsonToTree() {
-            try {
-                const val = document.getElementById('jsonEditor').value;
-                if (val.trim()) {
-                    currentData = JSON.parse(val);
-                    if (currentData.layout) tagDataWithIds(currentData.layout); // ID ekle
-
-                    // Tree'yi güncellemek için updateEditors'ı çağırmak yerine direkt data ile çalışıyoruz
-                    // Ama renderNode fonksiyonunu çağırmak gerekebilir
-                    const container = document.getElementById('treeContainer');
-                    container.innerHTML = '';
-                    try {
-                        container.appendChild(renderNode(currentData.layout, currentData.layout));
-                    } catch (e) { }
-
-                    // PREVIEW UPDATE
-                    updatePreview(currentData);
-
-                    // Auto Save
-                    saveToLocalStorage(currentData);
-                }
-            } catch (e) { }
-        }
-
-        // --- GENERATE ---
-        async function generate() {
-            if (!currentFilePath) return alert(i18n[currentLang].file_open_warning);
-
-            const prompt = document.getElementById('promptInput').value;
-            const fileInput = document.getElementById('imgInput');
-            const smartCrop = document.getElementById('smartCropToggle').checked;
-
-            if (!prompt && !fileInput.files[0]) return alert(i18n[currentLang].prompt_warning);
-
-            // LOADING MESAJINI AYARLA
-            const loadingTitle = document.getElementById('loadingTitle');
-            const loadingDesc = document.getElementById('loadingDesc');
-            document.getElementById('loading').style.display = 'flex';
-
-            loadingTitle.innerText = i18n[currentLang].loading_update;
-            loadingDesc.innerText = i18n[currentLang].loading_desc;
-
-            const formData = new FormData();
-            formData.append('prompt', prompt);
-            formData.append('platform', pMode); // Add Platform
-            formData.append('language', currentLang); // Add Language
-            formData.append('smart_crop', smartCrop); // Checkbox değerini gönder
-            if (fileInput.files[0]) formData.append('image', fileInput.files[0]);
-
-            // REFINE LOGIC
-            if (currentData) {
-                formData.append('current_json', JSON.stringify(currentData));
-            }
-
-            try {
-                const res = await fetch('/generate', { method: 'POST', body: formData });
-                const data = await res.json();
-
-                if (data.detail) return alert("Hata: " + JSON.stringify(data.detail));
-
-                document.getElementById('promptInput').value = ''; // Clean up after gen
-
-                // --- PHASE 2: UI VERIFICATION ---
-                loadingTitle.innerText = i18n[currentLang].loading_verify;
-                loadingDesc.innerText = i18n[currentLang].loading_verify_desc;
-
-                // Render preview off-screen to capture screenshot
-                const previewContainer = document.getElementById('appPreview');
-                // Temporarily render the generated data
-                if (data && data.layout) {
-                    if (data.layout) tagDataWithIds(data.layout);
-                    previewContainer.innerHTML = '';
-                    if (data.layout.props && data.layout.props.backgroundColor) {
-                        previewContainer.style.background = data.layout.props.backgroundColor;
-                    } else {
-                        previewContainer.style.background = '#FFFFFF';
-                    }
-                    const rootEl = renderPreview(data.layout);
-                    if (rootEl) previewContainer.appendChild(rootEl);
-                }
-
-                // Wait a moment for images to start loading, then capture screenshot
-                await new Promise(resolve => setTimeout(resolve, 1500));
-
-                try {
-                    const canvas = await html2canvas(previewContainer, {
-                        backgroundColor: null,
-                        scale: 1,
-                        useCORS: true,
-                        allowTaint: true,
-                        logging: false
-                    });
-
-                    // Convert canvas to blob
-                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-
-                    // Send JSON + screenshot to /verify
-                    const verifyForm = new FormData();
-                    verifyForm.append('json_data', JSON.stringify(data));
-                    verifyForm.append('screenshot', blob, 'preview.png');
-
-                    const verifyRes = await fetch('/verify', { method: 'POST', body: verifyForm });
-                    const verifiedData = await verifyRes.json();
-
-                    if (verifiedData && verifiedData.layout) {
-                        currentData = verifiedData;
-                        updateEditors(verifiedData);
-                        console.log('✅ UI verification completed');
-                    } else {
-                        // Verification returned invalid data, use original
-                        currentData = data;
-                        updateEditors(data);
-                        console.warn('⚠️ Verification returned invalid data, using original');
-                    }
-                } catch (verifyErr) {
-                    console.warn('⚠️ UI verification failed, using original:', verifyErr);
-                    // Fail-open: use original data
-                    currentData = data;
-                    updateEditors(data);
-                }
-
-            } catch (e) {
-                alert("Hata: " + e);
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
-        }
-
-        // --- RENDERERS ---
-        function updateEditors(data) {
-            if (data && data.layout) tagDataWithIds(data.layout); // ID ekle
-
-            // Enable or disable prompt based on open file
-            const promptInput = document.getElementById('promptInput');
-            const btnGenerate = document.getElementById('btnGenerate');
-            if (currentFilePath) {
-                promptInput.disabled = false;
-                promptInput.placeholder = "Örn: Bu görseldeki renkleri kullanarak modern bir profil sayfası yap...";
-                btnGenerate.disabled = false;
-                btnGenerate.classList.add('active');
-            } else {
-                promptInput.disabled = true;
-                promptInput.placeholder = "Lütfen önce Files sekmesinden bir dosya açın veya oluşturun...";
-                btnGenerate.disabled = true;
-                btnGenerate.classList.remove('active');
-            }
-
-            // Auto Save
-            saveToLocalStorage(data);
-            autoSaveFsFile();
-
-            // HATA YÖNETİMİ: Veriyi ekrana bas
-            document.getElementById('jsonEditor').value = JSON.stringify(data, null, 2);
-
-            const container = document.getElementById('treeContainer');
-            container.innerHTML = '';
-
-            // Eğer layout yoksa veya hata mesajı varsa
-            // Eğer layout yoksa veya hata mesajı varsa
-            if (!data || !data.layout) {
-                // If explicit null (clear), show empty state
-                if (data === null) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <span class="material-icons">dashboard_customize</span>
-                            <p>Henüz bir tasarım üretilmedi</p>
-                            <small>Sol taraftan bir resim yükleyin veya prompt yazıp "Üret" diyin.</small>
-                        </div>`;
-                    // Clear Preview
-                    document.getElementById('appPreview').innerHTML = '';
-                    return;
-                }
-
-                let errorMsg = "Geçersiz Veri Yapısı";
-                if (data && data.detail) errorMsg = "Backend Hatası: " + data.detail;
-
-                container.innerHTML = `
-                    <div class="empty-state" style="border-color: #FF5252; color: #FF5252;">
-                        <span class="material-icons">error_outline</span>
-                        <p>${errorMsg}</p>
-                        <small style="color:#AAA">Sağ taraftaki 'Ham JSON' sekmesinden gelen hatayı inceleyin.</small>
-                    </div>`;
-                return;
-            }
-
-            try {
-                container.appendChild(renderNode(data.layout, data.layout));
-            } catch (e) {
-                console.error(e);
-                container.innerHTML = '<div style="color:red;text-align:center">Ağaç oluşturulamadı.</div>';
-            }
-
-            // PREVIEW UPDATE
-            updatePreview(data);
-        }
-
-        function renderNode(node, parentRef) {
-            if (!node) return document.createElement('div');
-            const div = document.createElement('div');
-            div.className = 'tree-node';
-            if (node._id) {
-                div.setAttribute('data-id', node._id);
-                // DRAG & DROP HANDLERS
-                div.draggable = true;
-                div.ondragstart = (e) => handleDragStart(e, node._id);
-                div.ondragover = (e) => handleDragOver(e, div);
-                div.ondragleave = (e) => handleDragLeave(e, div);
-                // Need to attach drop to the HEADER or the whole div?
-                // Attaching to div allows dropping into children container too. 
-                // But let's handle drop on the div.
-                div.ondrop = (e) => handleDrop(e, node._id);
-            }
-
-            const header = document.createElement('div');
-            header.className = 'node-header';
-
-            let nodeType = node.type || 'Unknown';
-            let icon = 'widgets';
-            let colorClass = 'tag-col';
-
-            if (nodeType === 'Row') { icon = 'view_week'; colorClass = 'tag-row'; }
-            if (nodeType === 'Image') { icon = 'image'; colorClass = 'tag-img'; }
-            if (nodeType === 'Text') { icon = 'text_fields'; colorClass = 'tag-txt'; }
-
-            header.innerHTML = `
-                <span class="material-icons" style="font-size: 16px; color: #888;">${(node.children && node.children.length) ? 'expand_more' : 'fiber_manual_record'}</span>
-                <span class="tag ${colorClass}">${nodeType}</span>
-            `;
-
-            header.onclick = (e) => {
-                const childrenDiv = div.querySelector('.children-container');
-                if (childrenDiv) {
-                    const isHidden = childrenDiv.style.display === 'none';
-                    childrenDiv.style.display = isHidden ? 'block' : 'none';
-                    header.querySelector('.material-icons').innerText = isHidden ? 'expand_more' : 'chevron_right';
-                }
-            };
-            div.appendChild(header);
-
-            if (node.props) {
-                Object.keys(node.props).forEach(key => {
-                    const propRow = document.createElement('div');
-                    propRow.className = 'prop-row';
-                    const input = document.createElement('input');
-                    input.className = 'edit-input';
-                    input.value = node.props[key] || "";
-
-                    // SAFE INPUT HANDLER
-                    input.oninput = (e) => {
-                        try {
-                            node.props[key] = e.target.value;
-                            // Update global JSON editor silently (no event trigger)
-                            const jsonEditor = document.getElementById('jsonEditor');
-                            if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
-
-                            updatePreview(currentData); // Live Render
-                            saveToLocalStorage(currentData); // Auto Save prop edit
-                        } catch (err) {
-                            console.warn("Input handling error:", err);
-                        }
-                    };
-
-                    propRow.innerHTML = `<span class="prop-key">${key}:</span>`;
-                    propRow.appendChild(input);
-
-                    // COLOR PICKER
-                    if (key.toLowerCase().includes('color')) {
-                        const colorInput = document.createElement('input');
-                        colorInput.type = 'color';
-                        colorInput.style.marginLeft = '5px';
-                        colorInput.style.width = '24px';
-                        colorInput.style.height = '24px';
-                        colorInput.style.padding = '0';
-                        colorInput.style.border = 'none';
-                        colorInput.style.cursor = 'pointer';
-
-                        // Check if valid hex
-                        const currentVal = node.props[key];
-                        if (currentVal && typeof currentVal === 'string' && currentVal.startsWith('#') && currentVal.length === 7) {
-                            colorInput.value = currentVal;
-                        }
-
-                        colorInput.oninput = (e) => {
-                            try {
-                                const newColor = e.target.value;
-                                input.value = newColor; // Text inputunu güncelle
-                                node.props[key] = newColor; // Modeli güncelle
-
-                                const jsonEditor = document.getElementById('jsonEditor');
-                                if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
-
-                                updatePreview(currentData); // Live render
-                                saveToLocalStorage(currentData); // Auto Save color edit
-                            } catch (err) { }
-                        };
-
-                        propRow.appendChild(colorInput);
-
-                        // Gradient Builder Toggle Button
-                        const gradientBtn = document.createElement('button');
-                        gradientBtn.innerText = '🌈';
-                        gradientBtn.title = 'Özel Gradient Oluştur';
-                        gradientBtn.style.marginLeft = '5px';
-                        gradientBtn.style.padding = '0 5px';
-                        gradientBtn.style.fontSize = '12px';
-                        gradientBtn.style.height = '24px';
-                        gradientBtn.style.cursor = 'pointer';
-
-                        // Create Gradient Builder UI (Hidden by default)
-                        const gradBuilder = document.createElement('div');
-                        gradBuilder.style.display = 'none';
-                        gradBuilder.style.flexDirection = 'column';
-                        gradBuilder.style.gap = '5px';
-                        gradBuilder.style.marginTop = '5px';
-                        gradBuilder.style.padding = '8px';
-                        gradBuilder.style.background = '#222';
-                        gradBuilder.style.border = '1px solid #444';
-                        gradBuilder.style.borderRadius = '4px';
-
-                        // 1. Inputs Row
-                        const gRow1 = document.createElement('div');
-                        gRow1.style.display = 'flex';
-                        gRow1.style.gap = '10px';
-                        gRow1.style.alignItems = 'center';
-
-                        // Start Color
-                        const c1 = document.createElement('input'); c1.type = 'color'; c1.value = '#FF5252';
-                        c1.style.border = 'none'; c1.style.width = '24px'; c1.style.height = '24px'; c1.style.cursor = 'pointer'; c1.title = 'Başlangıç Rengi';
-
-                        // End Color
-                        const c2 = document.createElement('input'); c2.type = 'color'; c2.value = '#448AFF';
-                        c2.style.border = 'none'; c2.style.width = '24px'; c2.style.height = '24px'; c2.style.cursor = 'pointer'; c2.title = 'Bitiş Rengi';
-
-                        // Angle
-                        const angle = document.createElement('input');
-                        angle.type = 'number'; angle.value = '135'; angle.style.width = '40px';
-                        angle.className = 'edit-input'; angle.style.textAlign = 'center'; angle.title = 'Açı (Derece)';
-
-                        gRow1.appendChild(document.createTextNode('Start:')); gRow1.appendChild(c1);
-                        gRow1.appendChild(document.createTextNode('End:')); gRow1.appendChild(c2);
-                        gRow1.appendChild(document.createTextNode('Deg:')); gRow1.appendChild(angle);
-
-                        // 2. Action Row
-                        const gRow2 = document.createElement('div');
-                        gRow2.style.display = 'flex';
-                        gRow2.style.justifyContent = 'flex-end';
-
-                        const applyBtn = document.createElement('button');
-                        applyBtn.innerText = 'Uygula';
-                        applyBtn.className = 'action-btn';
-                        applyBtn.style.fontSize = '10px';
-                        applyBtn.style.padding = '4px 8px';
-
-                        applyBtn.onclick = () => {
-                            const val = `linear-gradient(${angle.value}deg, ${c1.value} 0%, ${c2.value} 100%)`;
-                            input.value = val;
-                            gradBuilder.style.display = 'none'; // Hide after apply
-
-                            try {
-                                const jsonEditor = document.getElementById('jsonEditor');
-                                node.props[key] = val; // Update model
-                                if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
-                                updatePreview(currentData); // Live Render
-                                saveToLocalStorage(currentData); // Auto Save gradient
-                            } catch (err) { }
-                        };
-
-                        gRow2.appendChild(applyBtn);
-
-                        gradBuilder.appendChild(gRow1);
-                        gradBuilder.appendChild(gRow2);
-
-                        // Toggle Logic
-                        gradientBtn.onclick = () => {
-                            gradBuilder.style.display = gradBuilder.style.display === 'none' ? 'flex' : 'none';
-                        };
-
-                        propRow.appendChild(gradientBtn);
-                        div.appendChild(propRow); // Append main row first
-                        div.appendChild(gradBuilder); // Append builder below
-
-                        // Handle splitting logic (NEXT IF BLOCK)...
-                        // We need to return here to avoid appending propRow again at the bottom
-
-                        // Check for Object Split logic next...
-                    } else {
-                        // Default append for non-color props (if they are not objects)
-                        div.appendChild(propRow);
-                    }
-
-                    // --- DELETE BUTTON ---
-                    const delBtn = document.createElement('span');
-                    delBtn.className = 'material-icons';
-                    delBtn.innerText = 'close';
-                    delBtn.style.fontSize = '14px';
-                    delBtn.style.color = '#FF5252'; // RED by default
-                    delBtn.style.cursor = 'pointer';
-                    delBtn.style.marginLeft = 'auto'; // Right align
-                    delBtn.title = 'Delete Prop';
-
-                    delBtn.onmouseover = () => delBtn.style.color = '#F44336';
-                    delBtn.onmouseout = () => delBtn.style.color = '#555';
-
-                    delBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        if (confirm(`"${key}" özelliğini silmek istiyor musunuz?`)) {
-                            delete node.props[key];
-
-                            // Update UI
-                            const jsonEditor = document.getElementById('jsonEditor');
-                            if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
-                            updateEditors(currentData); // Re-render tree
-                        }
-                    };
-
-                    propRow.appendChild(delBtn);
-
-
-                    // Handle Object inputs (like onClick) properly
-                    if (typeof node.props[key] === 'object' && node.props[key] !== null) {
-                        // Create a container for the object
-                        const objContainer = document.createElement('div');
-                        objContainer.style.marginLeft = '10px';
-                        objContainer.style.borderLeft = '1px dashed #444';
-                        objContainer.style.paddingLeft = '5px';
-
-                        // Label for the object prop
-                        propRow.innerHTML = `<span class="prop-key">${key}:</span>`;
-                        div.appendChild(propRow);
-
-                        // Iterate over object keys (e.g. type, message, destination)
-                        Object.keys(node.props[key]).forEach(subKey => {
-                            const subRow = document.createElement('div');
-                            subRow.className = 'prop-row';
-
-                            const subInput = document.createElement('input');
-                            subInput.className = 'edit-input';
-                            subInput.style.width = '100px';
-                            subInput.value = node.props[key][subKey] || "";
-
-                            subInput.oninput = (e) => {
-                                try {
-                                    // Update the specific field in the object
-                                    node.props[key][subKey] = e.target.value;
-
-                                    // Trigger updates
-                                    const jsonEditor = document.getElementById('jsonEditor');
-                                    if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
-                                    updatePreview(currentData);
-                                    saveToLocalStorage(currentData); // Auto Save object edit
-                                } catch (err) { console.warn(err); }
-                            };
-
-                            subRow.innerHTML = `<span class="prop-key" style="color:#aaa; font-size:11px;">${subKey}:</span>`;
-                            subRow.appendChild(subInput);
-                            objContainer.appendChild(subRow);
-                        });
-
-                        div.appendChild(objContainer);
-                        return; // Skip default append
-                    } else {
-                        // Normal Input Handler already defined above oninput
-                    }
-
-                    div.appendChild(propRow);
-                });
-            }
-
-            // --- ADD PROPERTY BUTTON ---
-            const addPropContainer = document.createElement('div');
-            addPropContainer.style.marginLeft = '20px';
-            addPropContainer.style.marginTop = '4px';
-
-            const addBtn = document.createElement('button');
-            addBtn.innerHTML = '<span class="material-icons" style="font-size:12px">add</span> Prop';
-            addBtn.className = 'action-btn';
-            addBtn.style.padding = '2px 6px';
-            addBtn.style.fontSize = '10px';
-            addBtn.style.background = '#222';
-            addBtn.style.border = '1px dashed #444';
-            addBtn.style.color = '#888';
-
-            // Available Props List
-            const availableProps = [
-                'padding', 'margin', 'marginTop', 'marginBottom',
-                'width', 'height', 'weight', 'fillWidth', 'fillMaxSize',
-                'backgroundColor', 'color', 'textColor', 'corner', 'elevation',
-                'horizontalArrangement', 'verticalAlignment', 'horizontalAlignment', 'verticalArrangement',
-                'scroll', 'contentScale', 'style', 'fontWeight', 'textAlign'
-            ];
-
-            // Prop Selector (Hidden by default)
-            const propSelect = document.createElement('select');
-            propSelect.style.display = 'none';
-            propSelect.style.background = '#333';
-            propSelect.style.color = 'white';
-            propSelect.style.border = '1px solid #555';
-            propSelect.style.fontSize = '11px';
-            propSelect.style.marginLeft = '5px';
-            propSelect.style.padding = '2px';
-
-            // Placeholder option
-            const defaultOpt = document.createElement('option');
-            defaultOpt.text = "Seç...";
-            defaultOpt.value = "";
-            propSelect.appendChild(defaultOpt);
-
-            availableProps.forEach(p => {
-                // Don't show if already exists
-                if (!node.props || !node.props.hasOwnProperty(p)) {
-                    const opt = document.createElement('option');
-                    opt.value = p;
-                    opt.text = p;
-                    propSelect.appendChild(opt);
-                }
-            });
-
-            addBtn.onclick = () => {
-                addBtn.style.display = 'none';
-                propSelect.style.display = 'inline-block';
-                propSelect.focus();
-            };
-
-            propSelect.onchange = (e) => {
-                const newProp = e.target.value;
-                if (newProp) {
-                    if (!node.props) node.props = {};
-
-                    // Default Values
-                    let defVal = "16";
-                    if (newProp.includes('Color') || newProp.includes('color')) defVal = "#FFFFFF";
-                    if (newProp.includes('Alignment') || newProp.includes('Arrangement')) defVal = "center";
-                    if (newProp === 'fillWidth' || newProp === 'fillMaxSize' || newProp === 'scroll') defVal = "true";
-                    if (newProp === 'weight') defVal = 1;
-
-                    node.props[newProp] = defVal;
-
-                    // Update UI
-                    const jsonEditor = document.getElementById('jsonEditor');
-                    if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
-                    updateEditors(currentData); // Re-render tree
-                }
-                // Reset UI
-                propSelect.style.display = 'none';
-                addBtn.style.display = 'inline-flex';
-                propSelect.value = "";
-            };
-
-            propSelect.onblur = () => {
-                setTimeout(() => {
-                    propSelect.style.display = 'none';
-                    addBtn.style.display = 'inline-flex';
-                }, 200);
-            };
-
-            addPropContainer.appendChild(addBtn);
-            addPropContainer.appendChild(propSelect);
-            div.appendChild(addPropContainer);
-
-            if (node.children && Array.isArray(node.children)) {
-                const childrenContainer = document.createElement('div');
-                childrenContainer.className = 'children-container';
-                node.children.forEach(child => { if (child) childrenContainer.appendChild(renderNode(child, node)); });
-                div.appendChild(childrenContainer);
-            }
-            return div;
-        }
-
-        // --- PREVIEW RENDERER ---
-        function renderPreview(node) {
-            if (!node) return null;
-            let el;
-
-            // 1. Element Oluşturma
-            if (node.type === 'Column') {
-                el = document.createElement('div');
-                el.classList.add('sdui-col');
-            } else if (node.type === 'Row') {
-                el = document.createElement('div');
-                el.classList.add('sdui-row');
-            } else if (node.type === 'Text') {
-                el = document.createElement('div');
-                el.innerText = node.props.text || "";
-
-                // Default Style Class
-                let style = node.props.style || 'body';
-                el.classList.add(`sdui-text-${style}`);
-            } else if (node.type === 'Image') {
-                el = document.createElement('img');
-                el.classList.add('sdui-img');
-                el.src = node.props.url || "";
-            } else if (node.type === 'Icon') {
-                el = document.createElement('span');
-                el.classList.add('material-icons');
-                el.innerText = node.props.name || "help";
-            } else if (node.type === 'Box') {
-                el = document.createElement('div');
-                el.classList.add('sdui-col');
-            } else if (node.type === 'Card') {
-                el = document.createElement('div');
-                el.classList.add('sdui-col', 'sdui-card');
-                // Default background if not set
-                if (!node.props || !node.props.backgroundColor) {
-                    el.style.backgroundColor = '#FFFFFF';
-                }
-            } else if (node.type === 'Button') {
-                el = document.createElement('div');
-                el.innerText = node.props.text || "Button";
-                // Default Button Styles
-                el.style.display = 'flex';
-                el.style.alignItems = 'center';
-                el.style.justifyContent = 'center';
-                el.style.cursor = 'pointer';
-                el.style.whiteSpace = 'nowrap'; // Prevent text wrap
-                el.style.width = 'fit-content'; // Shrink to fit content
-                if (!node.props.padding) el.style.padding = '12px 24px'; // Default padding if not set
-            } else if (node.type === 'BottomSheet') {
-                // Material 3 Bottom Sheet Container
-                const wrapper = document.createElement('div');
-                wrapper.style.position = 'relative';
-                wrapper.style.width = '100%';
-                wrapper.style.height = '100%';
-
-                // Scrim (optional, for modal variant)
-                if (node.props.modal === 'true') {
-                    const scrim = document.createElement('div');
-                    scrim.classList.add('sdui-bottom-sheet-scrim');
-                    wrapper.appendChild(scrim);
-                }
-
-                // Bottom Sheet
-                el = document.createElement('div');
-                el.classList.add('sdui-bottom-sheet');
-
-                // Drag Handle
-                const handle = document.createElement('div');
-                handle.classList.add('sdui-bottom-sheet-handle');
-                el.appendChild(handle);
-
-                // Content Container
-                const content = document.createElement('div');
-                content.classList.add('sdui-bottom-sheet-content');
-
-                // Children will be rendered into content
-                if (node.children && Array.isArray(node.children)) {
-                    node.children.forEach(child => {
-                        const childEl = renderPreview(child);
-                        if (childEl) content.appendChild(childEl);
-                    });
-                }
-
-                el.appendChild(content);
-                wrapper.appendChild(el);
-
-                // Apply custom props
-                if (node.props) {
-                    if (node.props.backgroundColor) el.style.background = node.props.backgroundColor;
-                    if (node.props.height) el.style.height = node.props.height + (String(node.props.height).includes('%') || String(node.props.height).includes('px') ? '' : 'px');
-                    if (node.props.corner) {
-                        el.style.borderTopLeftRadius = node.props.corner + 'px';
-                        el.style.borderTopRightRadius = node.props.corner + 'px';
-                    }
-                }
-
-                return wrapper;
-            } else if (node.type === 'BottomBar') {
-                // Bottom Navigation Bar - fixed to bottom, fills full width
-                el = document.createElement('div');
-                el.classList.add('sdui-bottom-bar');
-                // Flex layout - naturally sits at bottom if sibling has weight:1
-                el.style.width = '100%';
-                el.style.flexShrink = '0'; // Never shrink
-
-                // Flexbox layout properties
-                el.style.display = 'flex';
-                el.style.flexDirection = 'row';
-                el.style.alignItems = 'center';
-                el.style.boxSizing = 'border-box';
-                // Horizontal arrangement
-                const hArr = node.props?.horizontalArrangement;
-                if (hArr === 'spaceevenly') el.style.justifyContent = 'space-evenly';
-                else if (hArr === 'spacebetween') el.style.justifyContent = 'space-between';
-                else if (hArr === 'spacearound') el.style.justifyContent = 'space-around';
-                else if (hArr === 'center') el.style.justifyContent = 'center';
-                else el.style.justifyContent = 'space-evenly'; // default
-                // Parse padding (handle comma-separated format)
-                if (node.props?.padding) {
-                    const parts = String(node.props.padding).split(',').map(x => x.trim() + 'px');
-                    if (parts.length === 4) {
-                        el.style.padding = `${parts[0]} ${parts[1]} ${parts[2]} ${parts[3]}`;
-                    } else if (parts.length === 1) {
-                        el.style.padding = parts[0];
-                    }
-                } else {
-                    el.style.padding = '12px 16px';
-                }
-                // Background
-                el.style.backgroundColor = node.props?.backgroundColor || '#FFFFFF';
-                // Shadow
-                if (node.props?.elevation) {
-                    el.style.boxShadow = `0 -2px ${node.props.elevation * 2}px rgba(0,0,0,0.15)`;
-                } else {
-                    el.style.boxShadow = '0 -2px 8px rgba(0,0,0,0.08)';
-                }
-            } else if (node.type === 'Spacer') {
-                el = document.createElement('div');
-            } else {
-                el = document.createElement('div');
-            }
-
-            // LINK: Preview elemanına ID ekle
-            if (node._id) {
-                el.setAttribute('data-id', node._id);
-                // Tree Highlight Click
-                el.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    highlightTreeNode(node._id);
-
-                    // Action Handling
-                    if (node.props && node.props.onClick) {
-                        createRipple(e, el);
-                        handleAction(node.props.onClick);
-                    }
-                });
-
-                // Cursor Pointer if clickable
-                if (node.props && node.props.onClick) {
-                    el.style.cursor = 'pointer';
-                    el.classList.add('ripple-container'); // For Ripple positioning
-                }
-            }
-
-            // 2. Props İşleme
-            if (node.props) {
-                const s = el.style;
-                const p = node.props;
-
-                // Boyutlar
-                // Boyutlar
-                if (p.fillMaxSize === 'true') { s.width = '100%'; s.height = '100%'; }
-                if (p.fillWidth === 'true') s.width = '100%';
-                // Helper for size
-                const toSize = (v) => {
-                    const str = String(v);
-                    if (str.endsWith('%') || str.endsWith('px') || str.endsWith('vh') || str.endsWith('vw')) return str;
-                    return str + 'px';
-                };
-
-                if (p.width) s.width = toSize(p.width);
-                if (p.height) s.height = toSize(p.height);
-                if (p.weight) {
-                    s.flex = `${p.weight} ${p.weight} 0px`;
-                    s.minWidth = '0'; // Prevent content blowout
-                }
-
-                // Renkler
-                if (p.backgroundColor) s.background = p.backgroundColor; // Support Gradients
-                if (p.color) s.color = p.color;
-                if (p.textColor) s.color = p.textColor;
-
-                // Spacing
-                if (p.padding) {
-                    if (typeof p.padding === 'number') s.padding = p.padding + 'px';
-                    else {
-                        const parts = p.padding.split(',').map(x => toPx(x));
-                        if (parts.length === 1) s.padding = parts[0];
-                        else if (parts.length === 2) s.padding = `${parts[0]} ${parts[1]}`;
-                        else if (parts.length === 4) s.padding = `${parts[0]} ${parts[1]} ${parts[2]} ${parts[3]}`;
-                    }
-                }
-                if (p.margin) s.margin = typeof p.margin === 'number' ? p.margin + 'px' : p.margin;
-                if (p.marginBottom) s.marginBottom = p.marginBottom + 'px';
-                if (p.marginTop) s.marginTop = p.marginTop + 'px';
-
-                // BorderRadius
-                if (p.corner) s.borderRadius = p.corner + 'px';
-
-                // Elevation (Shadow) - IMPROVED
-                if (p.elevation) {
-                    const e = parseInt(p.elevation);
-                    // Modern, diffused shadow
-                    s.boxShadow = `0 ${Math.floor(e / 2) + 2}px ${e * 3}px rgba(0,0,0,${0.05 + (e * 0.015)})`;
-                }
-
-                // Flex Hizalama
-                if (node.type === 'Column') {
-                    if (p.verticalArrangement === 'center') s.justifyContent = 'center';
-                    if (p.verticalArrangement === 'bottom') s.justifyContent = 'flex-end';
-                    if (p.verticalArrangement === 'spacebetween') s.justifyContent = 'space-between';
-                    if (p.verticalArrangement && typeof p.verticalArrangement === 'string' && p.verticalArrangement.startsWith('spacedby:')) {
-                        s.gap = p.verticalArrangement.split(':')[1].trim() + 'px';
-                    }
-
-                    if (p.horizontalAlignment === 'center') s.alignItems = 'center';
-                    if (p.horizontalAlignment === 'end') s.alignItems = 'flex-end';
-                }
-                if (node.type === 'Row') {
-                    if (p.horizontalArrangement === 'center') s.justifyContent = 'center';
-                    if (p.horizontalArrangement === 'end') s.justifyContent = 'flex-end';
-                    if (p.horizontalArrangement === 'spacebetween') s.justifyContent = 'space-between';
-                    if (p.horizontalArrangement === 'spaceevenly') s.justifyContent = 'space-evenly';
-                    if (p.horizontalArrangement === 'spacearound') s.justifyContent = 'space-around';
-                    if (p.horizontalArrangement && p.horizontalArrangement.startsWith('spacedby:')) {
-                        s.gap = p.horizontalArrangement.split(':')[1].trim() + 'px';
-                    }
-
-                    if (p.verticalAlignment === 'center') s.alignItems = 'center';
-                    if (p.verticalAlignment === 'bottom') s.alignItems = 'flex-end';
-                }
-
-                // Text Stilleri - Enhanced
-                if (node.type === 'Text') {
-                    // Font sizes handled by CSS classes (sdui-text-h1 etc), but allow overrides:
-                    if (p.style === 'h1' && !s.fontSize) { s.fontWeight = '700'; }
-                    if (p.style === 'h2' && !s.fontSize) { s.fontWeight = '600'; }
-
-                    if (p.fontWeight === 'bold') s.fontWeight = '700';
-                    if (p.fontWeight === 'medium') s.fontWeight = '500';
-                    if (p.fontWeight === 'normal') s.fontWeight = '400';
-
-                    if (p.textAlign) s.textAlign = p.textAlign;
-
-                    // Line height fix
-                    if (!s.lineHeight) s.lineHeight = '1.4';
-                }
-
-                // Icon Size
-                if (node.type === 'Icon' && p.size) s.fontSize = p.size + 'px';
-
-                // Image Scale
-                if (node.type === 'Image') {
-                    s.display = 'block'; // Ensure block display
-                    if (p.contentScale === 'crop') s.objectFit = 'cover';
-                    if (p.contentScale === 'fit') s.objectFit = 'contain';
-
-                    // Critical Fix: width 100% was causing issues in some flex containers
-                    if (p.fillWidth === 'true' || !p.width) {
-                        s.width = '100%';
-                    }
-                    if (!p.width && !p.height && !p.fillWidth) s.width = '100%';
-
-                    // Auto-fix Pollinations URLs (Encode spaces)
-                    if (node.props.url && node.props.url.includes('pollinations.ai') && node.props.url.includes(' ')) {
-                        el.src = node.props.url.replace(/ /g, '%20');
-                    } else {
-                        el.src = node.props.url || "";
-                    }
-
-                    // 404 Fallback
-                    el.onerror = function () {
-                        console.warn("Image load failed, swapping to placeholder:", el.src);
-                        // Use random picsum instead of grayscale to keep it alive
-                        el.src = `https://picsum.photos/400/300?random=${Math.floor(Math.random() * 1000)}`;
-                        el.alt = 'Image load failed';
-                    };
-                }
-
-                // Scroll
-                if (p.scroll === 'true') {
-                    s.overflow = 'auto';
-                }
-            }
-
-            // 3. Çocukları render et
-            if (node.children && Array.isArray(node.children)) {
-                node.children.forEach(child => {
-                    const childEl = renderPreview(child);
-                    if (childEl) el.appendChild(childEl);
-                });
-            }
-
-            return el;
-        }
-
-        function updatePreview(data) {
-            const container = document.getElementById('appPreview');
-            container.innerHTML = '';
-
-            if (data && data.layout) {
-                if (data.layout.props && data.layout.props.backgroundColor) {
-                    container.style.background = data.layout.props.backgroundColor;
-                } else {
-                    container.style.background = '#FFFFFF';
-                }
-
-                const rootEl = renderPreview(data.layout);
-                if (rootEl) container.appendChild(rootEl);
-            }
-        }
-
-        // --- ACTION HANDLERS ---
-        function handleAction(action) {
-            console.log("Action Triggered:", action);
-
-            if (action.type === 'toast' && action.message) {
-                showToast(action.message);
-            }
-            else if (action.type === 'alert' && action.message) {
-                // Wait for ripple :)
-                setTimeout(() => alert(action.message), 100);
-            }
-            else if (action.type === 'navigate' && action.destination) {
-                showToast(`Navigating to: ${action.destination}`);
-            }
-            else if (action.type === 'openUrl' && action.url) {
-                window.open(action.url, '_blank');
-            }
-        }
-
-        function showToast(msg) {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-
-            const toast = document.createElement('div');
-            toast.className = 'toast-msg';
-            toast.innerText = msg;
-
-            container.appendChild(toast);
-
-            // Auto cleanup
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        }
-
-        function createRipple(event, element) {
-            const ripple = document.createElement("div");
-            ripple.className = "ripple-effect";
-
-            // Position relative to element
-            const rect = element.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-
-            ripple.style.left = x + "px";
-            ripple.style.top = y + "px";
-
-            element.appendChild(ripple);
-
-            setTimeout(() => {
-                ripple.remove();
-            }, 600);
-        }
-
-
-
-        // --- INTERACTION HELPERS ---
-        function tagDataWithIds(node) {
-            if (!node) return;
-            if (!node._id) node._id = Math.random().toString(36).substr(2, 9);
-            if (node.children && Array.isArray(node.children)) {
-                node.children.forEach(child => tagDataWithIds(child));
-            }
-        }
-
-        // --- DRAG & DROP LOGIC ---
-        let draggedNodeId = null;
-
-        function handleDragStart(e, id) {
-            draggedNodeId = id;
-            e.dataTransfer.effectAllowed = 'move';
-            e.stopPropagation(); // Only drag specific node
-
-            // Visual feedback
-            setTimeout(() => {
-                const el = document.querySelector(`.tree-node[data-id="${id}"]`);
-                if (el) el.classList.add('dragging');
-            }, 0);
-        }
-
-        function handleDragOver(e, targetEl) {
-            e.preventDefault(); // Necessary for allow drop
-            e.stopPropagation();
-
-            if (!targetEl) return;
-            const header = targetEl.querySelector('.node-header');
-            if (!header) return;
-
-            // Calculate Position
-            const rect = header.getBoundingClientRect();
-            const y = e.clientY - rect.top;
-            const height = rect.height;
-
-            // Clean classes
-            header.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-inside');
-
-            // Thresholds (25% top, 50% middle, 25% bottom)
-            const relY = y / height;
-
-            // If it's a container (Row/Column/Box/Card), allow inside drop
-            const isContainer = targetEl.querySelector('.children-container') != null;
-
-            if (relY < 0.25) {
-                header.classList.add('drag-over-top');
-            } else if (relY > 0.75) {
-                header.classList.add('drag-over-bottom');
-            } else if (isContainer) {
-                header.classList.add('drag-over-inside');
-            } else {
-                // If not container but in middle, default to bottom
-                header.classList.add('drag-over-bottom');
-            }
-        }
-
-        function handleDragLeave(e, targetEl) {
-            e.stopPropagation();
-            if (!targetEl) return;
-            const header = targetEl.querySelector('.node-header');
-            if (header) header.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-inside');
-        }
-
-        function handleDrop(e, targetId) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const targetEl = document.querySelector(`.tree-node[data-id="${targetId}"]`);
-            if (targetEl) targetEl.classList.remove('dragging');
-
-            // Clean visuals
-            document.querySelectorAll('.node-header').forEach(el =>
-                el.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-inside', 'dragging')
-            );
-
-            if (draggedNodeId === targetId) return; // Dropped on self
-
-            // Determine Drop Mode based on mouse pos relative to target header
-            const header = targetEl.querySelector('.node-header');
-            const rect = header.getBoundingClientRect();
-            const y = e.clientY - rect.top;
-            const relY = y / rect.height;
-
-            let mode = 'inside';
-            if (relY < 0.25) mode = 'before';
-            else if (relY > 0.75) mode = 'after';
-            else {
-                // Check if actually container
-                // We can check node type from data?
-                // Or just assume if it has children prop? 
-                // Let's use the helper to find node in data
-                const tNode = findNodeById(currentData.layout, targetId);
-                const canHaveChildren = tNode && (tNode.children !== undefined); // Simple check
-                if (!canHaveChildren) mode = 'after';
-            }
-
-            // Perform Move
-            moveNode(draggedNodeId, targetId, mode);
-        }
-
-        function moveNode(sourceId, targetId, mode) {
-            // 1. Find Source and remove it
-            const sourceInfo = findParentAndIndex(currentData.layout, sourceId);
-            if (!sourceInfo) return;
-
-            const sourceNode = sourceInfo.parent.children[sourceInfo.index];
-
-            // Prevent dropping parent into child (Cycle detection)
-            if (containsNode(sourceNode, targetId)) {
-                alert("Cannot drop a parent into its own child!");
-                return;
-            }
-
-            // Remove from old location
-            sourceInfo.parent.children.splice(sourceInfo.index, 1);
-
-            // 2. Find Target (Refind because removal might have shifted indices if same parent)
-            let targetInfo = findParentAndIndex(currentData.layout, targetId);
-
-            // Special Root case or not found
-            if (!targetInfo && currentData.layout._id === targetId) {
-                // Dropped on Root?
-                // Root can usually only have children if it's a Column/Row.
-                // If mode is inside and root is container
-                if (mode === 'inside') {
-                    if (!currentData.layout.children) currentData.layout.children = [];
-                    currentData.layout.children.push(sourceNode);
-                } else {
-                    // Cannot insert before/after root. Revert?
-                    // Put back
-                    sourceInfo.parent.children.splice(sourceInfo.index, 0, sourceNode);
-                    return;
-                }
-            } else if (targetInfo) {
-                // Normal Case
-                if (mode === 'before') {
-                    targetInfo.parent.children.splice(targetInfo.index, 0, sourceNode);
-                } else if (mode === 'after') {
-                    targetInfo.parent.children.splice(targetInfo.index + 1, 0, sourceNode);
-                } else if (mode === 'inside') {
-                    const tNode = targetInfo.parent.children[targetInfo.index];
-                    if (!tNode.children) tNode.children = [];
-                    tNode.children.push(sourceNode);
-                }
-            } else {
-                // Error? Put back
-                sourceInfo.parent.children.splice(sourceInfo.index, 0, sourceNode);
-                return;
-            }
-
-            // Update UI
-            const jsonEditor = document.getElementById('jsonEditor');
-            if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
-            updateEditors(currentData);
-        }
-
-        function containsNode(parent, childId) {
-            if (parent._id === childId) return true;
-            if (parent.children) {
-                for (let c of parent.children) {
-                    if (containsNode(c, childId)) return true;
-                }
-            }
-            return false;
-        }
-
-        // --- ATTRIBUTES PANEL LOGIC ---
-        let selectedNodeId = null;
-
-        function selectNode(id) {
-            selectedNodeId = id;
-
-            // 1. Highlight in Tree
-            document.querySelectorAll('.node-header').forEach(el => el.classList.remove('selected'));
-            const treeNode = document.querySelector(`.tree-node[data-id="${id}"] > .node-header`);
-            if (treeNode) {
-                treeNode.classList.add('selected');
-                // Ensure visible
-                // Logic to expand parents is already in highlightTreeNode, reusing it partly?
-                // Actually highlightTreeNode does scrollIntoView. Let's rely on that if needed, 
-                // but here we just toggle class for instant feedback.
-            }
-
-            // 2. Highlight in Preview
-            document.querySelectorAll('.preview-selected').forEach(el => el.classList.remove('preview-selected'));
-            const previewEl = document.querySelector(`[data-id="${id}"]`);
-            if (previewEl) {
-                previewEl.classList.add('preview-selected');
-                // Optional: Scroll preview to element? Maybe too jumpy.
-            }
-
-            // 3. Render Attributes
-            const node = findNodeById(currentData.layout, id);
-            if (node) {
-                renderAttributesPanel(node);
-            }
-        }
-
-        function findNodeById(node, id) {
-            if (!node) return null;
-            if (node._id === id) return node;
-            if (node.children) {
-                for (let child of node.children) {
-                    const found = findNodeById(child, id);
-                    if (found) return found;
-                }
-            }
-            return null;
-        }
-
-        function findParentAndIndex(root, id) {
-            if (!root || !root.children) return null;
-            for (let i = 0; i < root.children.length; i++) {
-                if (root.children[i]._id === id) {
-                    return { parent: root, index: i };
-                }
-                const found = findParentAndIndex(root.children[i], id);
-                if (found) return found;
-            }
-            return null;
-        }
-
-        function renderAttributesPanel(node) {
-            const container = document.getElementById('attrContainer');
-            container.innerHTML = '';
-
-            // Track rendered props to avoid duplicates in 'Extra Props'
-            const renderedProps = new Set(['_id', 'type', 'children']); // Ignore internal fields
-
-            const createSection = (title) => {
-                const div = document.createElement('div');
-                div.className = 'attr-section';
-                div.innerHTML = `<div class="attr-title">${title}</div>`;
-                return div;
-            };
-
-            const createInput = (label, value, onChange, type = 'text', propKey = null) => {
-                if (propKey) renderedProps.add(propKey);
-
-                const row = document.createElement('div');
-                row.className = 'attr-row';
-                row.innerHTML = `<label class="attr-label">${label}</label>`;
-                const input = document.createElement('input');
-                input.className = 'attr-input';
-                input.value = value || '';
-                input.type = type;
-                if (type === 'color') {
-                    // Make it look decent
-                    input.style.height = '30px';
-                    input.style.padding = '0';
-                }
-
-                input.oninput = (e) => onChange(e.target.value);
-                row.appendChild(input);
-                return row;
-            };
-
-            const createSelect = (label, value, options, onChange, propKey = null) => {
-                if (propKey) renderedProps.add(propKey);
-                const row = document.createElement('div');
-                row.className = 'attr-row';
-                row.innerHTML = `<label class="attr-label">${label}</label>`;
-                const select = document.createElement('select');
-                select.className = 'attr-input'; // Reuse style
-
-                options.forEach(opt => {
-                    const option = document.createElement('option');
-                    option.value = opt;
-                    option.text = opt;
-                    if (value === opt) option.selected = true;
-                    select.appendChild(option);
-                });
-
-                select.onchange = (e) => onChange(e.target.value);
-                row.appendChild(select);
-                return row;
-            };
-
-            // AUTO SAVE HELPER
-            const updateProp = (key, val) => {
-                if (!node.props) node.props = {};
-                node.props[key] = val;
-
-                // Sync everything
-                const jsonEditor = document.getElementById('jsonEditor');
-                if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
-                updatePreview(currentData);
-                saveToLocalStorage(currentData);
-
-                // Keep tree structure updated (names might change)
-                // But avoid full re-render of tree to keep selection state simpler if possible.
-                // Actually full re-render is safest for now to show updates.
-                // We'll just re-highlight.
-                // document.getElementById('treeContainer').innerHTML = ''; 
-                // container.appendChild(renderNode(currentData.layout, currentData.layout));
-                // RE-RENDER TREE but keep logic detached to avoid recursion hell
-                // Quick hack: update the text in tree if it exists
-                if (key === 'text') {
-                    const treeHeaderSpan = document.querySelector(`.tree-node[data-id="${node._id}"] .tag`);
-                    // Actually text is usually not in tag, it depends.
-                }
-            };
-
-            // --- 1. LAYOUT CONSTRAINTS (Box Model) ---
-            const layoutSec = createSection('Layout & Constraints');
-
-            // Dimensions
-            const dimGrid = document.createElement('div');
-            dimGrid.className = 'attr-grid';
-
-            dimGrid.appendChild(createInput('Width', node.props.width, (v) => updateProp('width', v), 'text', 'width'));
-            dimGrid.appendChild(createInput('Height', node.props.height, (v) => updateProp('height', v), 'text', 'height'));
-            dimGrid.appendChild(createInput('Weight', node.props.weight, (v) => updateProp('weight', Number(v)), 'number', 'weight'));
-
-            // Fill Toggles
-            const checksDiv = document.createElement('div');
-            checksDiv.style.display = 'flex';
-            checksDiv.style.gap = '10px';
-            checksDiv.style.marginTop = '10px';
-
-            const createCheck = (lbl, prop) => {
-                renderedProps.add(prop);
-                const l = document.createElement('label');
-                l.style.fontSize = '11px'; l.style.color = '#ccc'; l.style.display = 'flex'; l.style.alignItems = 'center'; l.style.gap = '5px';
-                const c = document.createElement('input');
-                c.type = 'checkbox';
-                c.checked = node.props[prop] === 'true';
-                c.onchange = (e) => updateProp(prop, e.target.checked ? 'true' : 'false');
-                l.appendChild(c); l.appendChild(document.createTextNode(lbl));
-                return l;
-            }
-
-            checksDiv.appendChild(createCheck('Fill Width', 'fillWidth'));
-            checksDiv.appendChild(createCheck('Fill Max', 'fillMaxSize'));
-            checksDiv.appendChild(createCheck('Scroll', 'scroll'));
-
-            layoutSec.appendChild(dimGrid);
-            layoutSec.appendChild(checksDiv);
-
-            // PADDING VISUALIZER (Box Model)
-            renderedProps.add('padding'); // Mark padding as rendered
-            const boxModel = document.createElement('div');
-            boxModel.className = 'box-model';
-            boxModel.style.marginTop = '15px';
-
-            // Parse Padding
-            let pt = '', pb = '', pl = '', pr = '';
-            if (node.props.padding) {
-                const parts = String(node.props.padding).split(',').map(s => s.trim());
-                if (parts.length === 1) { pt = pb = pl = pr = parts[0]; }
-                else if (parts.length === 4) { pt = parts[0]; pr = parts[1]; pb = parts[2]; pl = parts[3]; }
-            }
-
-            const createBmInput = (cls, val, idx) => {
-                const inp = document.createElement('input');
-                inp.className = `bm-input ${cls}`;
-                inp.value = val;
-                inp.placeholder = '0';
-
-                // USE ONINPUT for Live Updates
-                inp.oninput = (e) => {
-                    // Reconstruct padding string
-                    let v = e.target.value;
-
-                    // Sanitize: Remove 'px' if typed
-                    v = v.replace(/px/g, '').trim();
-                    if (v === '') v = '0';
-
-                    let npt = pt || '0', npb = pb || '0', npl = pl || '0', npr = pr || '0';
-                    if (idx === 0) npt = v; if (idx === 1) npr = v; if (idx === 2) npb = v; if (idx === 3) npl = v;
-
-                    // Allow simple int if all same? Nah, explicit 4 vals is safer for editor
-                    const newVal = `${npt}, ${npr}, ${npb}, ${npl}`;
-                    updateProp('padding', newVal);
-
-                    // Update local vars for next edit without reload
-                    pt = npt; pr = npr; pb = npb; pl = npl;
-                };
-                return inp;
-            };
-
-            boxModel.appendChild(createBmInput('bm-top', pt, 0));
-            boxModel.appendChild(createBmInput('bm-right', pr, 1));
-            boxModel.appendChild(createBmInput('bm-bottom', pb, 2));
-            boxModel.appendChild(createBmInput('bm-left', pl, 3));
-
-            const centerLbl = document.createElement('div');
-            centerLbl.className = 'bm-center';
-            centerLbl.innerText = node.type;
-            boxModel.appendChild(centerLbl);
-
-            layoutSec.appendChild(document.createElement('div')).innerHTML = '<div class="attr-label" style="margin-top:10px">Padding (T, R, B, L)</div>';
-            layoutSec.appendChild(boxModel);
-
-            container.appendChild(layoutSec);
-
-
-            // --- 2. ALIGNMENT ---
-            if (node.type === 'Column' || node.type === 'Row') {
-                const alignSec = createSection('Alignment');
-
-                if (node.type === 'Column') {
-                    alignSec.appendChild(createSelect('Vertical Arrangement', node.props.verticalArrangement, ['top', 'center', 'bottom', 'spacebetween', 'spacearound'], (v) => updateProp('verticalArrangement', v), 'verticalArrangement'));
-                    alignSec.appendChild(createSelect('Horizontal Alignment', node.props.horizontalAlignment, ['start', 'center', 'end'], (v) => updateProp('horizontalAlignment', v), 'horizontalAlignment'));
-                } else {
-                    alignSec.appendChild(createSelect('Horizontal Arrangement', node.props.horizontalArrangement, ['start', 'center', 'end', 'spacebetween', 'spacearound'], (v) => updateProp('horizontalArrangement', v), 'horizontalArrangement'));
-                    alignSec.appendChild(createSelect('Vertical Alignment', node.props.verticalAlignment, ['top', 'center', 'bottom'], (v) => updateProp('verticalAlignment', v), 'verticalAlignment'));
-                }
-                container.appendChild(alignSec);
-            }
-
-            // --- 3. STYLE & CONTENT ---
-            const styleSec = createSection('Style & Content');
-
-            styleSec.appendChild(createInput('Background Color', node.props.backgroundColor, (v) => updateProp('backgroundColor', v), 'color', 'backgroundColor'));
-
-            if (node.type === 'Text' || node.type === 'Button') {
-                styleSec.appendChild(createInput('Text Content', node.props.text, (v) => updateProp('text', v), 'text', 'text'));
-                styleSec.appendChild(createInput('Text Color', node.props.color || node.props.textColor, (v) => updateProp(node.type === 'Button' ? 'textColor' : 'color', v), 'color', node.type === 'Button' ? 'textColor' : 'color'));
-
-                if (node.type === 'Text') {
-                    styleSec.appendChild(createSelect('Style', node.props.style, ['h1', 'h2', 'h3', 'body', 'caption'], (v) => updateProp('style', v), 'style'));
-                    styleSec.appendChild(createSelect('Font Weight', node.props.fontWeight, ['normal', 'medium', 'bold'], (v) => updateProp('fontWeight', v), 'fontWeight'));
-                    styleSec.appendChild(createSelect('Text Align', node.props.textAlign, ['left', 'center', 'right'], (v) => updateProp('textAlign', v), 'textAlign'));
-                }
-            }
-
-            if (node.type === 'Image') {
-                styleSec.appendChild(createInput('Image URL', node.props.url, (v) => updateProp('url', v), 'text', 'url'));
-                styleSec.appendChild(createSelect('Content Scale', node.props.contentScale, ['crop', 'fit', 'fill'], (v) => updateProp('contentScale', v), 'contentScale'));
-            }
-
-            if (node.type === 'Icon') {
-                styleSec.appendChild(createInput('Icon Name', node.props.name, (v) => updateProp('name', v), 'text', 'name'));
-                styleSec.appendChild(createInput('Size', node.props.size, (v) => updateProp('size', Number(v)), 'number', 'size'));
-                styleSec.appendChild(createInput('Color', node.props.color, (v) => updateProp('color', v), 'color', 'color'));
-            }
-
-            styleSec.appendChild(createInput('Corner Radius', node.props.corner, (v) => updateProp('corner', v), 'number', 'corner'));
-            styleSec.appendChild(createInput('Elevation / Shadow', node.props.elevation, (v) => updateProp('elevation', v), 'number', 'elevation'));
-
-            container.appendChild(styleSec);
-
-            // --- STRUCTURE ACTIONS ---
-            const structSec = createSection('Structure');
-            let hasStructActions = false;
-
-            // A. Insert Spacer After
-            const parentInfo = findParentAndIndex(currentData.layout, node._id);
-            if (parentInfo) {
-                const addSpacerBtnH = document.createElement('button');
-                addSpacerBtnH.className = 'action-btn';
-                addSpacerBtnH.style.width = '48%';
-                addSpacerBtnH.style.flex = '1';
-                addSpacerBtnH.innerHTML = '<span class="material-icons" style="font-size:14px">hdr_strong</span> H-Spacer';
-                addSpacerBtnH.title = 'Insert Horizontal Spacer (Width 16)';
-                addSpacerBtnH.onclick = () => {
-                    const spacer = {
-                        type: 'Spacer',
-                        _id: Math.random().toString(36).substr(2, 9),
-                        props: { width: 16 }
-                    };
-                    parentInfo.parent.children.splice(parentInfo.index + 1, 0, spacer);
-
-                    const jsonEditor = document.getElementById('jsonEditor');
-                    if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
-                    updateEditors(currentData);
-                    selectNode(spacer._id);
-                };
-
-                const addSpacerBtnV = document.createElement('button');
-                addSpacerBtnV.className = 'action-btn';
-                addSpacerBtnV.style.width = '48%';
-                addSpacerBtnV.style.flex = '1';
-                addSpacerBtnV.innerHTML = '<span class="material-icons" style="font-size:14px">height</span> V-Spacer';
-                addSpacerBtnV.title = 'Insert Vertical Spacer (Height 16)';
-                addSpacerBtnV.onclick = () => {
-                    const spacer = {
-                        type: 'Spacer',
-                        _id: Math.random().toString(36).substr(2, 9),
-                        props: { height: 16 }
-                    };
-                    parentInfo.parent.children.splice(parentInfo.index + 1, 0, spacer);
-
-                    const jsonEditor = document.getElementById('jsonEditor');
-                    if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
-                    updateEditors(currentData);
-                    selectNode(spacer._id);
-                };
-
-                const btnGroup = document.createElement('div');
-                btnGroup.style.display = 'flex';
-                btnGroup.style.gap = '8px';
-                btnGroup.style.marginBottom = '8px';
-                btnGroup.appendChild(addSpacerBtnH);
-                btnGroup.appendChild(addSpacerBtnV);
-
-                structSec.appendChild(btnGroup);
-                hasStructActions = true;
-            }
-
-            // B. Add Spacer Child (for Containers)
-            if (node.type === 'Column' || node.type === 'Row') {
-                const appendSpacerBtn = document.createElement('button');
-                appendSpacerBtn.className = 'action-btn';
-                appendSpacerBtn.style.width = '100%';
-                appendSpacerBtn.innerText = '+ Add Spacer Child';
-                appendSpacerBtn.onclick = () => {
-                    const spacer = {
-                        type: 'Spacer',
-                        _id: Math.random().toString(36).substr(2, 9),
-                        props: {}
-                    };
-                    if (node.type === 'Row') spacer.props = { width: 16 };
-                    else spacer.props = { height: 16 };
-
-                    if (!node.children) node.children = [];
-                    node.children.push(spacer);
-
-                    const jsonEditor = document.getElementById('jsonEditor');
-                    if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
-                    updateEditors(currentData);
-                    selectNode(spacer._id);
-                };
-                structSec.appendChild(appendSpacerBtn);
-                hasStructActions = true;
-            }
-
-            if (hasStructActions) {
-                container.appendChild(structSec);
-            }
-
-            // --- 4. RAW PROPS (Fallback) ---
-            const rawSec = createSection('Extra Props');
-
-            // Centering Checkboxes (simplified alignment controls)
-            const centerDiv = document.createElement('div');
-            centerDiv.style.display = 'flex';
-            centerDiv.style.gap = '10px';
-            centerDiv.style.marginBottom = '10px';
-
-            const createCenterCheck = (lbl, props) => {
-                props.forEach(p => renderedProps.add(p));
-                const l = document.createElement('label');
-                l.style.fontSize = '11px'; l.style.color = '#ccc'; l.style.display = 'flex'; l.style.alignItems = 'center'; l.style.gap = '5px';
-                const c = document.createElement('input');
-                c.type = 'checkbox';
-                c.checked = props.some(p => node.props[p] === 'center');
-                c.onchange = (e) => {
-                    if (e.target.checked) {
-                        props.forEach(p => updateProp(p, 'center'));
-                    } else {
-                        props.forEach(p => delete node.props[p]);
-                    }
-                    const jsonEditor = document.getElementById('jsonEditor');
-                    if (jsonEditor) jsonEditor.value = JSON.stringify(currentData, null, 2);
-                    updatePreview(currentData);
-                    saveToLocalStorage(currentData);
-                    renderAttributesPanel(node);
-                };
-                l.appendChild(c); l.appendChild(document.createTextNode(lbl));
-                return l;
-            };
-
-            centerDiv.appendChild(createCenterCheck('Center H', ['horizontalAlignment', 'horizontalArrangement']));
-            centerDiv.appendChild(createCenterCheck('Center V', ['verticalAlignment', 'verticalArrangement']));
-            rawSec.appendChild(centerDiv);
-
-            Object.keys(node.props).forEach(k => {
-                // If not already rendered, show it here
-                if (!renderedProps.has(k)) {
-                    const row = createInput(k, node.props[k], (v) => updateProp(k, v), 'text', k);
-
-                    // Add Delete Button to row
-                    const delBtn = document.createElement('span');
-                    delBtn.className = 'material-icons';
-                    delBtn.innerText = 'remove_circle_outline';
-                    delBtn.style.fontSize = '14px';
-                    delBtn.style.color = '#FF5252';
-                    delBtn.style.marginLeft = '5px';
-                    delBtn.style.cursor = 'pointer';
-                    delBtn.onclick = () => {
-                        if (confirm(`Delete property: ${k}?`)) {
-                            delete node.props[k];
-                            updateEditors(currentData);
-                            renderAttributesPanel(node);
-                        }
-                    };
-
-                    // Flex the input part to make space for delete
-                    row.style.display = 'flex';
-                    row.style.alignItems = 'center';
-                    // Re-arrange structure: Label is block, input is block. 
-                    // To add delete btn beside input, we need input wrapper?
-                    // Quick hack: Just append delBtn to row (which is block), but styling might break.
-                    // Better: createInput returns a block with Label + Input.
-                    // Let's wrap input+btn in a flex div.
-
-                    // REFACTOR: Actually createInput returns a .attr-row (block) with label and input.
-                    // We can just append the button there and CSS flex it or position absolute.
-                    // Let's modify the row to be relative and put button top right? 
-                    // Or cleaner: row is flex col usually?
-                    // .attr-row { margin-bottom: 8px; } -> block.
-                    // Let's just append delBtn. It will appear below input.
-                    // To make it side-by-side with label?
-                    const label = row.querySelector('label');
-                    label.style.display = 'flex';
-                    label.style.justifyContent = 'space-between';
-                    label.appendChild(delBtn);
-
-                    rawSec.appendChild(row);
-                }
-            });
-
-            // Available Props for Dropdown
-            const availableProps = [
-                'padding', 'margin', 'marginTop', 'marginBottom',
-                'width', 'height', 'weight', 'fillWidth', 'fillMaxSize',
-                'backgroundColor', 'color', 'textColor', 'corner', 'elevation',
-                'horizontalArrangement', 'verticalAlignment', 'horizontalAlignment', 'verticalArrangement',
-                'scroll', 'contentScale', 'style', 'fontWeight', 'textAlign', 'onClick', 'url', 'name', 'size'
-            ];
-
-            const addContainer = document.createElement('div');
-            addContainer.style.display = 'flex';
-            addContainer.style.gap = '5px';
-
-            const addSelect = document.createElement('select');
-            addSelect.className = 'attr-input';
-            addSelect.style.flex = '1';
-
-            const defOpt = document.createElement('option');
-            defOpt.text = "+ Add Property...";
-            defOpt.value = "";
-            addSelect.appendChild(defOpt);
-
-            availableProps.sort().forEach(p => {
-                if (!node.props || !node.props.hasOwnProperty(p)) {
-                    const opt = document.createElement('option');
-                    opt.value = p;
-                    opt.text = p;
-                    addSelect.appendChild(opt);
-                }
-            });
-
-            // Custom Option
-            const custOpt = document.createElement('option');
-            custOpt.value = "CUSTOM";
-            custOpt.text = "Custom...";
-            custOpt.style.fontStyle = 'italic';
-            addSelect.appendChild(custOpt);
-
-            addSelect.onchange = (e) => {
-                const val = e.target.value;
-                if (!val) return;
-
-                if (val === 'CUSTOM') {
-                    const key = prompt("Enter property name:");
-                    if (key) {
-                        const v = prompt("Enter property value:");
-                        updateProp(key, v);
-                        renderAttributesPanel(node);
-                    }
-                } else {
-                    // Add default value logic
-                    let def = "";
-                    if (val.includes('olor')) def = "#000000";
-                    if (val === 'fillWidth' || val === 'fillMaxSize') def = "true";
-                    if (val === 'weight') def = "1";
-
-                    updateProp(val, def);
-                    renderAttributesPanel(node);
-                }
-                // Reset
-                addSelect.value = "";
-            };
-
-            addContainer.appendChild(addSelect);
-            rawSec.appendChild(addContainer);
-
-            container.appendChild(rawSec);
-        }
-
-        // Modified renderNode to remove inline edits and handle selection
-        function renderNode(node, parentRef) {
-            if (!node) return document.createElement('div');
-            const div = document.createElement('div');
-            div.className = 'tree-node';
-            if (node._id) div.setAttribute('data-id', node._id);
-
-            const header = document.createElement('div');
-            header.className = 'node-header';
-
-            let nodeType = node.type || 'Unknown';
-            let colorClass = 'tag-col';
-            if (nodeType === 'Row') colorClass = 'tag-row';
-            if (nodeType === 'Image') colorClass = 'tag-img';
-            if (nodeType === 'Text') colorClass = 'tag-txt';
-
-            // Selection Handler
-            header.onclick = (e) => {
-                e.preventDefault();
-                selectNode(node._id);
-            };
-
-            // Toggle Children
-            const toggleIcon = document.createElement('span');
-            toggleIcon.className = 'material-icons';
-            toggleIcon.style.fontSize = '16px';
-            toggleIcon.style.color = '#888';
-            toggleIcon.style.marginRight = '5px';
-            toggleIcon.innerText = (node.children && node.children.length) ? 'expand_more' : 'fiber_manual_record';
-
-            toggleIcon.onclick = (e) => {
-                e.stopPropagation(); // Avoid selecting node when just toggling
-                const childrenDiv = div.querySelector('.children-container');
-                if (childrenDiv) {
-                    const isHidden = childrenDiv.style.display === 'none';
-                    childrenDiv.style.display = isHidden ? 'block' : 'none';
-                    toggleIcon.innerText = isHidden ? 'expand_more' : 'chevron_right';
-                }
-            }
-
-            header.appendChild(toggleIcon);
-            header.innerHTML += `<span class="tag ${colorClass}">${nodeType}</span>`;
-            if (node.props && node.props.text) {
-                header.innerHTML += `<span style="font-size:10px; color:#888; margin-left:5px; white-space:nowrap; overflow:hidden; max-width:100px; text-overflow:ellipsis;">"${node.props.text}"</span>`;
-            }
-
-            div.appendChild(header);
-
-            if (node.children && Array.isArray(node.children)) {
-                const childrenContainer = document.createElement('div');
-                childrenContainer.className = 'children-container';
-                node.children.forEach(child => { if (child) childrenContainer.appendChild(renderNode(child, node)); });
-                div.appendChild(childrenContainer);
-            }
-            return div;
-        }
-
-        function highlightTreeNode(id) {
-            // Reusing this for "Scroll to view" logic mostly
-            selectNode(id);
-
-            // Scroll logic
-            setTimeout(() => {
-                const treeNode = document.querySelector(`.tree-node[data-id="${id}"]`);
-                if (treeNode) {
-                    // Expand parents...
-                    let parent = treeNode.parentElement;
-                    while (parent && parent.className !== 'tree-view') {
-                        if (parent.classList.contains('children-container')) {
-                            parent.style.display = 'block';
-                        }
-                        parent = parent.parentElement;
-                    }
-                    treeNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }, 50);
-        }
-
-        // --- PUBLISH ACTIONS ---
-        function ensureData() {
-            if (!currentData) {
-                try {
-                    const val = document.getElementById('jsonEditor').value;
-                    if (val) currentData = JSON.parse(val);
-                } catch (e) { return false; }
-            }
-            if (!currentData) {
-                alert("Veri yok! Önce bir tasarım üretin.");
-                return false;
-            }
-            return true;
-        }
-
-        async function publishSingle() {
-            if (!currentData) return alert("Yayınlanacak veri yok!");
-            try {
-                // 1. Publish to Current Platform
-                const payload = {
-                    ...currentData,
-                    platform: pMode
-                };
-
-                await fetch('/update_layout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                alert(`Tasarım (${pMode.toUpperCase()}) başarıyla yayınlandı! 🚀`);
-
-                // 2. Cross-Platform Prompt (Mobile -> Web)
-                if (pMode === 'mobile') {
-                    if (confirm("Mobile yayınlandı! Web tarafına da yayınlansın mı?")) {
-                        const webPayload = {
-                            ...currentData,
-                            platform: 'web'
-                        };
-
-                        await fetch('/update_layout', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(webPayload)
-                        });
-                        alert("Tasarım (WEB) de başarıyla yayınlandı! 🌐");
-                    }
-                }
-
-            } catch (e) {
-                alert("Hata: " + e);
-            }
-        }
-
-        function saveToVariant(v) {
-            if (!ensureData()) return;
-            if (v === 'A') { variantA = currentData; alert("Varyant A Hazır"); }
-            if (v === 'B') { variantB = currentData; alert("Varyant B Hazır"); }
-        }
-
-        async function publishAB() {
-            if (!variantA || !variantB) return alert("Önce A ve B varyantlarını hazırla.");
-            await fetch('/publish_ab', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ layout_a: variantA, layout_b: variantB })
-            });
-            alert("🚀 A/B Testi Başladı!");
-        }
-        // --- PERSISTENCE ---
-        const LS_KEY = 'sdui_layout_data';
-
-        function saveToLocalStorage(data) {
-            try {
-                if (data) {
-                    localStorage.setItem(LS_KEY, JSON.stringify(data));
-                }
-            } catch (e) {
-                console.warn("Local Storage Save Error:", e);
-            }
-        }
-
-        function loadFromLocalStorage() {
-            try {
-                const saved = localStorage.getItem(LS_KEY);
-                if (saved) {
-                    const data = JSON.parse(saved);
-                    // Validasyon basitçe yapılabilir
-                    if (data && data.layout) {
-                        currentData = data;
-                        updateEditors(data);
-                        // Toast ile bilgi ver
-                        setTimeout(() => showToast("Yedeklenen tasarım yüklendi 📂"), 500);
-                    }
-                }
-            } catch (e) {
-                console.warn("Local Storage Load Error:", e);
-            }
-        }
-
-        // --- INIT ---
-        // --- INIT ---
-        // --- PREVIEW RENDERER HELPERS ---
-        function toPx(val) {
-            if (!val) return '0px';
-            const s = String(val).trim();
-            if (s.endsWith('px')) return s;
-            return s + 'px';
-        }
-
-        window.onload = () => {
-            // Restore Platform
-            const savedPlatform = localStorage.getItem('sdui_platform_mode');
-            if (savedPlatform && (savedPlatform === 'mobile' || savedPlatform === 'web')) {
-                // Directly set mode to avoid confirmation dialog on load
-                pMode = savedPlatform;
-
-                // UI Update for Platform Switch
-                document.querySelectorAll('[id^="plat-"]').forEach(b => b.classList.remove('active'));
-                document.getElementById(`plat-${savedPlatform}`).classList.add('active');
-
-                const btnIos = document.getElementById('btn-ios');
-                const btnAndroid = document.getElementById('btn-android');
-                const btnWeb = document.getElementById('btn-web');
-                const variantBtns = document.querySelectorAll('.btn-ab');
-
-                if (savedPlatform === 'web') {
-                    btnIos.style.display = 'none';
-                    btnAndroid.style.display = 'none';
-                    setDevice('web');
-                    variantBtns.forEach(b => b.style.display = 'none');
-                } else {
-                    btnIos.style.display = 'inline-block';
-                    btnAndroid.style.display = 'inline-block';
-                    variantBtns.forEach(b => b.style.display = 'block');
-                    // Default to iOS if just switched
-                    if (document.querySelector('.mobile-frame').classList.contains('web')) {
-                        setDevice('ios');
-                    }
-                }
-            }
-
-            loadFromLocalStorage();
-
-            // --- THEME LOGIC ---
-            const themeToggle = document.getElementById('themeToggle');
-            const themeIcon = document.getElementById('themeIcon');
-
-            function setTheme(isLight) {
-                if (isLight) {
-                    document.documentElement.setAttribute('data-theme', 'light');
-                    themeIcon.innerText = 'dark_mode';
-                    localStorage.setItem('sdui_theme', 'light');
-                } else {
-                    document.documentElement.removeAttribute('data-theme');
-                    themeIcon.innerText = 'light_mode';
-                    localStorage.setItem('sdui_theme', 'dark');
-                }
-            }
-
-            // Init Theme
-            const savedTheme = localStorage.getItem('sdui_theme');
-            if (savedTheme === 'light') {
-                setTheme(true);
-            }
-
-            themeToggle.onclick = () => {
-                const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-                setTheme(!isLight);
-            };
-        };
-        // --- FILE MANAGEMENT ---
-        let currentFilePath = null;
-
-        async function fetchFsTree() {
-            try {
-                const res = await fetch('/api/fs/tree');
-                const data = await res.json();
-                if (data.status === 'success') {
-                    renderFsTree(data.tree, document.getElementById('filesContainer'));
-                }
-            } catch (e) {
-                console.error("Failed to fetch tree:", e);
-            }
-        }
-
-        let draggedFsPath = null;
-
-        function renderFsTree(tree, container, isRoot = true) {
-            if (isRoot) {
-                container.innerHTML = `
-                    <div style="padding: 10px; border-bottom: 1px solid var(--border); display: flex; gap: 5px;">
-                        <button onclick="createNewFolder('')" class="action-btn" style="flex:1;"><span class="material-icons" style="font-size:14px;">create_new_folder</span> Folder</button>
-                        <button onclick="createNewFile('')" class="action-btn" style="flex:1;"><span class="material-icons" style="font-size:14px;">note_add</span> File</button>
-                    </div>
-                    <div id="fsTreeList" style="padding: 10px; overflow-y: auto; flex: 1;"></div>
-                `;
-                container = document.getElementById('fsTreeList');
-                
-                // Allow dropping in root
-                container.ondragover = (e) => { e.preventDefault(); container.style.background = 'rgba(187,134,252,0.1)'; };
-                container.ondragleave = (e) => { container.style.background = 'transparent'; };
-                container.ondrop = async (e) => {
-                    e.preventDefault();
-                    container.style.background = 'transparent';
-                    if (draggedFsPath) await handleFsMove(draggedFsPath, "");
-                };
-            }
-
-            if (!tree || tree.length === 0) {
-                if (isRoot) container.innerHTML = `<div class="empty-state" style="opacity: 0.5; height: 100%; border: none;"><p>${i18n[currentLang].workspace_empty}</p></div>`;
-                return;
-            }
-
-            tree.forEach(node => {
-                const el = document.createElement('div');
-                el.className = 'tree-node';
-                el.style.marginLeft = isRoot ? '0' : '15px';
-                el.style.borderLeft = isRoot ? 'none' : '1px solid var(--border)';
-                el.style.paddingLeft = isRoot ? '0' : '10px';
-                
-                const header = document.createElement('div');
-                header.className = 'node-header';
-                header.draggable = true;
-                
-                header.ondragstart = (e) => {
-                    draggedFsPath = node.path;
-                    e.stopPropagation();
-                };
-                
-                if (node.is_dir) {
-                    header.ondragover = (e) => { e.preventDefault(); header.classList.add('drag-over-inside'); e.stopPropagation(); };
-                    header.ondragleave = (e) => { header.classList.remove('drag-over-inside'); e.stopPropagation(); };
-                    header.ondrop = async (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        header.classList.remove('drag-over-inside');
-                        if (draggedFsPath && draggedFsPath !== node.path) {
-                            await handleFsMove(draggedFsPath, node.path);
-                        }
-                    };
-
-                    header.innerHTML = `
-                        <span class="material-icons" style="color: #FFC107; font-size: 18px;">folder</span>
-                        <span style="color: var(--text); font-size: 13px;">${node.name}</span>
-                        <div style="margin-left: auto; display: flex; gap: 5px; opacity: 0; transition: 0.2s;" class="fs-actions">
-                            <span class="material-icons" title="New File" style="font-size: 16px; cursor: pointer; color: var(--success);" onclick="createNewFile('${node.path}', event)">note_add</span>
-                            <span class="material-icons" title="New Folder" style="font-size: 16px; cursor: pointer; color: #FFC107;" onclick="createNewFolder('${node.path}', event)">create_new_folder</span>
-                            <span class="material-icons" title="Delete" style="font-size: 16px; cursor: pointer; color: var(--accent);" onclick="deleteFsItem('${node.path}', event)">delete</span>
-                        </div>
-                    `;
-                    header.onclick = (e) => {
-                        const childrenDiv = el.querySelector('.fs-children');
-                        if (childrenDiv) childrenDiv.style.display = childrenDiv.style.display === 'none' ? 'block' : 'none';
-                    };
-                } else {
-                    const isSelected = currentFilePath === node.path;
-                    if (isSelected) header.style.background = 'rgba(187, 134, 252, 0.2)';
-                    
-                    header.innerHTML = `
-                        <span class="material-icons" style="color: #4CAF50; font-size: 18px;">description</span>
-                        <span style="color: ${isSelected ? 'var(--accent)' : 'var(--text)'}; font-size: 13px;">${node.name}</span>
-                        <div style="margin-left: auto; display: flex; gap: 5px; opacity: 0; transition: 0.2s;" class="fs-actions">
-                            <span class="material-icons" title="Delete" style="font-size: 16px; cursor: pointer; color: var(--accent);" onclick="deleteFsItem('${node.path}', event)">delete</span>
-                        </div>
-                    `;
-                    header.onclick = () => openFsFile(node.path);
-                }
-                
-                header.onmouseenter = () => header.querySelector('.fs-actions').style.opacity = '1';
-                header.onmouseleave = () => header.querySelector('.fs-actions').style.opacity = '0';
-                
-                el.appendChild(header);
-                
-                if (node.is_dir && node.children) {
-                    const childrenDiv = document.createElement('div');
-                    childrenDiv.className = 'fs-children';
-                    renderFsTree(node.children, childrenDiv, false);
-                    el.appendChild(childrenDiv);
-                }
-                
-                container.appendChild(el);
-            });
-        }
-
-        async function handleFsMove(sourcePath, targetPath) {
-            try {
-                const res = await fetch(`/api/fs/move?source_path=${encodeURIComponent(sourcePath)}&target_path=${encodeURIComponent(targetPath)}`, { method: 'PUT' });
-                if (res.ok) {
-                    if (currentFilePath === sourcePath) {
-                        const filename = sourcePath.split('/').pop();
-                        currentFilePath = targetPath ? `${targetPath}/${filename}` : filename;
-                    } else if (currentFilePath && currentFilePath.startsWith(sourcePath + '/')) {
-                        const relPath = currentFilePath.substring(sourcePath.length);
-                        const basename = sourcePath.split('/').pop();
-                        const newBase = targetPath ? `${targetPath}/${basename}` : basename;
-                        currentFilePath = newBase + relPath;
-                    }
-                    fetchFsTree();
-                } else {
-                    const data = await res.json();
-                    alert(i18n[currentLang].move_failed + data.detail);
-                }
-            } catch (e) {
-                console.error("Move error:", e);
-            }
-        }
-
-        async function createNewFolder(parentPath, e) {
-            if (e) e.stopPropagation();
-            const name = prompt(i18n[currentLang].folder_prompt);
-            if (!name) return;
-            const path = parentPath ? `${parentPath}/${name}` : name;
-            await fetch(`/api/fs/folder?path=${encodeURIComponent(path)}`, { method: 'POST' });
-            fetchFsTree();
-        }
-
-        async function createNewFile(parentPath, e) {
-            if (e) e.stopPropagation();
-            const name = prompt(i18n[currentLang].file_prompt);
-            if (!name) return;
-            const path = parentPath ? `${parentPath}/${name}.json` : `${name}.json`;
-            await fetch(`/api/fs/file?path=${encodeURIComponent(path)}`, { method: 'POST' });
-            fetchFsTree();
-            openFsFile(path);
-        }
-
-        async function openFsFile(path) {
-            try {
-                const res = await fetch(`/api/fs/file?path=${encodeURIComponent(path)}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    currentFilePath = path;
-                    currentData = data;
-                    updateEditors(data);
-                    fetchFsTree(); // Re-render to highlight active
-                    showToast(`Opened ${path}`);
-                    switchTab('tree'); // Switch to tree to see design
-                }
-            } catch (e) {
-                console.error("Failed to open file", e);
-            }
-        }
-
-        async function autoSaveFsFile() {
-            if (!currentFilePath || !currentData) return;
-            try {
-                await fetch(`/api/fs/file?path=${encodeURIComponent(currentFilePath)}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(currentData)
-                });
-            } catch (e) {
-                console.error("Auto-save failed", e);
-            }
-        }
-
-        async function deleteFsItem(path, e) {
-            if (e) e.stopPropagation();
-            if (!confirm(i18n[currentLang].delete_confirm + path + "?")) return;
-            await fetch(`/api/fs/item?path=${encodeURIComponent(path)}`, { method: 'DELETE' });
-            if (currentFilePath === path) {
-                currentFilePath = null;
-                currentData = null;
-                updateEditors(null);
-            }
-            fetchFsTree();
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            fetchFsTree();
-        });
-
-    </script>
+      })
+      .catch(() => {});
+
+    loadFiles();
+  }, []);
+
+  function loadFiles() {
+    fetch('/api/fs/tree')
+      .then(r => r.ok ? r.json() : null)
+      .then(tree => { if (tree) setFiles(flattenFsTree(tree)); })
+      .catch(() => {});
+  }
+
+  // ── Theme cycling ───────────────────────────────────────────────────────
+  const cycleTheme = () => {
+    const order = ['light', 'dark', 'vf-light', 'vf-dark'];
+    setTheme(t => order[(order.indexOf(t) + 1) % order.length]);
+  };
+
+  // ── Image input ─────────────────────────────────────────────────────────
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = ev => setImagePreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleImageRemove = () => { setImageFile(null); setImagePreview(null); };
+
+  // ── Generate ────────────────────────────────────────────────────────────
+  const handleGenerate = async () => {
+    if (!promptText && !imageFile) return;
+    setAppState('streaming');
+    setSelectedId(null);
+
+    const fd = new FormData();
+    if (promptText) fd.append('prompt', promptText);
+    fd.append('platform', platform);
+    if (imageFile) fd.append('image', imageFile);
+    if (smartCrop) fd.append('smart_crop', 'true');
+    if (currentJson) fd.append('current_json', JSON.stringify(currentJson));
+    fd.append('language', lang);
+
+    try {
+      const res = await fetch('/generate', { method: 'POST', body: fd });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (!data?.layout) throw new Error('Invalid response');
+
+      _uid = 0; tagIds(data.layout);
+      setCurrentJson(data);
+      setVersion(v => v + 1);
+      setAppState('editing');
+      setSavedAt(Date.now());
+
+      // Auto-save to open file
+      if (currentFilePath) {
+        fetch(`/api/fs/file?path=${encodeURIComponent(currentFilePath)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        }).catch(() => {});
+      }
+    } catch (err) {
+      setAppState(currentJson ? 'editing' : 'empty');
+      alert((lang === 'tr' ? 'Hata: ' : 'Error: ') + err.message);
+    }
+  };
+
+  // ── Publish ─────────────────────────────────────────────────────────────
+  const handlePublish = async () => {
+    if (!currentJson) return;
+    try {
+      await fetch('/update_layout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ layout: currentJson, platform }),
+      });
+      setSavedAt(Date.now());
+    } catch (err) {
+      alert('Publish failed: ' + err.message);
+    }
+  };
+
+  const handleSaveAsA = () => { if (currentJson) { setAbVariantA(currentJson); alert(lang === 'tr' ? 'Varyant A kaydedildi' : 'Variant A saved'); } };
+  const handleSaveAsB = () => { if (currentJson) { setAbVariantB(currentJson); alert(lang === 'tr' ? 'Varyant B kaydedildi' : 'Variant B saved'); } };
+
+  const handleStartAB = async () => {
+    if (!abVariantA || !abVariantB) {
+      alert(lang === 'tr' ? 'Önce A ve B varyantlarını kaydedin' : 'Save variants A and B first');
+      return;
+    }
+    try {
+      await fetch('/publish_ab', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ variant_a: abVariantA, variant_b: abVariantB }),
+      });
+      setAbActive(true);
+    } catch (err) {
+      alert('A/B start failed: ' + err.message);
+    }
+  };
+
+  // ── File system ─────────────────────────────────────────────────────────
+  const handleSelectFile = async (path) => {
+    try {
+      const res = await fetch(`/api/fs/file?path=${encodeURIComponent(path)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data?.layout) {
+        _uid = 0; tagIds(data.layout);
+        setCurrentJson(data);
+        setCurrentFilePath(path);
+        setAppState('editing');
+        setSelectedId(null);
+      }
+    } catch (err) { console.error('File open failed', err); }
+  };
+
+  const handleNewFolder = async () => {
+    const name = window.prompt(lang === 'tr' ? 'Klasör adı:' : 'Folder name:');
+    if (!name) return;
+    await fetch(`/api/fs/folder?path=${encodeURIComponent(name)}`, { method: 'POST' });
+    loadFiles();
+  };
+
+  const handleNewFile = async () => {
+    const name = window.prompt(lang === 'tr' ? 'Dosya adı (uzantısız):' : 'File name (no extension):');
+    if (!name) return;
+    const path = name.endsWith('.json') ? name : name + '.json';
+    await fetch(`/api/fs/file?path=${encodeURIComponent(path)}`, { method: 'POST' });
+    loadFiles();
+    handleSelectFile(path);
+  };
+
+  // ── Derived ─────────────────────────────────────────────────────────────
+  const tree = currentJson?.layout ? [buildTreeNode(currentJson.layout)] : null;
+  const selectedPath = (selectedId && currentJson?.layout)
+    ? (findPath(currentJson.layout, selectedId) || [])
+    : [];
+  const selectedNode = selectedId ? findById(currentJson?.layout, selectedId) : null;
+
+  const breadcrumb = currentFilePath ? {
+    folder: currentFilePath.includes('/') ? currentFilePath.split('/').slice(0, -1).join('/') : (lang === 'tr' ? 'Projeler' : 'Projects'),
+    file: currentFilePath.split('/').pop(),
+  } : null;
+
+  const generateState = appState === 'streaming' ? 'streaming' : currentJson ? 'filled' : 'idle';
+
+  const attrSelection = selectedNode ? {
+    type: selectedNode.type,
+    name: selectedNode.props?.text?.slice(0, 22) || selectedNode.type,
+    path: selectedPath.join(' › '),
+    props: {
+      height: selectedNode.props?.height,
+      padX: selectedNode.props?.horizontalPadding ?? selectedNode.props?.paddingLeft ?? selectedNode.props?.padding,
+      padY: selectedNode.props?.verticalPadding ?? selectedNode.props?.paddingTop ?? selectedNode.props?.padding,
+      radius: selectedNode.props?.cornerRadius,
+      bg: selectedNode.props?.backgroundColor,
+      color: selectedNode.props?.color,
+      fontSize: selectedNode.props?.fontSize,
+      fontWeight: selectedNode.props?.fontWeight,
+    },
+  } : null;
+
+  // ── Render ──────────────────────────────────────────────────────────────
+  return (
+    <>
+      <div className="studio" data-theme={theme}>
+        <window.SDUI.TopBar
+          lang={lang}
+          theme={theme}
+          onToggleTheme={cycleTheme}
+          onToggleLang={setLang}
+          breadcrumb={breadcrumb}
+          savedAt={formatRelTime(savedAt, lang)}
+          showAB={abActive}
+        />
+
+        <div className="workspace">
+          {/* Left rail — Files / Generate / Publish */}
+          <window.LeftRail
+            lang={lang}
+            tab={leftTab}
+            onTab={setLeftTab}
+            promptText={promptText}
+            onPromptChange={setPromptText}
+            imagePreview={imagePreview}
+            onImageChange={handleImageChange}
+            onImageRemove={handleImageRemove}
+            smartCrop={smartCrop}
+            onSmartCropChange={setSmartCrop}
+            generateState={generateState}
+            onGenerate={handleGenerate}
+            files={files}
+            selectedFilePath={currentFilePath}
+            onSelectFile={handleSelectFile}
+            onNewFolder={handleNewFolder}
+            onNewFile={handleNewFile}
+            abActive={abActive}
+            currentVersion={`v${version}`}
+            onPublish={handlePublish}
+            onSaveAsA={handleSaveAsA}
+            onSaveAsB={handleSaveAsB}
+            onStartAB={handleStartAB}
+          />
+
+          {/* Component tree / JSON pane */}
+          {treeView === 'json' ? (
+            <JsonPane lang={lang} json={currentJson} onView={setTreeView}/>
+          ) : (
+            <window.SDUI.TreePane
+              lang={lang}
+              view={treeView}
+              onView={setTreeView}
+              tree={tree}
+              selectedPath={selectedPath}
+              onSelectNode={path => setSelectedId(path[path.length - 1])}
+              breadcrumb={selectedPath.length ? selectedPath.map(String) : null}
+            />
+          )}
+
+          {/* Canvas — preview */}
+          <window.SDUI.CanvasPane
+            lang={lang}
+            device={device}
+            onDevice={setDevice}
+            hideShell={appState === 'empty'}
+          >
+            {appState === 'empty' && (
+              <div style={{ width: '100%', height: '100%', overflowY: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 24 }}>
+                <EmptyHero lang={lang} onStart={() => { setLeftTab('generate'); }}/>
+              </div>
+            )}
+            {appState === 'streaming' && (
+              <window.SDUIMocks.MockStreamingScreen lang={lang}/>
+            )}
+            {appState === 'editing' && (
+              <SDUIRenderer
+                layout={currentJson?.layout}
+                selectedId={selectedId}
+                onSelectId={setSelectedId}
+              />
+            )}
+          </window.SDUI.CanvasPane>
+
+          {/* Attributes panel */}
+          <window.SDUI.AttributesPane lang={lang} selection={attrSelection}/>
+        </div>
+      </div>
+
+      {/* Tweaks floating panel (gear icon activates it) */}
+      <window.TweaksPanel title="Tweaks">
+        <window.TweakSection label={lang === 'tr' ? 'Görünüm' : 'Appearance'}>
+          <window.TweakRadio
+            label={lang === 'tr' ? 'Tema' : 'Theme'}
+            value={theme}
+            onChange={setTheme}
+            options={[
+              { value: 'light',    label: lang === 'tr' ? 'Açık' : 'Light' },
+              { value: 'dark',     label: lang === 'tr' ? 'Koyu' : 'Dark' },
+              { value: 'vf-light', label: 'Red · Light' },
+              { value: 'vf-dark',  label: 'Red · Dark' },
+            ]}
+          />
+          <window.TweakRadio
+            label={lang === 'tr' ? 'Dil' : 'Language'}
+            value={lang}
+            onChange={setLang}
+            options={[
+              { value: 'tr', label: 'Türkçe' },
+              { value: 'en', label: 'English' },
+            ]}
+          />
+        </window.TweakSection>
+      </window.TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
 </body>
-
 </html>
