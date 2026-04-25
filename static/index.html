@@ -1027,6 +1027,13 @@
         </div>
         <div style="height: 20px;"></div>
 
+        <!-- Files Manager -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <h2><span class="material-icons">folder</span> Dosyalar</h2>
+            <div id="filesContainer" class="tree-view" style="display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 8px; padding: 0; min-height: 200px; max-height: 300px; background: var(--input-bg);"></div>
+        </div>
+        <hr style="width: 100%; border-color: #333; margin: 15px 0;">
+
         <!-- Platform Selector -->
         <div style="margin-bottom: 20px;">
             <div class="device-toggle" style="margin-bottom: 5px;">
@@ -1062,17 +1069,13 @@
 
         <div>
             <h2><span class="material-icons">edit</span> Prompt</h2>
-            <textarea id="promptInput"
-                placeholder="Örn: Bu görseldeki renkleri kullanarak modern bir profil sayfası yap..."></textarea>
+            <textarea id="promptInput" disabled
+                placeholder="Lütfen önce Files sekmesinden bir dosya açın veya oluşturun..."></textarea>
         </div>
 
-        <button class="generate-btn" onclick="generate('create')" style="margin-top: 10px;">
-            <span class="material-icons">auto_awesome</span> TASARIMI ÜRET
-        </button>
-
-        <button id="btnRefine" class="generate-btn secondary" onclick="generate('refine')"
-            style="margin-top: 10px; display: none;" disabled>
-            <span class="material-icons">edit_note</span> MEVCUT TASARIMI REVİZE ET
+        <button id="btnGenerate" class="generate-btn secondary" onclick="generate()"
+            style="margin-top: 10px;" disabled>
+            <span class="material-icons">auto_awesome</span> TASARIMI GÜNCELLE
         </button>
 
         <hr style="width: 100%; border-color: #333;">
@@ -1227,33 +1230,6 @@
             exitBtn.style.display = editor.classList.contains('fullscreen') ? 'block' : 'none';
         }
 
-        // Prompt/Refine State Logic
-        const promptInput = document.getElementById('promptInput');
-        promptInput.addEventListener('input', updateRefineButtonState);
-
-        function updateRefineButtonState() {
-            const btn = document.getElementById('btnRefine');
-            const hasData = currentData != null;
-            const hasText = promptInput.value.trim().length > 0;
-
-            if (btn) {
-                if (hasData && hasText) {
-                    btn.classList.add('active');
-                    btn.disabled = false;
-                    btn.style.display = 'flex';
-                } else if (hasData) {
-                    // Has data but no text -> Show but disabled
-                    btn.classList.remove('active');
-                    btn.disabled = true;
-                    btn.style.display = 'flex';
-                } else {
-                    // No data -> Hide
-                    btn.style.display = 'none';
-                    btn.classList.remove('active');
-                }
-            }
-        }
-
         document.addEventListener('keydown', e => { if (e.key === "Escape") toggleFullscreen(); });
 
         function setDevice(type) {
@@ -1287,7 +1263,6 @@
 
             document.getElementById('treeContainer').style.display = tab === 'tree' ? 'block' : 'none';
             document.getElementById('jsonEditor').style.display = tab === 'json' ? 'block' : 'none';
-            document.getElementById('fsBtn').style.display = tab === 'json' ? 'flex' : 'none';
 
             if (tab === 'tree') syncJsonToTree();
         }
@@ -1355,7 +1330,9 @@
         }
 
         // --- GENERATE ---
-        async function generate(mode = 'create') {
+        async function generate() {
+            if (!currentFilePath) return alert("Lütfen önce bir dosya açın veya oluşturun.");
+
             const prompt = document.getElementById('promptInput').value;
             const fileInput = document.getElementById('imgInput');
             const smartCrop = document.getElementById('smartCropToggle').checked;
@@ -1367,16 +1344,8 @@
             const loadingDesc = document.getElementById('loadingDesc');
             document.getElementById('loading').style.display = 'flex';
 
-            if (mode === 'refine') {
-                loadingTitle.innerText = "Tasarım Revize Ediliyor ✏️";
-                loadingDesc.innerText = "Yapay zeka mevcut tasarım üzerinde değişiklik yapıyor...";
-            } else if (smartCrop && fileInput.files[0]) {
-                loadingTitle.innerText = "Görsel İşleniyor & Kesiliyor ✂️";
-                loadingDesc.innerText = "Yapay zeka nesneleri algılıyor, koordinatları hesaplıyor ve parçalıyor...\nBu işlem biraz sürebilir.";
-            } else {
-                loadingTitle.innerText = "Tasarım Üretiliyor 🎨";
-                loadingDesc.innerText = "Yapay zeka renk paletini ve düzeni oluşturuyor...";
-            }
+            loadingTitle.innerText = "Tasarım Güncelleniyor ✏️";
+            loadingDesc.innerText = "Yapay zeka mevcut tasarım üzerinde değişiklik yapıyor...";
 
             const formData = new FormData();
             formData.append('prompt', prompt);
@@ -1385,7 +1354,7 @@
             if (fileInput.files[0]) formData.append('image', fileInput.files[0]);
 
             // REFINE LOGIC
-            if (mode === 'refine' && currentData) {
+            if (currentData) {
                 formData.append('current_json', JSON.stringify(currentData));
             }
 
@@ -1460,7 +1429,6 @@
                 alert("Hata: " + e);
             } finally {
                 document.getElementById('loading').style.display = 'none';
-                updateRefineButtonState();
             }
         }
 
@@ -1468,11 +1436,24 @@
         function updateEditors(data) {
             if (data && data.layout) tagDataWithIds(data.layout); // ID ekle
 
-            // Sync UI State
-            updateRefineButtonState();
+            // Enable or disable prompt based on open file
+            const promptInput = document.getElementById('promptInput');
+            const btnGenerate = document.getElementById('btnGenerate');
+            if (currentFilePath) {
+                promptInput.disabled = false;
+                promptInput.placeholder = "Örn: Bu görseldeki renkleri kullanarak modern bir profil sayfası yap...";
+                btnGenerate.disabled = false;
+                btnGenerate.classList.add('active');
+            } else {
+                promptInput.disabled = true;
+                promptInput.placeholder = "Lütfen önce Files sekmesinden bir dosya açın veya oluşturun...";
+                btnGenerate.disabled = true;
+                btnGenerate.classList.remove('active');
+            }
 
             // Auto Save
             saveToLocalStorage(data);
+            autoSaveFsFile();
 
             // HATA YÖNETİMİ: Veriyi ekrana bas
             document.getElementById('jsonEditor').value = JSON.stringify(data, null, 2);
@@ -3202,6 +3183,208 @@
                 setTheme(!isLight);
             };
         };
+        // --- FILE MANAGEMENT ---
+        let currentFilePath = null;
+
+        async function fetchFsTree() {
+            try {
+                const res = await fetch('/api/fs/tree');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    renderFsTree(data.tree, document.getElementById('filesContainer'));
+                }
+            } catch (e) {
+                console.error("Failed to fetch tree:", e);
+            }
+        }
+
+        let draggedFsPath = null;
+
+        function renderFsTree(tree, container, isRoot = true) {
+            if (isRoot) {
+                container.innerHTML = `
+                    <div style="padding: 10px; border-bottom: 1px solid var(--border); display: flex; gap: 5px;">
+                        <button onclick="createNewFolder('')" class="action-btn" style="flex:1;"><span class="material-icons" style="font-size:14px;">create_new_folder</span> Folder</button>
+                        <button onclick="createNewFile('')" class="action-btn" style="flex:1;"><span class="material-icons" style="font-size:14px;">note_add</span> File</button>
+                    </div>
+                    <div id="fsTreeList" style="padding: 10px; overflow-y: auto; flex: 1;"></div>
+                `;
+                container = document.getElementById('fsTreeList');
+                
+                // Allow dropping in root
+                container.ondragover = (e) => { e.preventDefault(); container.style.background = 'rgba(187,134,252,0.1)'; };
+                container.ondragleave = (e) => { container.style.background = 'transparent'; };
+                container.ondrop = async (e) => {
+                    e.preventDefault();
+                    container.style.background = 'transparent';
+                    if (draggedFsPath) await handleFsMove(draggedFsPath, "");
+                };
+            }
+
+            if (!tree || tree.length === 0) {
+                if (isRoot) container.innerHTML = `<div class="empty-state" style="opacity: 0.5; height: 100%; border: none;"><p>Workspace is empty</p></div>`;
+                return;
+            }
+
+            tree.forEach(node => {
+                const el = document.createElement('div');
+                el.className = 'tree-node';
+                el.style.marginLeft = isRoot ? '0' : '15px';
+                el.style.borderLeft = isRoot ? 'none' : '1px solid var(--border)';
+                el.style.paddingLeft = isRoot ? '0' : '10px';
+                
+                const header = document.createElement('div');
+                header.className = 'node-header';
+                header.draggable = true;
+                
+                header.ondragstart = (e) => {
+                    draggedFsPath = node.path;
+                    e.stopPropagation();
+                };
+                
+                if (node.is_dir) {
+                    header.ondragover = (e) => { e.preventDefault(); header.classList.add('drag-over-inside'); e.stopPropagation(); };
+                    header.ondragleave = (e) => { header.classList.remove('drag-over-inside'); e.stopPropagation(); };
+                    header.ondrop = async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        header.classList.remove('drag-over-inside');
+                        if (draggedFsPath && draggedFsPath !== node.path) {
+                            await handleFsMove(draggedFsPath, node.path);
+                        }
+                    };
+
+                    header.innerHTML = `
+                        <span class="material-icons" style="color: #FFC107; font-size: 18px;">folder</span>
+                        <span style="color: var(--text); font-size: 13px;">${node.name}</span>
+                        <div style="margin-left: auto; display: flex; gap: 5px; opacity: 0; transition: 0.2s;" class="fs-actions">
+                            <span class="material-icons" title="New File" style="font-size: 16px; cursor: pointer; color: var(--success);" onclick="createNewFile('${node.path}', event)">note_add</span>
+                            <span class="material-icons" title="New Folder" style="font-size: 16px; cursor: pointer; color: #FFC107;" onclick="createNewFolder('${node.path}', event)">create_new_folder</span>
+                            <span class="material-icons" title="Delete" style="font-size: 16px; cursor: pointer; color: var(--accent);" onclick="deleteFsItem('${node.path}', event)">delete</span>
+                        </div>
+                    `;
+                    header.onclick = (e) => {
+                        const childrenDiv = el.querySelector('.fs-children');
+                        if (childrenDiv) childrenDiv.style.display = childrenDiv.style.display === 'none' ? 'block' : 'none';
+                    };
+                } else {
+                    const isSelected = currentFilePath === node.path;
+                    if (isSelected) header.style.background = 'rgba(187, 134, 252, 0.2)';
+                    
+                    header.innerHTML = `
+                        <span class="material-icons" style="color: #4CAF50; font-size: 18px;">description</span>
+                        <span style="color: ${isSelected ? 'var(--accent)' : 'var(--text)'}; font-size: 13px;">${node.name}</span>
+                        <div style="margin-left: auto; display: flex; gap: 5px; opacity: 0; transition: 0.2s;" class="fs-actions">
+                            <span class="material-icons" title="Delete" style="font-size: 16px; cursor: pointer; color: var(--accent);" onclick="deleteFsItem('${node.path}', event)">delete</span>
+                        </div>
+                    `;
+                    header.onclick = () => openFsFile(node.path);
+                }
+                
+                header.onmouseenter = () => header.querySelector('.fs-actions').style.opacity = '1';
+                header.onmouseleave = () => header.querySelector('.fs-actions').style.opacity = '0';
+                
+                el.appendChild(header);
+                
+                if (node.is_dir && node.children) {
+                    const childrenDiv = document.createElement('div');
+                    childrenDiv.className = 'fs-children';
+                    renderFsTree(node.children, childrenDiv, false);
+                    el.appendChild(childrenDiv);
+                }
+                
+                container.appendChild(el);
+            });
+        }
+
+        async function handleFsMove(sourcePath, targetPath) {
+            try {
+                const res = await fetch(`/api/fs/move?source_path=${encodeURIComponent(sourcePath)}&target_path=${encodeURIComponent(targetPath)}`, { method: 'PUT' });
+                if (res.ok) {
+                    if (currentFilePath === sourcePath) {
+                        const filename = sourcePath.split('/').pop();
+                        currentFilePath = targetPath ? `${targetPath}/${filename}` : filename;
+                    } else if (currentFilePath && currentFilePath.startsWith(sourcePath + '/')) {
+                        const relPath = currentFilePath.substring(sourcePath.length);
+                        const basename = sourcePath.split('/').pop();
+                        const newBase = targetPath ? `${targetPath}/${basename}` : basename;
+                        currentFilePath = newBase + relPath;
+                    }
+                    fetchFsTree();
+                } else {
+                    const data = await res.json();
+                    alert("Taşıma başarısız: " + data.detail);
+                }
+            } catch (e) {
+                console.error("Move error:", e);
+            }
+        }
+
+        async function createNewFolder(parentPath, e) {
+            if (e) e.stopPropagation();
+            const name = prompt("Folder name:");
+            if (!name) return;
+            const path = parentPath ? `${parentPath}/${name}` : name;
+            await fetch(`/api/fs/folder?path=${encodeURIComponent(path)}`, { method: 'POST' });
+            fetchFsTree();
+        }
+
+        async function createNewFile(parentPath, e) {
+            if (e) e.stopPropagation();
+            const name = prompt("File name (without .json):");
+            if (!name) return;
+            const path = parentPath ? `${parentPath}/${name}.json` : `${name}.json`;
+            await fetch(`/api/fs/file?path=${encodeURIComponent(path)}`, { method: 'POST' });
+            fetchFsTree();
+            openFsFile(path);
+        }
+
+        async function openFsFile(path) {
+            try {
+                const res = await fetch(`/api/fs/file?path=${encodeURIComponent(path)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    currentFilePath = path;
+                    currentData = data;
+                    updateEditors(data);
+                    fetchFsTree(); // Re-render to highlight active
+                    showToast(`Opened ${path}`);
+                    switchTab('tree'); // Switch to tree to see design
+                }
+            } catch (e) {
+                console.error("Failed to open file", e);
+            }
+        }
+
+        async function autoSaveFsFile() {
+            if (!currentFilePath || !currentData) return;
+            try {
+                await fetch(`/api/fs/file?path=${encodeURIComponent(currentFilePath)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentData)
+                });
+            } catch (e) {
+                console.error("Auto-save failed", e);
+            }
+        }
+
+        async function deleteFsItem(path, e) {
+            if (e) e.stopPropagation();
+            if (!confirm(`Are you sure you want to delete ${path}?`)) return;
+            await fetch(`/api/fs/item?path=${encodeURIComponent(path)}`, { method: 'DELETE' });
+            if (currentFilePath === path) {
+                currentFilePath = null;
+                currentData = null;
+                updateEditors(null);
+            }
+            fetchFsTree();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchFsTree();
+        });
+
     </script>
 </body>
 

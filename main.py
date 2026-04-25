@@ -1,4 +1,5 @@
 import os
+import shutil
 import io
 import json
 import uuid
@@ -45,10 +46,12 @@ else:
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 CROPS_DIR = os.path.join(STATIC_DIR, "crops")
+PROJECTS_DIR = os.path.join(BASE_DIR, "projects")
 
 # Klasörleri oluştur (Garanti olsun)
 os.makedirs(STATIC_DIR, exist_ok=True)
 os.makedirs(CROPS_DIR, exist_ok=True)
+os.makedirs(PROJECTS_DIR, exist_ok=True)
 
 app.add_middleware(
     CORSMiddleware,
@@ -464,6 +467,14 @@ async def generate_ui(
             # Yapay Zeka Modu
             input_content = []
             
+            # ALWAYS SELECT PROMPT BASED ON PLATFORM FIRST
+            if platform == "web":
+                print(f"🌐 Web Modu Seçildi")
+                input_content.append(PROMPT_WEB)
+            else:
+                print(f"📱 Mobile Modu Seçildi")
+                input_content.append(PROMPT_BASE)
+            
             if current_json:
                 print("✨ Revize Modu: Mevcut tasarım güncelleniyor...")
                 REFINE_PROMPT = f"""
@@ -482,19 +493,7 @@ async def generate_ui(
                 4. Output ONLY the valid, updated JSON. No Markdown.
                 """
                 input_content.append(REFINE_PROMPT)
-                # Note: We don't necessarily need PROMPT_BASE here if we trust the model to follow the structure of the input JSON, 
-                # but adding it creates consistency. Let's try appending the user prompt concept + base rules if needed. 
-                # Actually, for refinement, specific instructions + existing JSON is usually better.
-                # Let's keep it simple.
             else:
-                # SELECT PROMPT BASED ON PLATFORM
-                if platform == "web":
-                    print(f"🌐 Web Modu Seçildi")
-                    input_content.append(PROMPT_WEB)
-                else:
-                    print(f"📱 Mobile Modu Seçildi")
-                    input_content.append(PROMPT_BASE)
-                
                 input_content.append(prompt)
 
             if pil_image:
@@ -670,6 +669,105 @@ async def get_current_ui(platform: str = "mobile"):
             ]
         }
     }
+
+@app.get("/api/fs/tree")
+async def get_fs_tree():
+    def get_tree(path):
+        tree = []
+        for item in os.listdir(path):
+            if item.startswith('.'):
+                continue
+            item_path = os.path.join(path, item)
+            rel_path = os.path.relpath(item_path, PROJECTS_DIR)
+            is_dir = os.path.isdir(item_path)
+            node = {
+                "name": item,
+                "path": rel_path,
+                "is_dir": is_dir
+            }
+            if is_dir:
+                node["children"] = get_tree(item_path)
+            tree.append(node)
+        return tree
+    return {"status": "success", "tree": get_tree(PROJECTS_DIR)}
+
+
+@app.post("/api/fs/folder")
+async def create_folder(path: str):
+    full_path = os.path.join(PROJECTS_DIR, path)
+    os.makedirs(full_path, exist_ok=True)
+    return {"status": "success"}
+
+
+@app.post("/api/fs/file")
+async def create_file(path: str):
+    full_path = os.path.join(PROJECTS_DIR, path)
+    if not full_path.endswith('.json'):
+        full_path += '.json'
+    if not os.path.exists(full_path):
+        with open(full_path, 'w', encoding='utf-8') as f:
+            json.dump({
+                "screen_name": os.path.basename(full_path).replace('.json', ''),
+                "layout": {
+                    "type": "Column",
+                    "props": {
+                        "fillMaxSize": "true",
+                        "backgroundColor": "#FFFFFF"
+                    },
+                    "children": []
+                }
+            }, f)
+    return {"status": "success"}
+
+
+@app.get("/api/fs/file")
+async def get_file(path: str):
+    full_path = os.path.join(PROJECTS_DIR, path)
+    if os.path.exists(full_path):
+        with open(full_path, 'r', encoding='utf-8') as f:
+            try:
+                return json.load(f)
+            except:
+                return {}
+    raise HTTPException(status_code=404, detail="File not found")
+
+
+@app.put("/api/fs/file")
+async def update_file(path: str, data: dict = Body(...)):
+    full_path = os.path.join(PROJECTS_DIR, path)
+    with open(full_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    return {"status": "success"}
+
+
+@app.delete("/api/fs/item")
+async def delete_item(path: str):
+    full_path = os.path.join(PROJECTS_DIR, path)
+    if os.path.exists(full_path):
+        if os.path.isdir(full_path):
+            shutil.rmtree(full_path)
+        else:
+            os.remove(full_path)
+    return {"status": "success"}
+
+
+@app.put("/api/fs/move")
+async def move_item(source_path: str, target_path: str):
+    full_source = os.path.join(PROJECTS_DIR, source_path)
+    full_target = os.path.join(PROJECTS_DIR, target_path) if target_path else PROJECTS_DIR
+
+    if not os.path.exists(full_source):
+        raise HTTPException(status_code=404, detail="Source not found")
+        
+    basename = os.path.basename(full_source)
+    final_destination = os.path.join(full_target, basename)
+    
+    # Prevent moving into itself
+    if os.path.isdir(full_source) and full_target.startswith(full_source):
+        raise HTTPException(status_code=400, detail="Cannot move a directory into itself")
+        
+    shutil.move(full_source, final_destination)
+    return {"status": "success"}
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
