@@ -644,33 +644,35 @@ async def get_current_ui(platform: str = "mobile"):
                 "fillMaxSize": "true",
                 "verticalArrangement": "center",
                 "horizontalAlignment": "center",
-                "backgroundColor": "#FFFFFF"
+                "backgroundColor": "#FAFAFA"
             },
             "children": [
                 {
                     "type": "Icon",
                     "props": {
-                        "name": "u_turn_left",
+                        "name": "palette",
                         "size": 48,
-                        "color": "#9E9E9E"
+                        "color": "#D1D5DB"
                     }
                 },
                 {
                     "type": "Text",
                     "props": {
                         "text": "Henüz Tasarım Yok",
-                        "style": "h2",
-                        "color": "#666666",
-                        "marginTop": 16
+                        "style": "h3",
+                        "color": "#9CA3AF",
+                        "marginTop": 16,
+                        "textAlign": "center"
                     }
                 },
                 {
                     "type": "Text",
                     "props": {
-                        "text": "Lütfen SDUI Studio'dan yeni bir tasarım üretin.",
+                        "text": "Sol menüden bir tasarım üretin.",
                         "style": "body",
-                        "color": "#999999",
-                        "marginTop": 8
+                        "color": "#D1D5DB",
+                        "marginTop": 8,
+                        "textAlign": "center"
                     }
                 }
             ]

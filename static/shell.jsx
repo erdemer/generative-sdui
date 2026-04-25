@@ -12,7 +12,10 @@ function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt 
     <div className="topbar">
       <div className="topbar-left">
         <div className="brand-mark">S</div>
-        <div className="brand-name">SDUI <em>Studio</em></div>
+        <div className="brand-name" style={{display: 'flex', alignItems: 'center', gap: 6}}>
+          SDUI <em>Studio</em>
+          <Icon name="vodafone" size={14} />
+        </div>
         {breadcrumb && (
           <div className="crumb">
             <Icon name="folder" size={12}/>
@@ -318,17 +321,17 @@ function AttrSection({ title, children, defaultOpen = true }) {
 
 function AttrRow({ label, children }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '78px 1fr', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '86px 1fr', alignItems: 'center', gap: 8, marginBottom: 8 }}>
       <label style={{ fontSize: 11, color: 'var(--fg-3)' }}>{label}</label>
-      <div>{children}</div>
+      <div style={{ minWidth: 0 }}>{children}</div>
     </div>
   );
 }
 
 function NumInput({ value, unit = "px" }) {
   return (
-    <div style={{ position: 'relative' }}>
-      <input className="input" defaultValue={value} style={{ height: 26, paddingRight: 26, fontSize: 12, fontFamily: 'var(--font-mono)' }}/>
+    <div style={{ position: 'relative', width: '100%' }}>
+      <input className="input" defaultValue={value} style={{ height: 26, width: '100%', paddingRight: 26, fontSize: 11, fontFamily: 'var(--font-mono)' }}/>
       <span style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: 'var(--fg-3)', fontFamily: 'var(--font-mono)' }}>{unit}</span>
     </div>
   );
@@ -336,9 +339,9 @@ function NumInput({ value, unit = "px" }) {
 
 function ColorRow({ value }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, height: 26, padding: '0 4px 0 6px', border: '1px solid var(--input-line)', borderRadius: 6, background: 'var(--input)' }}>
-      <span style={{ width: 16, height: 16, borderRadius: 4, background: value, border: '1px solid var(--line)' }}/>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11.5, color: 'var(--fg)', flex: 1 }}>{value}</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, height: 26, padding: '0 4px 0 6px', border: '1px solid var(--input-line)', borderRadius: 6, background: 'var(--input)', width: '100%' }}>
+      <span style={{ width: 14, height: 14, borderRadius: 4, background: value, border: '1px solid var(--line)', flexShrink: 0 }}/>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</span>
       <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--fg-3)' }}>100%</span>
     </div>
   );
@@ -389,7 +392,7 @@ function SelectedAttributes({ selection, lang }) {
         <AttrSection title={t(lang,"typography")}>
           <AttrRow label={t(lang,"fontSize")}><NumInput value={p.fontSize || 16}/></AttrRow>
           <AttrRow label={t(lang,"fontWeight")}>
-            <select className="select" style={{ height: 26, fontSize: 12 }} defaultValue={p.fontWeight || "600"}>
+            <select className="select" style={{ height: 26, fontSize: 11, width: '100%', textOverflow: 'ellipsis' }} defaultValue={p.fontWeight || "600"}>
               <option value="400">Regular · 400</option>
               <option value="500">Medium · 500</option>
               <option value="600">Semibold · 600</option>
@@ -404,7 +407,7 @@ function SelectedAttributes({ selection, lang }) {
         <AttrRow label={t(lang,"background")}><ColorRow value={p.bg || "#FFFFFF"}/></AttrRow>
         <AttrRow label={t(lang,"radius")}><NumInput value={p.radius || 12}/></AttrRow>
         <AttrRow label={lang==='tr'?'Gölge':'Shadow'}>
-          <select className="select" style={{ height: 26, fontSize: 12 }} defaultValue="sm">
+          <select className="select" style={{ height: 26, fontSize: 11, width: '100%', textOverflow: 'ellipsis' }} defaultValue="sm">
             <option value="none">None</option>
             <option value="sm">Soft · sm</option>
             <option value="md">Medium · md</option>
@@ -415,14 +418,14 @@ function SelectedAttributes({ selection, lang }) {
 
       <AttrSection title={t(lang,"interactions")} defaultOpen={false}>
         <AttrRow label={t(lang,"onTap")}>
-          <select className="select" style={{ height: 26, fontSize: 12 }} defaultValue="navigate">
+          <select className="select" style={{ height: 26, fontSize: 11, width: '100%', textOverflow: 'ellipsis' }} defaultValue="navigate">
             <option value="none">{t(lang,"none")}</option>
             <option value="navigate">{t(lang,"navigate")}</option>
             <option value="track">{t(lang,"track")}</option>
           </select>
         </AttrRow>
         <AttrRow label={lang==='tr'?'Hedef':'Target'}>
-          <input className="input" style={{ height: 26, fontSize: 12, fontFamily: 'var(--font-mono)' }} defaultValue="/product/123"/>
+          <input className="input" style={{ height: 26, fontSize: 11, fontFamily: 'var(--font-mono)', width: '100%' }} defaultValue="/product/123"/>
         </AttrRow>
       </AttrSection>
 
