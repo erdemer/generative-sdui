@@ -478,6 +478,12 @@ function App() {
   const [smartCrop, setSmartCrop] = useState(false);
   const [platform, setPlatform] = useState('mobile');
 
+  const handlePlatformChange = (p) => {
+    setPlatform(p);
+    if (p === 'web') setDevice('web');
+    if (p === 'mobile' && device === 'web') setDevice('iphone');
+  };
+
   // ── Publish / A/B ───────────────────────────────────────────────────────
   const [abActive, setAbActive] = useState(false);
   const [abVariantA, setAbVariantA] = useState(null);
@@ -841,7 +847,7 @@ function App() {
           showAB={abActive}
           onPublish={handlePublish}
           platform={platform}
-          onPlatform={setPlatform}
+          onPlatform={handlePlatformChange}
         />
 
         <div className="workspace">
@@ -865,7 +871,7 @@ function App() {
             onNewFolder={handleNewFolder}
             onNewFile={handleNewFile}
             platform={platform}
-            onPlatform={setPlatform}
+            onPlatform={handlePlatformChange}
             abActive={abActive}
             currentVersion={`v${version}`}
             onPublish={handlePublish}
