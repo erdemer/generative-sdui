@@ -7,7 +7,7 @@ const { useState, useMemo, useEffect } = React;
 const t = (lang, key) => (window.I18N[lang] && window.I18N[lang][key]) || key;
 
 /* =================== TOPBAR =================== */
-function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt = "1m", showAB = false, onPublish }) {
+function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt = "1m", showAB = false, onPublish, platform = 'mobile', onPlatform }) {
   return (
     <div className="topbar">
       <div className="topbar-left">
@@ -26,8 +26,8 @@ function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt 
       </div>
       <div className="topbar-center">
         <div className="seg">
-          <button className="on"><Icon name="device-mobile" size={13}/> {t(lang,"mobile")}</button>
-          <button><Icon name="device-desktop" size={13}/> {t(lang,"web")}</button>
+          <button className={platform==='mobile'?'on':''} onClick={()=>onPlatform && onPlatform('mobile')}><Icon name="device-mobile" size={13}/> {t(lang,"mobile")}</button>
+          <button className={platform==='web'?'on':''} onClick={()=>onPlatform && onPlatform('web')}><Icon name="device-desktop" size={13}/> {t(lang,"web")}</button>
         </div>
         <div className="seg" style={{ marginLeft: 4 }}>
           <button className={lang==='tr'?'on':''} onClick={()=>onToggleLang && onToggleLang('tr')}>TR</button>
@@ -255,8 +255,27 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
           <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s', width: '100%', height: '100%', pointerEvents: interactive ? 'auto' : 'none' }}>
             {children}
           </div>
+        ) : device === 'web' ? (
+          /* Web: browser-like frame */
+          <div style={{ 
+            transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'all 0.3s ease',
+            width: 580, background: 'var(--device-bezel)', borderRadius: 12, padding: 0,
+            boxShadow: 'var(--shadow-lg)', overflow: 'hidden'
+          }}>
+            {/* Browser chrome bar */}
+            <div style={{ height: 32, background: 'var(--device-bezel)', display: 'flex', alignItems: 'center', padding: '0 12px', gap: 6 }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f57' }}/>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffbd2e' }}/>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#28c840' }}/>
+              <div style={{ flex: 1, height: 18, background: 'rgba(255,255,255,0.1)', borderRadius: 4, marginLeft: 8 }}/>
+            </div>
+            <div style={{ width: '100%', height: 480, background: 'var(--device-screen)', overflow: 'hidden', pointerEvents: interactive ? 'auto' : 'none' }}>
+              {children}
+            </div>
+          </div>
         ) : (
-          <div className="device-shell" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s' }}>
+          /* iPhone / Android phone frame */
+          <div className={`device-shell ${device === 'pixel' ? 'device-android' : ''}`} style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'all 0.3s ease' }}>
             <div className="device-screen" style={{ pointerEvents: interactive ? 'auto' : 'none' }}>
               {children}
             </div>

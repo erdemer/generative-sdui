@@ -528,6 +528,21 @@ input, textarea { font-family: inherit; color: inherit; }
   position: relative;
 }
 
+/* Android device: smaller radius, punch-hole camera */
+.device-android { border-radius: 24px; padding: 8px; }
+.device-android::before {
+  content: "";
+  position: absolute;
+  top: 16px; left: 50%;
+  transform: translateX(-50%);
+  width: 10px; height: 10px;
+  background: var(--device-bezel);
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.1);
+}
+.device-android .device-screen { border-radius: 18px; }
+
 /* Floating toolbar over canvas */
 .canvas-toolbar {
   position: absolute;
