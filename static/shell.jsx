@@ -152,7 +152,7 @@ function FileRow({ name, type = "file", level = 0, selected, open, lang, onClick
 }
 
 /* =================== TREE PANE =================== */
-function TreePane({ lang, view = "tree", onView, hasSelection = true, tree, selectedPath = [], onSelectNode, breadcrumb }) {
+function TreePane({ lang, view = "tree", onView, hasSelection = true, tree, selectedPaths = [], onSelectNode, breadcrumb }) {
   return (
     <div className="pane">
       <div className="pane-header">
@@ -192,7 +192,7 @@ function TreePane({ lang, view = "tree", onView, hasSelection = true, tree, sele
           </div>
         ) : (
           <div className="tree">
-            {tree.map((n, i) => <TreeNode key={i} node={n} level={0} selectedPath={selectedPath} onSelect={onSelectNode} />)}
+            {tree.map((n, i) => <TreeNode key={i} node={n} level={0} selectedPaths={selectedPaths} onSelect={onSelectNode} />)}
           </div>
         )}
       </div>
@@ -200,9 +200,10 @@ function TreePane({ lang, view = "tree", onView, hasSelection = true, tree, sele
   );
 }
 
-function TreeNode({ node, level, selectedPath, onSelect, path = [] }) {
+function TreeNode({ node, level, selectedPaths = [], onSelect, path = [] }) {
   const myPath = [...path, node.id];
-  const selected = selectedPath && selectedPath.join('/') === myPath.join('/');
+  const myPathStr = myPath.join('/');
+  const selected = selectedPaths.some(p => p.join('/') === myPathStr);
   const open = node.open !== false;
   const indent = level * 14;
   return (
@@ -210,15 +211,16 @@ function TreeNode({ node, level, selectedPath, onSelect, path = [] }) {
       <div
         className={"tree-node" + (selected ? " selected" : "")}
         style={{ paddingLeft: 6 + indent }}
-        onClick={() => onSelect && onSelect(myPath)}
+        onClick={(e) => { e.stopPropagation(); onSelect && onSelect(myPath, e.shiftKey || e.metaKey); }}
       >
         {node.children?.length ? <Icon name={open?"chev-d":"chev-r"} size={11} stroke={2.2} className="chev"/> : <span style={{ width: 14 }}/>}
         <span className={`type-tag tt-${node.type.toLowerCase()}`}>{node.type}</span>
         <span className="name">{node.name || node.label || ""}</span>
-        {node.children?.length ? <span style={{ fontSize: 10, color: 'var(--fg-3)' }}>{node.children.length}</span> : null}
+        {node.sduiLabel && <span className="chip" style={{ marginLeft: 'auto', background: 'var(--brand-soft)', color: 'var(--brand)' }}>{node.sduiLabel}</span>}
+        {node.children?.length ? <span style={{ fontSize: 10, color: 'var(--fg-3)', marginLeft: !node.sduiLabel ? 'auto' : 4 }}>{node.children.length}</span> : null}
       </div>
       {open && node.children?.map((c, i) => (
-        <TreeNode key={i} node={c} level={level+1} selectedPath={selectedPath} onSelect={onSelect} path={myPath}/>
+        <TreeNode key={i} node={c} level={level+1} selectedPaths={selectedPaths} onSelect={onSelect} path={myPath}/>
       ))}
     </>
   );
@@ -301,8 +303,8 @@ function AttributesPane({ lang, selection, onChangeProp, onDuplicate, onDelete, 
       <div className="pane-header">
         <h3>{t(lang,"attributes")}</h3>
         <div className="actions">
-          <button className="icon-btn" onClick={() => selection && onDuplicate && onDuplicate(selection.id)} disabled={!selection}><Icon name="duplicate" size={13}/></button>
-          <button className="icon-btn" onClick={() => selection && onDelete && onDelete(selection.id)} disabled={!selection}><Icon name="trash" size={13}/></button>
+          <button className="icon-btn" onClick={() => selection && onDuplicate && onDuplicate()} disabled={!selection}><Icon name="duplicate" size={13}/></button>
+          <button className="icon-btn" onClick={() => selection && onDelete && onDelete()} disabled={!selection}><Icon name="trash" size={13}/></button>
           <button className="icon-btn"><Icon name="more-h" size={14}/></button>
         </div>
       </div>
@@ -390,20 +392,49 @@ function ColorRow({ value, onChange }) {
 }
 
 function SelectedAttributes({ selection, lang, onChangeProp, onRefine }) {
-  // selection = { type, name, props: {...} }
+  // selection = { isMulti, count, types, props, name, path, id }
+  const isMulti = selection.isMulti;
   const p = selection.props || {};
+
   return (
     <div style={{ margin: '-12px' }}>
       {/* selected header */}
-      <div style={{ padding: '12px', borderBottom: '1px solid var(--line)' }}>
+      <div style={{ padding: '12px', borderBottom: '1px solid var(--line)', background: isMulti ? 'var(--bg-elev)' : 'transparent' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-          <span className={`type-tag tt-${selection.type.toLowerCase()}`}>{selection.type}</span>
-          <input
-            defaultValue={selection.name}
-            style={{ flex: 1, background: 'transparent', border: 0, outline: 'none', fontWeight: 600, fontSize: 13, color: 'var(--fg)' }}
+          {isMulti ? (
+            <>
+              <Icon name="layers" size={12} style={{ color: 'var(--brand)' }}/>
+              <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--fg)' }}>{selection.count} {lang === 'tr' ? 'Bileşen Seçildi' : 'Components Selected'}</span>
+            </>
+          ) : (
+            <>
+              <span className={`type-tag tt-${selection.type.toLowerCase()}`}>{selection.type}</span>
+              <span style={{ flex: 1, fontWeight: 600, fontSize: 13, color: 'var(--fg)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selection.name}</span>
+            </>
+          )}
+        </div>
+        {!isMulti && <div style={{ fontSize: 10.5, color: 'var(--fg-3)', fontFamily: 'var(--font-mono)' }}>{selection.path || "/"}</div>}
+        {isMulti && <div style={{ fontSize: 10.5, color: 'var(--fg-3)' }}>{selection.types}</div>}
+      </div>
+
+      <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)', background: 'var(--panel-2)' }}>
+        <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--fg-3)', marginBottom: 6 }}>{lang === 'tr' ? 'KİMLİK VE ETİKET' : 'IDENTITY & LABEL'}</div>
+        <div style={{ position: 'relative' }}>
+          <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 12, fontWeight: 700, color: 'var(--brand)' }}>$</span>
+          <input 
+            className="input" 
+            placeholder={lang === 'tr' ? 'Etiket (örn: topCard)' : 'Label (ex: topCard)'}
+            style={{ height: 28, width: '100%', paddingLeft: 18, fontSize: 12, fontWeight: 600, border: '1px solid var(--brand-soft)' }}
+            value={(p.sduiLabel || "").replace('$', '')}
+            onChange={e => {
+              const val = e.target.value.replace('$', '');
+              onChangeProp && onChangeProp('sduiLabel', val ? '$' + val : undefined);
+            }}
           />
         </div>
-        <div style={{ fontSize: 10.5, color: 'var(--fg-3)', fontFamily: 'var(--font-mono)' }}>{selection.path || "/"}</div>
+        <div style={{ fontSize: 9.5, color: 'var(--fg-3)', marginTop: 4, lineHeight: 1.4 }}>
+          {lang === 'tr' ? 'Promptta bu bileşenleri hedeflemek için kullanılır.' : 'Use this to target these components in prompts.'}
+        </div>
       </div>
 
       <AttrSection title={t(lang,"layout")}>
@@ -414,23 +445,16 @@ function SelectedAttributes({ selection, lang, onChangeProp, onRefine }) {
             <button style={{ height: 20, flex: 1, justifyContent: 'center' }}>{t(lang,"fixed")}</button>
           </div>
         </AttrRow>
-        <AttrRow label={t(lang,"height")}><NumInput value={p.height || 64} onChange={v => onChangeProp && onChangeProp('height', v)}/></AttrRow>
+        {!isMulti && <AttrRow label={t(lang,"height")}><NumInput value={p.height || 64} onChange={v => onChangeProp && onChangeProp('height', v)}/></AttrRow>}
         <AttrRow label={t(lang,"padding")}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
             <NumInput value={p.padX || 16} onChange={v => onChangeProp && onChangeProp('padX', v)}/>
             <NumInput value={p.padY || 12} onChange={v => onChangeProp && onChangeProp('padY', v)}/>
           </div>
         </AttrRow>
-        <AttrRow label={t(lang,"align")}>
-          <div className="seg" style={{ height: 26, width: '100%' }}>
-            <button style={{ height: 20, flex: 1, justifyContent: 'center', fontFamily: 'var(--font-mono)', fontSize: 11 }}>L</button>
-            <button className="on" style={{ height: 20, flex: 1, justifyContent: 'center', fontFamily: 'var(--font-mono)', fontSize: 11 }}>C</button>
-            <button style={{ height: 20, flex: 1, justifyContent: 'center', fontFamily: 'var(--font-mono)', fontSize: 11 }}>R</button>
-          </div>
-        </AttrRow>
       </AttrSection>
 
-      {selection.type === 'Text' && (
+      {!isMulti && selection.type === 'Text' && (
         <AttrSection title={t(lang,"typography")}>
           <AttrRow label={t(lang,"fontSize")}><NumInput value={p.fontSize || 16} onChange={v => onChangeProp && onChangeProp('fontSize', v)}/></AttrRow>
           <AttrRow label={t(lang,"fontWeight")}>
@@ -446,33 +470,37 @@ function SelectedAttributes({ selection, lang, onChangeProp, onRefine }) {
       )}
 
       <AttrSection title={t(lang,"appearance")}>
-        <AttrRow label={t(lang,"background")}><ColorRow value={p.backgroundColor || p.bg || "#FFFFFF"} onChange={v => onChangeProp && onChangeProp('backgroundColor', v)}/></AttrRow>
-        <AttrRow label={t(lang,"radius")}><NumInput value={p.radius || p.borderRadius || 12} onChange={v => onChangeProp && onChangeProp('borderRadius', v)}/></AttrRow>
-        <AttrRow label={lang==='tr'?'Gölge':'Shadow'}>
-          <select className="select" style={{ height: 26, fontSize: 11, width: '100%', textOverflow: 'ellipsis' }} value={p.shadow || "sm"} onChange={e => onChangeProp && onChangeProp('shadow', e.target.value)}>
-            <option value="none">None</option>
-            <option value="sm">Soft · sm</option>
-            <option value="md">Medium · md</option>
-            <option value="lg">Elevated · lg</option>
-          </select>
-        </AttrRow>
+        <AttrRow label={t(lang,"background")}><ColorRow value={p.backgroundColor || p.bg || (isMulti ? '' : "#FFFFFF")} onChange={v => onChangeProp && onChangeProp('backgroundColor', v)}/></AttrRow>
+        {!isMulti && <AttrRow label={t(lang,"radius")}><NumInput value={p.radius || p.borderRadius || 12} onChange={v => onChangeProp && onChangeProp('borderRadius', v)}/></AttrRow>}
+        {!isMulti && (
+          <AttrRow label={lang==='tr'?'Gölge':'Shadow'}>
+            <select className="select" style={{ height: 26, fontSize: 11, width: '100%', textOverflow: 'ellipsis' }} value={p.shadow || "sm"} onChange={e => onChangeProp && onChangeProp('shadow', e.target.value)}>
+              <option value="none">None</option>
+              <option value="sm">Soft · sm</option>
+              <option value="md">Medium · md</option>
+              <option value="lg">Elevated · lg</option>
+            </select>
+          </AttrRow>
+        )}
       </AttrSection>
 
-      <AttrSection title={t(lang,"interactions")} defaultOpen={false}>
-        <AttrRow label={t(lang,"onTap")}>
-          <select className="select" style={{ height: 26, fontSize: 11, width: '100%', textOverflow: 'ellipsis' }} defaultValue="navigate">
-            <option value="none">{t(lang,"none")}</option>
-            <option value="navigate">{t(lang,"navigate")}</option>
-            <option value="track">{t(lang,"track")}</option>
-          </select>
-        </AttrRow>
-        <AttrRow label={lang==='tr'?'Hedef':'Target'}>
-          <input className="input" style={{ height: 26, fontSize: 11, fontFamily: 'var(--font-mono)', width: '100%' }} defaultValue="/product/123"/>
-        </AttrRow>
-      </AttrSection>
+      {!isMulti && (
+        <AttrSection title={t(lang,"interactions")} defaultOpen={false}>
+          <AttrRow label={t(lang,"onTap")}>
+            <select className="select" style={{ height: 26, fontSize: 11, width: '100%', textOverflow: 'ellipsis' }} defaultValue="navigate">
+              <option value="none">{t(lang,"none")}</option>
+              <option value="navigate">{t(lang,"navigate")}</option>
+              <option value="track">{t(lang,"track")}</option>
+            </select>
+          </AttrRow>
+          <AttrRow label={lang==='tr'?'Hedef':'Target'}>
+            <input className="input" style={{ height: 26, fontSize: 11, fontFamily: 'var(--font-mono)', width: '100%' }} defaultValue="/product/123"/>
+          </AttrRow>
+        </AttrSection>
+      )}
 
       <div style={{ padding: 12, borderTop: '1px solid var(--line)', display: 'flex', gap: 6 }}>
-        <button className="btn" style={{ flex: 1, justifyContent: 'center' }} onClick={() => onRefine && onRefine(selection.id)}>
+        <button className="btn" style={{ flex: 1, justifyContent: 'center' }} onClick={() => onRefine && onRefine()}>
           <Icon name="sparkle" size={11}/> {lang==='tr'?'AI ile İyileştir':'Refine with AI'}
         </button>
       </div>

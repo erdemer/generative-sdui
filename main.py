@@ -491,7 +491,8 @@ async def generate_ui(
                 1. Modify the EXISTING JSON to satisfy the user request.
                 2. Preserve the overall structure and existing components unless explicitly asked to change them.
                 3. Keep existing `_id` values if possible to maintain state, or generate new ones if adding items.
-                4. Output ONLY the valid, updated JSON. No Markdown.
+                4. Components may have an `"sduiLabel"` property (e.g., `"$topCard"`). If the user request mentions a label (starting with $), you MUST specifically target and modify the components that have that matching label in their props.
+                5. Output ONLY the valid, updated JSON. No Markdown.
                 """
                 input_content.append(REFINE_PROMPT)
             else:

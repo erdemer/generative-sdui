@@ -176,10 +176,10 @@ function computeSDUIStyle(node, p) {
   return s;
 }
 
-function SDUINode({ node, selectedId, onSelectId }) {
+function SDUINode({ node, selectedIds, onSelectId }) {
   if (!node) return null;
   const p = node.props || {};
-  const isSelected = node._id === selectedId;
+  const isSelected = selectedIds && selectedIds.includes(node._id);
   const baseStyle = computeSDUIStyle(node, p);
 
   const selStyle = isSelected ? {
@@ -193,11 +193,11 @@ function SDUINode({ node, selectedId, onSelectId }) {
 
   const onClick = (e) => {
     e.stopPropagation();
-    onSelectId && onSelectId(node._id);
+    onSelectId && onSelectId(node._id, e.shiftKey || e.metaKey);
   };
 
   const children = (node.children || []).map((c, i) => (
-    <SDUINode key={i} node={c} selectedId={selectedId} onSelectId={onSelectId}/>
+    <SDUINode key={i} node={c} selectedIds={selectedIds} onSelectId={onSelectId}/>
   ));
 
   switch (node.type) {
@@ -261,7 +261,7 @@ function SDUINode({ node, selectedId, onSelectId }) {
   }
 }
 
-function SDUIRenderer({ layout, selectedId, onSelectId }) {
+function SDUIRenderer({ layout, selectedIds, onSelectId }) {
   if (!layout) return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, color: 'var(--fg-3)', fontSize: 12, textAlign: 'center', padding: 24 }}>
       <Icon name="sparkle" size={24} stroke={1.4}/>
@@ -270,7 +270,7 @@ function SDUIRenderer({ layout, selectedId, onSelectId }) {
   );
   return (
     <div className="sdui-device-content">
-      <SDUINode node={layout} selectedId={selectedId} onSelectId={onSelectId}/>
+      <SDUINode node={layout} selectedIds={selectedIds} onSelectId={onSelectId}/>
     </div>
   );
 }
@@ -298,6 +298,7 @@ function buildTreeNode(node) {
     id: node._id,
     type: node.type,
     name,
+    sduiLabel: p.sduiLabel,
     open: true,
     children: (node.children || []).map(buildTreeNode).filter(Boolean),
   };
@@ -462,7 +463,7 @@ function App() {
   // ── Core state ─────────────────────────────────────────────────────────
   const [appState, setAppState] = useState('empty'); // 'empty' | 'streaming' | 'editing'
   const [currentJson, setCurrentJson] = useState(null);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
 
   // ── UI preferences ──────────────────────────────────────────────────────
   const [lang, setLang] = useState(pickLang);
@@ -595,25 +596,23 @@ function App() {
               if (!vRes.ok) return;
               const verified = await vRes.json();
               if (verified?.layout) {
-                // Determine structural path of currently selected node (if any)
-                // We use a functional state update to access the latest selectedId without closure staleness
-                setSelectedId(currentSelId => {
-                  let pathIndex = null;
+                setSelectedIds(currentSelIds => {
+                  let pathIndices = [];
                   setCurrentJson(currentLayout => {
-                    if (currentSelId && currentLayout?.layout) {
-                      pathIndex = findIndexPath(currentLayout.layout, currentSelId);
+                    if (currentSelIds.length > 0 && currentLayout?.layout) {
+                      pathIndices = currentSelIds.map(id => findIndexPath(currentLayout.layout, id)).filter(Boolean);
                     }
                     _uid = 0; 
                     tagIds(verified.layout);
                     console.log('✅ Auditor: UI verified and improved');
                     return verified;
                   });
-                  // If we had a path, try to find the equivalent node in the verified layout
-                  if (pathIndex) {
-                    const restoredNode = getNodeByIndexPath(verified.layout, pathIndex);
-                    if (restoredNode) return restoredNode._id;
+                  // If we had paths, try to find the equivalent nodes in the verified layout
+                  if (pathIndices.length > 0) {
+                    const restoredIds = pathIndices.map(p => getNodeByIndexPath(verified.layout, p)).filter(Boolean).map(n => n._id);
+                    if (restoredIds.length > 0) return restoredIds;
                   }
-                  return currentSelId;
+                  return currentSelIds;
                 });
 
                 // Auto-save improved version
@@ -721,24 +720,36 @@ function App() {
   const handleZoomOut = () => setZoom(z => Math.max(50, z - 10));
 
   // ── Prop editing (live attribute changes) ───────────────────────────────
+  // ── Multi-select handler ────────────────────────────────────────────────
+  const handleSelectNode = useCallback((id, multi) => {
+    setSelectedIds(prev => {
+      if (!multi) return [id];
+      if (prev.includes(id)) return prev.filter(x => x !== id);
+      return [...prev, id];
+    });
+  }, []);
+
+  // ── Prop editing (live attribute changes) ───────────────────────────────
   const handlePropChange = useCallback((propName, value) => {
-    if (!selectedId || !currentJson?.layout) return;
+    if (!selectedIds.length || !currentJson?.layout) return;
     const updateNode = (node) => {
-      if (node._id === selectedId) {
+      let changed = false;
+      if (selectedIds.includes(node._id)) {
         if (!node.props) node.props = {};
-        node.props[propName] = value;
-        return true;
+        if (value === undefined) delete node.props[propName];
+        else node.props[propName] = value;
+        changed = true;
       }
       for (const c of (node.children || [])) {
-        if (updateNode(c)) return true;
+        if (updateNode(c)) changed = true;
       }
-      return false;
+      return changed;
     };
     const clone = JSON.parse(JSON.stringify(currentJson));
     _uid = 0; tagIds(clone.layout);
     updateNode(clone.layout);
     setCurrentJson(clone);
-  }, [selectedId, currentJson]);
+  }, [selectedIds, currentJson]);
 
   // ── Duplicate ───────────────────────────────────────────────────────────
   const handleDuplicate = useCallback((nodeId) => {
@@ -766,46 +777,63 @@ function App() {
     insertAfter(clone.layout);
     _uid = 0; tagIds(clone.layout);
     setCurrentJson(clone);
-  }, [selectedId, currentJson]);
+  }, [selectedIds, currentJson]);
 
   // ── Delete ──────────────────────────────────────────────────────────────
   const handleDelete = useCallback((nodeId) => {
-    const id = nodeId || selectedId;
-    if (!id || !currentJson?.layout) return;
-    if (currentJson.layout._id === id) return; // can't delete root
+    const idsToDelete = nodeId ? [nodeId] : selectedIds;
+    if (!idsToDelete.length || !currentJson?.layout) return;
+
     const removeFrom = (parent) => {
+      let changed = false;
       const kids = parent.children || [];
-      for (let i = 0; i < kids.length; i++) {
-        if (kids[i]._id === id) { kids.splice(i, 1); return true; }
-        if (removeFrom(kids[i])) return true;
+      const newKids = [];
+      for (const kid of kids) {
+        if (!idsToDelete.includes(kid._id)) {
+          newKids.push(kid);
+        } else {
+          changed = true;
+        }
       }
-      return false;
+      parent.children = newKids;
+      for (const kid of parent.children) {
+        if (removeFrom(kid)) changed = true;
+      }
+      return changed;
     };
+
     const clone = JSON.parse(JSON.stringify(currentJson));
-    removeFrom(clone.layout);
-    _uid = 0; tagIds(clone.layout);
-    setCurrentJson(clone);
-    setSelectedId(null);
-  }, [selectedId, currentJson]);
+    if (idsToDelete.includes(clone.layout._id)) return; // can't delete root
+    if (removeFrom(clone.layout)) {
+      _uid = 0; tagIds(clone.layout);
+      setCurrentJson(clone);
+      setSelectedIds(prev => prev.filter(id => !idsToDelete.includes(id)));
+    }
+  }, [selectedIds, currentJson]);
 
   // ── Refine with AI ─────────────────────────────────────────────────────
   const handleRefine = useCallback((nodeId) => {
-    const node = findById(currentJson?.layout, nodeId || selectedId);
-    if (!node) return;
-    const desc = node.type + (node.props?.text ? `: "${node.props.text}"` : '');
+    const idsToRefine = nodeId ? [nodeId] : selectedIds;
+    if (!idsToRefine.length || !currentJson?.layout) return;
+    
+    const nodes = idsToRefine.map(id => findById(currentJson.layout, id)).filter(Boolean);
+    const desc = nodes.map(n => n.props?.sduiLabel ? n.props.sduiLabel : n.type).join(', ');
+    
     const instruction = lang === 'tr'
-      ? `Bu bileşeni iyileştir: ${desc}. Daha modern ve profesyonel yap.`
-      : `Refine this component: ${desc}. Make it more modern and professional.`;
+      ? `Şu bileşenleri iyileştir (${desc}): ... Daha modern ve profesyonel yap.`
+      : `Refine these components (${desc}): ... Make them more modern and professional.`;
     setPromptText(instruction);
     setLeftTab('generate');
-  }, [selectedId, currentJson, lang]);
+  }, [selectedIds, currentJson, lang]);
 
   // ── Derived ─────────────────────────────────────────────────────────────
   const tree = currentJson?.layout ? [buildTreeNode(currentJson.layout)] : null;
-  const selectedPath = (selectedId && currentJson?.layout)
-    ? (findPath(currentJson.layout, selectedId) || [])
+  const selectedPath = (selectedIds.length > 0 && currentJson?.layout)
+    ? (findPath(currentJson.layout, selectedIds[0]) || [])
     : [];
-  const selectedNode = selectedId ? findById(currentJson?.layout, selectedId) : null;
+  
+  const selectedNodes = selectedIds.map(id => findById(currentJson?.layout, id)).filter(Boolean);
+  const primaryNode = selectedNodes[0];
 
   const breadcrumb = currentFilePath ? {
     folder: currentFilePath.includes('/') ? currentFilePath.split('/').slice(0, -1).join('/') : (lang === 'tr' ? 'Projeler' : 'Projects'),
@@ -814,24 +842,39 @@ function App() {
 
   const generateState = appState === 'streaming' ? 'streaming' : currentJson ? 'filled' : 'idle';
 
-  const attrSelection = selectedNode ? {
-    id: selectedNode._id,
-    type: selectedNode.type,
-    name: selectedNode.props?.text?.slice(0, 22) || selectedNode.type,
-    path: selectedPath.join(' › '),
-    props: {
-      height: selectedNode.props?.height,
-      padX: selectedNode.props?.horizontalPadding ?? selectedNode.props?.paddingLeft ?? selectedNode.props?.padding,
-      padY: selectedNode.props?.verticalPadding ?? selectedNode.props?.paddingTop ?? selectedNode.props?.padding,
-      radius: selectedNode.props?.cornerRadius,
-      backgroundColor: selectedNode.props?.backgroundColor,
-      bg: selectedNode.props?.backgroundColor,
-      color: selectedNode.props?.color,
-      fontSize: selectedNode.props?.fontSize,
-      fontWeight: selectedNode.props?.fontWeight,
-      shadow: selectedNode.props?.shadow,
-    },
-  } : null;
+  let attrSelection = null;
+  if (selectedNodes.length === 1) {
+    attrSelection = {
+      isMulti: false,
+      id: primaryNode._id,
+      type: primaryNode.type,
+      name: primaryNode.props?.sduiLabel || primaryNode.props?.text?.slice(0, 22) || primaryNode.type,
+      path: selectedPath.join(' › '),
+      props: {
+        sduiLabel: primaryNode.props?.sduiLabel,
+        height: primaryNode.props?.height,
+        padX: primaryNode.props?.horizontalPadding ?? primaryNode.props?.paddingLeft ?? primaryNode.props?.padding,
+        padY: primaryNode.props?.verticalPadding ?? primaryNode.props?.paddingTop ?? primaryNode.props?.padding,
+        radius: primaryNode.props?.cornerRadius,
+        backgroundColor: primaryNode.props?.backgroundColor,
+        bg: primaryNode.props?.backgroundColor,
+        color: primaryNode.props?.color,
+        fontSize: primaryNode.props?.fontSize,
+        fontWeight: primaryNode.props?.fontWeight,
+        shadow: primaryNode.props?.shadow,
+      },
+    };
+  } else if (selectedNodes.length > 1) {
+    attrSelection = {
+      isMulti: true,
+      count: selectedNodes.length,
+      types: [...new Set(selectedNodes.map(n => n.type))].join(', '),
+      props: {
+        sduiLabel: selectedNodes.every(n => n.props?.sduiLabel === primaryNode.props?.sduiLabel) ? primaryNode.props?.sduiLabel : undefined,
+        bg: selectedNodes.every(n => n.props?.backgroundColor === primaryNode.props?.backgroundColor) ? primaryNode.props?.backgroundColor : undefined,
+      }
+    };
+  }
 
   // ── Render ──────────────────────────────────────────────────────────────
   return (
@@ -889,8 +932,8 @@ function App() {
               view={treeView}
               onView={setTreeView}
               tree={tree}
-              selectedPath={selectedPath}
-              onSelectNode={path => setSelectedId(path[path.length - 1])}
+              selectedPaths={selectedIds.map(id => findPath(currentJson?.layout, id) || [])}
+              onSelectNode={(path, multi) => handleSelectNode(path[path.length - 1], multi)}
               breadcrumb={selectedPath.length ? selectedPath.map(String) : null}
             />
           )}
@@ -916,8 +959,8 @@ function App() {
             {appState === 'editing' && (
               <SDUIRenderer
                 layout={currentJson?.layout}
-                selectedId={selectedId}
-                onSelectId={setSelectedId}
+                selectedIds={selectedIds}
+                onSelectId={handleSelectNode}
               />
             )}
           </window.SDUI.CanvasPane>
