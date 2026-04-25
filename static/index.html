@@ -464,6 +464,7 @@ function App() {
   const [abVariantB, setAbVariantB] = useState(null);
   const [version, setVersion] = useState(1);
   const [savedAt, setSavedAt] = useState(null);
+  const [zoom, setZoom] = useState(100);
 
   // ── File system ─────────────────────────────────────────────────────────
   const [files, setFiles] = useState([]);
@@ -624,6 +625,90 @@ function App() {
     handleSelectFile(path);
   };
 
+  // ── Zoom ─────────────────────────────────────────────────────────────────
+  const handleZoomIn = () => setZoom(z => Math.min(200, z + 10));
+  const handleZoomOut = () => setZoom(z => Math.max(50, z - 10));
+
+  // ── Prop editing (live attribute changes) ───────────────────────────────
+  const handlePropChange = useCallback((propName, value) => {
+    if (!selectedId || !currentJson?.layout) return;
+    const updateNode = (node) => {
+      if (node._id === selectedId) {
+        if (!node.props) node.props = {};
+        node.props[propName] = value;
+        return true;
+      }
+      for (const c of (node.children || [])) {
+        if (updateNode(c)) return true;
+      }
+      return false;
+    };
+    const clone = JSON.parse(JSON.stringify(currentJson));
+    _uid = 0; tagIds(clone.layout);
+    updateNode(clone.layout);
+    setCurrentJson(clone);
+  }, [selectedId, currentJson]);
+
+  // ── Duplicate ───────────────────────────────────────────────────────────
+  const handleDuplicate = useCallback((nodeId) => {
+    const id = nodeId || selectedId;
+    if (!id || !currentJson?.layout) return;
+    const deepClone = (node) => {
+      const copy = JSON.parse(JSON.stringify(node));
+      delete copy._id;
+      (copy.children || []).forEach(c => delete c._id);
+      return copy;
+    };
+    const insertAfter = (parent) => {
+      const kids = parent.children || [];
+      for (let i = 0; i < kids.length; i++) {
+        if (kids[i]._id === id) {
+          kids.splice(i + 1, 0, deepClone(kids[i]));
+          return true;
+        }
+        if (insertAfter(kids[i])) return true;
+      }
+      return false;
+    };
+    const clone = JSON.parse(JSON.stringify(currentJson));
+    if (clone.layout._id === id) return; // can't duplicate root
+    insertAfter(clone.layout);
+    _uid = 0; tagIds(clone.layout);
+    setCurrentJson(clone);
+  }, [selectedId, currentJson]);
+
+  // ── Delete ──────────────────────────────────────────────────────────────
+  const handleDelete = useCallback((nodeId) => {
+    const id = nodeId || selectedId;
+    if (!id || !currentJson?.layout) return;
+    if (currentJson.layout._id === id) return; // can't delete root
+    const removeFrom = (parent) => {
+      const kids = parent.children || [];
+      for (let i = 0; i < kids.length; i++) {
+        if (kids[i]._id === id) { kids.splice(i, 1); return true; }
+        if (removeFrom(kids[i])) return true;
+      }
+      return false;
+    };
+    const clone = JSON.parse(JSON.stringify(currentJson));
+    removeFrom(clone.layout);
+    _uid = 0; tagIds(clone.layout);
+    setCurrentJson(clone);
+    setSelectedId(null);
+  }, [selectedId, currentJson]);
+
+  // ── Refine with AI ─────────────────────────────────────────────────────
+  const handleRefine = useCallback((nodeId) => {
+    const node = findById(currentJson?.layout, nodeId || selectedId);
+    if (!node) return;
+    const desc = node.type + (node.props?.text ? `: "${node.props.text}"` : '');
+    const instruction = lang === 'tr'
+      ? `Bu bileşeni iyileştir: ${desc}. Daha modern ve profesyonel yap.`
+      : `Refine this component: ${desc}. Make it more modern and professional.`;
+    setPromptText(instruction);
+    setLeftTab('generate');
+  }, [selectedId, currentJson, lang]);
+
   // ── Derived ─────────────────────────────────────────────────────────────
   const tree = currentJson?.layout ? [buildTreeNode(currentJson.layout)] : null;
   const selectedPath = (selectedId && currentJson?.layout)
@@ -639,6 +724,7 @@ function App() {
   const generateState = appState === 'streaming' ? 'streaming' : currentJson ? 'filled' : 'idle';
 
   const attrSelection = selectedNode ? {
+    id: selectedNode._id,
     type: selectedNode.type,
     name: selectedNode.props?.text?.slice(0, 22) || selectedNode.type,
     path: selectedPath.join(' › '),
@@ -647,10 +733,12 @@ function App() {
       padX: selectedNode.props?.horizontalPadding ?? selectedNode.props?.paddingLeft ?? selectedNode.props?.padding,
       padY: selectedNode.props?.verticalPadding ?? selectedNode.props?.paddingTop ?? selectedNode.props?.padding,
       radius: selectedNode.props?.cornerRadius,
+      backgroundColor: selectedNode.props?.backgroundColor,
       bg: selectedNode.props?.backgroundColor,
       color: selectedNode.props?.color,
       fontSize: selectedNode.props?.fontSize,
       fontWeight: selectedNode.props?.fontWeight,
+      shadow: selectedNode.props?.shadow,
     },
   } : null;
 
@@ -666,6 +754,7 @@ function App() {
           breadcrumb={breadcrumb}
           savedAt={formatRelTime(savedAt, lang)}
           showAB={abActive}
+          onPublish={handlePublish}
         />
 
         <div className="workspace">
@@ -688,6 +777,8 @@ function App() {
             onSelectFile={handleSelectFile}
             onNewFolder={handleNewFolder}
             onNewFile={handleNewFile}
+            platform={platform}
+            onPlatform={setPlatform}
             abActive={abActive}
             currentVersion={`v${version}`}
             onPublish={handlePublish}
@@ -716,6 +807,9 @@ function App() {
             lang={lang}
             device={device}
             onDevice={setDevice}
+            zoom={zoom}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
             hideShell={appState === 'empty'}
           >
             {appState === 'empty' && (
@@ -736,7 +830,14 @@ function App() {
           </window.SDUI.CanvasPane>
 
           {/* Attributes panel */}
-          <window.SDUI.AttributesPane lang={lang} selection={attrSelection}/>
+          <window.SDUI.AttributesPane
+            lang={lang}
+            selection={attrSelection}
+            onChangeProp={handlePropChange}
+            onDuplicate={handleDuplicate}
+            onDelete={handleDelete}
+            onRefine={handleRefine}
+          />
         </div>
       </div>
 

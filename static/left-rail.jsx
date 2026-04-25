@@ -9,6 +9,7 @@ function LeftRail({
   generateState = 'idle', onGenerate,
   // Files tab
   files = [], selectedFilePath, onSelectFile, onNewFolder, onNewFile,
+  platform = 'mobile', onPlatform,
   // Publish tab
   abActive = false, currentVersion = 'v1',
   onPublish, onSaveAsA, onSaveAsB, onStartAB,
@@ -37,7 +38,7 @@ function LeftRail({
       </div>
 
       <div className="pane-body" style={{ padding: 0 }}>
-        {tab === 'files'    && <FilesContent lang={lang} files={files} selectedFilePath={selectedFilePath} onSelectFile={onSelectFile} onNewFolder={onNewFolder} onNewFile={onNewFile}/>}
+        {tab === 'files'    && <FilesContent lang={lang} files={files} selectedFilePath={selectedFilePath} onSelectFile={onSelectFile} onNewFolder={onNewFolder} onNewFile={onNewFile} platform={platform} onPlatform={onPlatform}/>}
         {tab === 'generate' && <GenerateContent lang={lang} state={generateState} promptText={promptText} onPromptChange={onPromptChange} imagePreview={imagePreview} onImageChange={onImageChange} onImageRemove={onImageRemove} smartCrop={smartCrop} onSmartCropChange={onSmartCropChange} onGenerate={onGenerate}/>}
         {tab === 'publish'  && <PublishContent lang={lang} abActive={abActive} currentVersion={currentVersion} onPublish={onPublish} onSaveAsA={onSaveAsA} onSaveAsB={onSaveAsB} onStartAB={onStartAB}/>}
       </div>
@@ -46,7 +47,7 @@ function LeftRail({
 }
 
 /* ── Files tab ─────────────────────────────────────────────────────────────── */
-function FilesContent({ lang, files, selectedFilePath, onSelectFile, onNewFolder, onNewFile }) {
+function FilesContent({ lang, files, selectedFilePath, onSelectFile, onNewFolder, onNewFile, platform, onPlatform }) {
   const t = window.SDUI.t;
   return (
     <div>
@@ -87,10 +88,18 @@ function FilesContent({ lang, files, selectedFilePath, onSelectFile, onNewFolder
           {t(lang, 'platform')}
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
-          <button className="btn" style={{ flex: 1, justifyContent: 'center', background: 'var(--brand-soft)', color: 'var(--brand)', borderColor: 'transparent', fontWeight: 600 }}>
+          <button 
+            className="btn" 
+            style={{ flex: 1, justifyContent: 'center', ...(platform === 'mobile' ? { background: 'var(--brand-soft)', color: 'var(--brand)', borderColor: 'transparent', fontWeight: 600 } : {}) }}
+            onClick={() => onPlatform && onPlatform('mobile')}
+          >
             <Icon name="device-mobile" size={12}/> {t(lang, 'mobile')}
           </button>
-          <button className="btn" style={{ flex: 1, justifyContent: 'center' }}>
+          <button 
+            className="btn" 
+            style={{ flex: 1, justifyContent: 'center', ...(platform === 'web' ? { background: 'var(--brand-soft)', color: 'var(--brand)', borderColor: 'transparent', fontWeight: 600 } : {}) }}
+            onClick={() => onPlatform && onPlatform('web')}
+          >
             <Icon name="globe" size={12}/> {t(lang, 'web')}
           </button>
         </div>

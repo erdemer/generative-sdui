@@ -7,7 +7,7 @@ const { useState, useMemo, useEffect } = React;
 const t = (lang, key) => (window.I18N[lang] && window.I18N[lang][key]) || key;
 
 /* =================== TOPBAR =================== */
-function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt = "1m", showAB = false }) {
+function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt = "1m", showAB = false, onPublish }) {
   return (
     <div className="topbar">
       <div className="topbar-left">
@@ -43,25 +43,28 @@ function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt 
         <button className="icon-btn" onClick={onToggleTheme} title={lang==='tr'?'Tema değiştir':'Cycle theme'}>
           <Icon name={theme && theme.indexOf('dark')>=0 ? 'moon' : 'sun'} size={15}/>
         </button>
-        <button className="icon-btn"><Icon name="users" size={15}/></button>
+        <button className="icon-btn" onClick={() => alert("Invite / Share coming soon!")}><Icon name="users" size={15}/></button>
         <div style={{ display: 'flex', marginLeft: 4 }}>
           <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'oklch(0.65 0.15 25)', border: '2px solid var(--panel)', color: '#fff', fontSize: 10, fontWeight: 600, display: 'grid', placeItems: 'center' }}>EA</div>
           <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'oklch(0.62 0.13 240)', border: '2px solid var(--panel)', color: '#fff', fontSize: 10, fontWeight: 600, display: 'grid', placeItems: 'center', marginLeft: -8 }}>MK</div>
         </div>
-        <button className="btn primary"><Icon name="rocket" size={13}/> {t(lang,"publish")}</button>
+        <button className="btn primary" onClick={onPublish}><Icon name="rocket" size={13}/> {t(lang,"publish")}</button>
       </div>
     </div>
   );
 }
 
 /* =================== LEFT PANE: Files + Settings + Reference + Prompt + Publish =================== */
-function FilesPane({ lang, files = [], selectedId, onSelect, density = "default" }) {
+function FilesPane({ lang, files = [], selectedId, onSelect, onNewFile, density = "default" }) {
+  const [search, setSearch] = useState("");
+  const filteredFiles = useMemo(() => files.filter(f => f.name.toLowerCase().includes(search.toLowerCase())), [files, search]);
+
   return (
     <div className="pane">
       <div className="pane-header">
         <h3>{t(lang,"files")}</h3>
         <div className="actions">
-          <button className="icon-btn" title={t(lang,"newProject")}><Icon name="plus" size={14}/></button>
+          <button className="icon-btn" title={t(lang,"newProject")} onClick={onNewFile}><Icon name="plus" size={14}/></button>
           <button className="icon-btn"><Icon name="search" size={14}/></button>
           <button className="icon-btn"><Icon name="more-h" size={14}/></button>
         </div>
@@ -71,16 +74,16 @@ function FilesPane({ lang, files = [], selectedId, onSelect, density = "default"
         <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)' }}>
           <div style={{ position: 'relative' }}>
             <Icon name="search" size={13} className="" style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: 'var(--fg-3)' }}/>
-            <input className="input" style={{ paddingLeft: 28, height: 28 }} placeholder={lang==='tr'?'Dosyalarda ara…':'Search files…'}/>
+            <input className="input" style={{ paddingLeft: 28, height: 28 }} placeholder={lang==='tr'?'Dosyalarda ara…':'Search files…'} value={search} onChange={e => setSearch(e.target.value)}/>
           </div>
         </div>
 
         {/* File tree */}
         <div style={{ padding: '8px 6px' }}>
-          {files.length === 0 ? (
+          {filteredFiles.length === 0 ? (
             <EmptyFiles lang={lang}/>
           ) : (
-            files.map((f, i) => (
+            filteredFiles.map((f, i) => (
               <FileRow key={i} {...f} selected={f.id === selectedId} onClick={() => onSelect && onSelect(f.id)} lang={lang}/>
             ))
           )}
@@ -223,7 +226,9 @@ function TreeNode({ node, level, selectedPath, onSelect, path = [] }) {
 }
 
 /* =================== DEVICE STAGE =================== */
-function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, showGrid = true, toolbarRight, footer, hideShell = false }) {
+function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, onZoomIn, onZoomOut, showGrid = true, toolbarRight, footer, hideShell = false }) {
+  const [interactive, setInteractive] = useState(false);
+  
   return (
     <div className="pane canvas">
       <div className="canvas-toolbar">
@@ -239,16 +244,20 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, s
           </button>
         </div>
         <span style={{ width: 1, height: 16, background: 'var(--line)' }}/>
-        <button className="icon-btn" title={t(lang,"interactive")}><Icon name="play" size={12}/></button>
-        <button className="icon-btn"><Icon name="eye" size={13}/></button>
+        <button className={`icon-btn ${interactive?'active':''}`} title={t(lang,"interactive")} onClick={() => setInteractive(!interactive)}><Icon name="play" size={12}/></button>
+        <button className="icon-btn" onClick={() => alert("Preview mode coming soon")}><Icon name="eye" size={13}/></button>
         <span style={{ width: 1, height: 16, background: 'var(--line)' }}/>
         <span style={{ fontSize: 11, color: 'var(--fg-3)', padding: '0 6px' }}>{t(lang,"livePreview")}</span>
         {toolbarRight}
       </div>
 
-      <div className="device-stage">
-        {hideShell ? children : (
-          <div className="device-shell">
+      <div className="device-stage" style={{ pointerEvents: interactive ? 'auto' : 'none' }}>
+        {hideShell ? (
+          <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s', width: '100%', height: '100%' }}>
+            {children}
+          </div>
+        ) : (
+          <div className="device-shell" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s' }}>
             <div className="device-screen">
               {children}
             </div>
@@ -257,9 +266,9 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, s
       </div>
 
       <div className="canvas-zoom">
-        <button><Icon name="x" size={11}/></button>
+        <button onClick={onZoomOut}><Icon name="x" size={11}/></button>
         <span className="val">{zoom}%</span>
-        <button><Icon name="plus" size={11}/></button>
+        <button onClick={onZoomIn}><Icon name="plus" size={11}/></button>
       </div>
 
       {footer}
@@ -268,14 +277,14 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, s
 }
 
 /* =================== ATTRIBUTES PANE =================== */
-function AttributesPane({ lang, selection }) {
+function AttributesPane({ lang, selection, onChangeProp, onDuplicate, onDelete, onRefine }) {
   return (
     <div className="pane">
       <div className="pane-header">
         <h3>{t(lang,"attributes")}</h3>
         <div className="actions">
-          <button className="icon-btn"><Icon name="duplicate" size={13}/></button>
-          <button className="icon-btn"><Icon name="trash" size={13}/></button>
+          <button className="icon-btn" onClick={() => selection && onDuplicate && onDuplicate(selection.id)} disabled={!selection}><Icon name="duplicate" size={13}/></button>
+          <button className="icon-btn" onClick={() => selection && onDelete && onDelete(selection.id)} disabled={!selection}><Icon name="trash" size={13}/></button>
           <button className="icon-btn"><Icon name="more-h" size={14}/></button>
         </div>
       </div>
@@ -292,14 +301,14 @@ function AttributesPane({ lang, selection }) {
                 <Icon name="lightning" size={11}/> {t(lang,"quickActions")}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{lang==='tr'?'Çoğalt':'Duplicate'}</span><span className="kbd">⌘D</span></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{lang==='tr'?'Sil':'Delete'}</span><span className="kbd">⌫</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => onDuplicate && onDuplicate()}><span>{lang==='tr'?'Çoğalt':'Duplicate'}</span><span className="kbd">⌘D</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => onDelete && onDelete()}><span>{lang==='tr'?'Sil':'Delete'}</span><span className="kbd">⌫</span></div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{lang==='tr'?'Üret':'Generate'}</span><span className="kbd">⌘↵</span></div>
               </div>
             </div>
           </div>
         ) : (
-          <SelectedAttributes selection={selection} lang={lang}/>
+          <SelectedAttributes selection={selection} lang={lang} onChangeProp={onChangeProp} onRefine={onRefine} />
         )}
       </div>
     </div>
@@ -328,26 +337,41 @@ function AttrRow({ label, children }) {
   );
 }
 
-function NumInput({ value, unit = "px" }) {
+function NumInput({ value, unit = "px", onChange }) {
+  const [val, setVal] = useState(value || '');
+  useEffect(() => { setVal(value || ''); }, [value]);
+  
+  const handleBlur = () => { if (val != value && onChange) onChange(Number(val) || val); };
+  const handleKey = (e) => { if (e.key === 'Enter') handleBlur(); };
+
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      <input className="input" defaultValue={value} style={{ height: 26, width: '100%', paddingRight: 26, fontSize: 11, fontFamily: 'var(--font-mono)' }}/>
+      <input className="input" value={val} onChange={e => setVal(e.target.value)} onBlur={handleBlur} onKeyDown={handleKey} style={{ height: 26, width: '100%', paddingRight: 26, fontSize: 11, fontFamily: 'var(--font-mono)' }}/>
       <span style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: 'var(--fg-3)', fontFamily: 'var(--font-mono)' }}>{unit}</span>
     </div>
   );
 }
 
-function ColorRow({ value }) {
+function ColorRow({ value, onChange }) {
+  const [val, setVal] = useState(value || '');
+  useEffect(() => { setVal(value || ''); }, [value]);
+  
+  const handleBlur = () => { if (val != value && onChange) onChange(val); };
+  const handleKey = (e) => { if (e.key === 'Enter') handleBlur(); };
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, height: 26, padding: '0 4px 0 6px', border: '1px solid var(--input-line)', borderRadius: 6, background: 'var(--input)', width: '100%' }}>
       <span style={{ width: 14, height: 14, borderRadius: 4, background: value, border: '1px solid var(--line)', flexShrink: 0 }}/>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</span>
+      <input 
+        style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg)', flex: 1, minWidth: 0, background: 'transparent', border: 0, outline: 'none' }}
+        value={val} onChange={e => setVal(e.target.value)} onBlur={handleBlur} onKeyDown={handleKey}
+      />
       <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--fg-3)' }}>100%</span>
     </div>
   );
 }
 
-function SelectedAttributes({ selection, lang }) {
+function SelectedAttributes({ selection, lang, onChangeProp, onRefine }) {
   // selection = { type, name, props: {...} }
   const p = selection.props || {};
   return (
@@ -372,11 +396,11 @@ function SelectedAttributes({ selection, lang }) {
             <button style={{ height: 20, flex: 1, justifyContent: 'center' }}>{t(lang,"fixed")}</button>
           </div>
         </AttrRow>
-        <AttrRow label={t(lang,"height")}><NumInput value={p.height || 64}/></AttrRow>
+        <AttrRow label={t(lang,"height")}><NumInput value={p.height || 64} onChange={v => onChangeProp && onChangeProp('height', v)}/></AttrRow>
         <AttrRow label={t(lang,"padding")}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
-            <NumInput value={p.padX || 16}/>
-            <NumInput value={p.padY || 12}/>
+            <NumInput value={p.padX || 16} onChange={v => onChangeProp && onChangeProp('padX', v)}/>
+            <NumInput value={p.padY || 12} onChange={v => onChangeProp && onChangeProp('padY', v)}/>
           </div>
         </AttrRow>
         <AttrRow label={t(lang,"align")}>
@@ -390,24 +414,24 @@ function SelectedAttributes({ selection, lang }) {
 
       {selection.type === 'Text' && (
         <AttrSection title={t(lang,"typography")}>
-          <AttrRow label={t(lang,"fontSize")}><NumInput value={p.fontSize || 16}/></AttrRow>
+          <AttrRow label={t(lang,"fontSize")}><NumInput value={p.fontSize || 16} onChange={v => onChangeProp && onChangeProp('fontSize', v)}/></AttrRow>
           <AttrRow label={t(lang,"fontWeight")}>
-            <select className="select" style={{ height: 26, fontSize: 11, width: '100%', textOverflow: 'ellipsis' }} defaultValue={p.fontWeight || "600"}>
+            <select className="select" style={{ height: 26, fontSize: 11, width: '100%', textOverflow: 'ellipsis' }} value={p.fontWeight || "600"} onChange={e => onChangeProp && onChangeProp('fontWeight', e.target.value)}>
               <option value="400">Regular · 400</option>
               <option value="500">Medium · 500</option>
               <option value="600">Semibold · 600</option>
               <option value="700">Bold · 700</option>
             </select>
           </AttrRow>
-          <AttrRow label={t(lang,"color")}><ColorRow value={p.color || "#0F1115"}/></AttrRow>
+          <AttrRow label={t(lang,"color")}><ColorRow value={p.color || "#0F1115"} onChange={v => onChangeProp && onChangeProp('color', v)}/></AttrRow>
         </AttrSection>
       )}
 
       <AttrSection title={t(lang,"appearance")}>
-        <AttrRow label={t(lang,"background")}><ColorRow value={p.bg || "#FFFFFF"}/></AttrRow>
-        <AttrRow label={t(lang,"radius")}><NumInput value={p.radius || 12}/></AttrRow>
+        <AttrRow label={t(lang,"background")}><ColorRow value={p.backgroundColor || p.bg || "#FFFFFF"} onChange={v => onChangeProp && onChangeProp('backgroundColor', v)}/></AttrRow>
+        <AttrRow label={t(lang,"radius")}><NumInput value={p.radius || p.borderRadius || 12} onChange={v => onChangeProp && onChangeProp('borderRadius', v)}/></AttrRow>
         <AttrRow label={lang==='tr'?'Gölge':'Shadow'}>
-          <select className="select" style={{ height: 26, fontSize: 11, width: '100%', textOverflow: 'ellipsis' }} defaultValue="sm">
+          <select className="select" style={{ height: 26, fontSize: 11, width: '100%', textOverflow: 'ellipsis' }} value={p.shadow || "sm"} onChange={e => onChangeProp && onChangeProp('shadow', e.target.value)}>
             <option value="none">None</option>
             <option value="sm">Soft · sm</option>
             <option value="md">Medium · md</option>
@@ -430,7 +454,7 @@ function SelectedAttributes({ selection, lang }) {
       </AttrSection>
 
       <div style={{ padding: 12, borderTop: '1px solid var(--line)', display: 'flex', gap: 6 }}>
-        <button className="btn" style={{ flex: 1, justifyContent: 'center' }}>
+        <button className="btn" style={{ flex: 1, justifyContent: 'center' }} onClick={() => onRefine && onRefine(selection.id)}>
           <Icon name="sparkle" size={11}/> {lang==='tr'?'AI ile İyileştir':'Refine with AI'}
         </button>
       </div>
