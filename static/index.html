@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css"/>
   <style>
     html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
@@ -57,14 +58,19 @@ function computeSDUIStyle(node, p) {
   if (type === 'Column') {
     s.display = 'flex'; s.flexDirection = 'column';
   } else if (type === 'Row') {
-    s.display = 'flex'; s.flexDirection = 'row';
+    s.display = 'flex'; s.flexDirection = 'row'; s.flexWrap = 'wrap';
   } else if (type === 'Card') {
-    s.display = 'flex'; s.flexDirection = 'column';
-    if (!p.backgroundColor) s.backgroundColor = '#ffffff';
-    s.borderRadius = (p.cornerRadius ?? 12) + 'px';
+    s.display = 'flex'; s.flexDirection = 'column'; s.overflow = 'hidden';
+    s.backgroundColor = p.backgroundColor || '#ffffff';
+    s.borderRadius = (p.corner ?? p.cornerRadius ?? 12) + 'px';
     if (!p.elevation) s.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
   } else if (type === 'Box') {
     s.position = 'relative';
+  } else if (type === 'BottomBar') {
+    s.display = 'flex'; s.flexDirection = 'row';
+    s.position = 'sticky'; s.bottom = 0; s.left = 0; s.right = 0;
+    s.width = '100%'; s.zIndex = 100; s.flexShrink = 0;
+    s.backgroundColor = p.backgroundColor || '#ffffff';
   } else if (type === 'BottomSheet') {
     s.display = 'flex'; s.flexDirection = 'column';
     s.position = 'absolute'; s.bottom = 0; s.left = 0; s.right = 0;
@@ -73,8 +79,10 @@ function computeSDUIStyle(node, p) {
   }
 
   // Size
+  if (p.fillMaxSize === 'true' || p.fillMaxSize === true) { s.width = '100%'; s.flex = '1'; s.minHeight = 0; }
   if (p.fillWidth === 'true' || p.fillWidth === true) s.width = '100%';
   else if (p.width != null) s.width = typeof p.width === 'number' ? p.width + 'px' : p.width;
+  if (p.weight != null) { s.flex = p.weight; s.minWidth = 0; }
 
   if (p.fillHeight === 'true' || p.fillHeight === true) s.flex = '1';
   else if (p.height != null) s.height = typeof p.height === 'number' ? p.height + 'px' : p.height;
@@ -82,26 +90,51 @@ function computeSDUIStyle(node, p) {
   if (p.minHeight != null) s.minHeight = p.minHeight + 'px';
   if (p.maxHeight != null) s.maxHeight = p.maxHeight + 'px';
 
-  // Colors
-  if (p.backgroundColor && type !== 'Card') s.backgroundColor = p.backgroundColor;
+  // Colors (background as gradient or hex)
+  if (p.backgroundColor && type !== 'Card') {
+    s.backgroundColor = p.backgroundColor;
+    if (p.backgroundColor.includes('gradient')) { s.background = p.backgroundColor; delete s.backgroundColor; }
+  }
   if (p.color) s.color = p.color;
 
-  // Padding
-  const px = (v) => v != null ? v + 'px' : undefined;
-  if (p.padding != null) s.padding = px(p.padding);
-  if (p.horizontalPadding != null) { s.paddingLeft = px(p.horizontalPadding); s.paddingRight = px(p.horizontalPadding); }
-  if (p.verticalPadding != null) { s.paddingTop = px(p.verticalPadding); s.paddingBottom = px(p.verticalPadding); }
-  if (p.paddingTop != null) s.paddingTop = px(p.paddingTop);
-  if (p.paddingBottom != null) s.paddingBottom = px(p.paddingBottom);
-  if (p.paddingStart != null) s.paddingLeft = px(p.paddingStart);
-  if (p.paddingEnd != null) s.paddingRight = px(p.paddingEnd);
-  if (p.paddingLeft != null) s.paddingLeft = px(p.paddingLeft);
-  if (p.paddingRight != null) s.paddingRight = px(p.paddingRight);
+  // Padding — supports integer OR "top, right, bottom, left" string
+  const toPx = (v) => v != null ? (typeof v === 'number' ? v + 'px' : v + 'px') : undefined;
+  const parsePadding = (v) => {
+    if (v == null) return undefined;
+    if (typeof v === 'number') return v + 'px';
+    const parts = String(v).split(',').map(x => x.trim());
+    return parts.map(x => (/^\d+$/.test(x) ? x + 'px' : x)).join(' ');
+  };
+  if (p.padding != null) s.padding = parsePadding(p.padding);
+  if (p.horizontalPadding != null) { s.paddingLeft = toPx(p.horizontalPadding); s.paddingRight = toPx(p.horizontalPadding); }
+  if (p.verticalPadding != null) { s.paddingTop = toPx(p.verticalPadding); s.paddingBottom = toPx(p.verticalPadding); }
+  if (p.paddingTop != null) s.paddingTop = toPx(p.paddingTop);
+  if (p.paddingBottom != null) s.paddingBottom = toPx(p.paddingBottom);
+  if (p.paddingStart != null) s.paddingLeft = toPx(p.paddingStart);
+  if (p.paddingEnd != null) s.paddingRight = toPx(p.paddingEnd);
+  if (p.paddingLeft != null) s.paddingLeft = toPx(p.paddingLeft);
+  if (p.paddingRight != null) s.paddingRight = toPx(p.paddingRight);
 
-  // Border radius
-  if (p.cornerRadius != null && type !== 'Card') s.borderRadius = p.cornerRadius + 'px';
+  // Margin
+  if (p.margin != null) s.margin = toPx(p.margin);
+  if (p.marginTop != null) s.marginTop = toPx(p.marginTop);
+  if (p.marginBottom != null) s.marginBottom = toPx(p.marginBottom);
+  if (p.marginStart != null) s.marginLeft = toPx(p.marginStart);
+  if (p.marginEnd != null) s.marginRight = toPx(p.marginEnd);
+  if (p.marginLeft != null) s.marginLeft = toPx(p.marginLeft);
+  if (p.marginRight != null) s.marginRight = toPx(p.marginRight);
+
+  // Border radius — `corner` (AI prompt) or `cornerRadius`
+  const radius = p.corner ?? p.cornerRadius;
+  if (radius != null && type !== 'Card') s.borderRadius = radius + 'px';
 
   // Typography
+  if (type === 'Text' && p.style) {
+    const ts = { h1: ['24px','700'], h2: ['20px','700'], h3: ['17px','600'], body: ['14px','400'], caption: ['12px','400'] };
+    const [fs, fw] = ts[p.style] || [];
+    if (fs && !p.fontSize) s.fontSize = fs;
+    if (fw && !p.fontWeight) s.fontWeight = fw;
+  }
   if (p.fontSize != null) s.fontSize = p.fontSize + 'px';
   if (p.fontWeight === 'bold') s.fontWeight = '700';
   else if (p.fontWeight === 'semibold') s.fontWeight = '600';
@@ -126,15 +159,16 @@ function computeSDUIStyle(node, p) {
     else if (ha === 'end') s.alignItems = 'flex-end';
   }
 
-  // Row alignment
-  if (type === 'Row') {
+  // Row / BottomBar alignment
+  if (type === 'Row' || type === 'BottomBar') {
     const ha = p.horizontalArrangement;
     if (ha === 'center') s.justifyContent = 'center';
     else if (ha === 'end') s.justifyContent = 'flex-end';
+    else if (ha === 'start' || ha === 'starts') s.justifyContent = 'flex-start';
     else if (ha === 'spacebetween') s.justifyContent = 'space-between';
     else if (ha === 'spaceevenly') s.justifyContent = 'space-evenly';
     else if (ha === 'spacearound') s.justifyContent = 'space-around';
-    else if (ha && ha.startsWith('spacedby:')) s.gap = ha.split(':')[1].trim() + 'px';
+    else if (ha && ha.startsWith('spacedby:')) { s.gap = ha.split(':')[1].trim() + 'px'; s.flexWrap = 'nowrap'; }
     const va = p.verticalAlignment;
     if (va === 'center') s.alignItems = 'center';
     else if (va === 'bottom') s.alignItems = 'flex-end';
@@ -238,14 +272,21 @@ function SDUINode({ node, selectedIds, onSelectId }) {
     }
 
     case 'Icon': {
-      const iconStyle = { ...style, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' };
+      const iconStyle = { ...style, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 };
       if (p.size) iconStyle.fontSize = p.size + 'px';
+      if (p.color) iconStyle.color = p.color;
       return (
         <span onClick={onClick} style={iconStyle} className="material-icons" aria-hidden="true">
-          {p.name || '◆'}
+          {p.name || 'help_outline'}
         </span>
       );
     }
+
+    case 'Card':
+      return <div onClick={onClick} style={style}>{children}</div>;
+
+    case 'BottomBar':
+      return <div onClick={onClick} style={style}>{children}</div>;
 
     case 'Spacer':
       return <div onClick={onClick} style={style}/>;
