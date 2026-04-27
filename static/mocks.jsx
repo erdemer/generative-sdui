@@ -1,5 +1,7 @@
 /* SDUI Studio — Mock content for the device screen previews */
 
+var Icon = window.Icon;
+
 /* ============ EMPTY DEVICE — initial canvas state ============ */
 function MockEmptyScreen({ lang }) {
   return (

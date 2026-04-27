@@ -1,5 +1,7 @@
 /* SDUI Studio — EmptyHero: shown when no layout is loaded */
 
+var Icon = window.Icon;
+
 function EmptyHero({ lang, onStart }) {
   const I = window.I18N[lang];
   return (

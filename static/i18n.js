@@ -318,7 +318,7 @@ const I18N = {
 window.I18N = I18N;
 
 /* ============ Icons (Phosphor-ish, hand-tuned) ============ */
-const Icon = ({ name, size = 16, stroke = 1.6, className = "", style }) => {
+window.Icon = ({ name, size = 16, stroke = 1.6, className = "", style }) => {
   const props = {
     width: size, height: size, viewBox: "0 0 24 24",
     fill: "none", stroke: "currentColor", strokeWidth: stroke,
@@ -375,5 +375,3 @@ const Icon = ({ name, size = 16, stroke = 1.6, className = "", style }) => {
     default: return null;
   }
 };
-
-window.Icon = Icon;

@@ -2,6 +2,7 @@
 
 const HISTORY_KEY = 'sdui_prompt_history';
 const MAX_HISTORY = 8;
+var Icon = window.Icon;
 
 function loadHistory() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }

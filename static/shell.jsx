@@ -4,6 +4,7 @@
 
 const { useState, useMemo, useEffect } = React;
 
+var Icon = window.Icon;
 const t = (lang, key) => (window.I18N[lang] && window.I18N[lang][key]) || key;
 
 /* =================== TOPBAR =================== */

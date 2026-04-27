@@ -1,5 +1,7 @@
 /* SDUI Studio — JsonPane: raw JSON view */
 
+var Icon = window.Icon;
+
 function JsonPane({ lang, json, onView }) {
   const t = window.SDUI.t;
   return (
