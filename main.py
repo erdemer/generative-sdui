@@ -354,39 +354,34 @@ SMART_CROP_PROMPT = """
 """
 
 UI_VERIFY_PROMPT = """
-You are an expert UI Quality Assurance reviewer. You will receive:
-1. An SDUI JSON layout definition
-2. A screenshot of how this JSON renders visually
+You are a Senior UI/UX Engineer and Design System expert. You will receive an SDUI JSON layout and its rendered screenshot.
 
-Your job is to compare the rendered screenshot against the JSON and identify ANY visual or structural issues.
+Your mission: make the UI look **polished, modern, and professional** by fixing real issues — do NOT change things that already look good.
 
-### VISUAL ISSUES TO CHECK:
-- **Padding/Margin**: Elements too cramped or too spread out. Text touching edges without padding.
-- **Colors**: Poor contrast (e.g., light text on light background), inconsistent color scheme, unreadable text.
-- **Alignment**: Misaligned elements, uneven spacing between similar items.
-- **Layout**: Overlapping elements, content cut off or overflowing, empty gaps where content should be.
-- **Images**: Missing images, broken aspect ratios, images too small or too large for their container.
-- **Typography**: Text too small to read, inconsistent font sizes for similar elements.
-- **Overall Polish**: Does it look like a professional, well-designed app screen?
+### PRIORITY 1 — STRUCTURAL BUGS (always fix these):
+- `scroll: "true"` on a container whose children have `weight` → remove `weight` from those children.
+- Root container missing `fillMaxSize: "true"` → add it.
+- `Image` inside a Card/List without a fixed `height` → set `height: 160` (or appropriate value).
+- `Image` missing `contentScale: "crop"` → add it.
+- Empty `children: []` arrays → remove the empty container.
 
-### STRUCTURAL JSON ISSUES TO CHECK:
-- `scroll: "true"` on a container whose children have `weight` (causes infinite size error).
-- Missing `fillWidth: "true"` on containers that should span full width.
-- Missing `fillMaxSize: "true"` on root containers.
-- Image components without `height` specified inside cards/lists (causes collapse).
-- Empty `children` arrays.
-- Missing `contentScale` on Image components.
-- Rows without proper `horizontalArrangement` or `verticalAlignment`.
+### PRIORITY 2 — VISUAL QUALITY (fix only if clearly broken):
+- **Contrast**: Text color too similar to background → fix the color for readability.
+- **Cramped layout**: No padding on root Column/Row → add `padding: "16, 16, 16, 16"` at minimum.
+- **Broken hierarchy**: All Text components the same size → differentiate heading vs body sizes.
+- **Missing spacing**: Elements stacked with zero gap → add `verticalArrangement: "spacedby:12"` on the parent Column.
+
+### WHAT NOT TO CHANGE:
+- Do NOT change color schemes, themes, or brand colors unless contrast is unreadable.
+- Do NOT restructure the layout or reorder sections.
+- Do NOT rename text content.
+- Do NOT add or remove major sections.
+- Do NOT change things that look fine in the screenshot.
 
 ### RESPONSE FORMAT:
-You must output ONLY valid JSON. No Markdown, no explanations, no commentary.
-
-If issues are found:
-- Fix ALL issues in the JSON and return the COMPLETE corrected JSON.
-- Ensure the fix addresses both visual AND structural problems.
-
-If no issues are found:
-- Return the original JSON exactly as-is.
+Output ONLY valid JSON. No Markdown fences, no explanations.
+- If you made improvements → return the complete corrected JSON.
+- If the UI already looks good → return the original JSON exactly as-is.
 
 ### CURRENT SDUI JSON:
 """

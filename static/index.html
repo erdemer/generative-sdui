@@ -563,7 +563,8 @@ function App() {
       const res = await fetch('/generate', { method: 'POST', body: fd });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
-      if (!data?.layout) throw new Error('Invalid response');
+      console.log('[generate] response:', data);
+      if (!data?.layout) throw new Error(data?.detail || 'Geçersiz yanıt — layout yok');
 
       _uid = 0; tagIds(data.layout);
       setCurrentJson(data);
@@ -749,6 +750,7 @@ function App() {
     _uid = 0; tagIds(clone.layout);
     updateNode(clone.layout);
     setCurrentJson(clone);
+    if (propName === 'sduiLabel' && value) setLeftTab('generate');
   }, [selectedIds, currentJson]);
 
   // ── Duplicate ───────────────────────────────────────────────────────────
@@ -841,6 +843,7 @@ function App() {
   } : null;
 
   const generateState = appState === 'streaming' ? 'streaming' : currentJson ? 'filled' : 'idle';
+  const selectedLabel = primaryNode?.props?.sduiLabel || null;
 
   let attrSelection = null;
   if (selectedNodes.length === 1) {
@@ -915,6 +918,7 @@ function App() {
             onNewFile={handleNewFile}
             platform={platform}
             onPlatform={handlePlatformChange}
+            selectedLabel={selectedLabel}
             abActive={abActive}
             currentVersion={`v${version}`}
             onPublish={handlePublish}

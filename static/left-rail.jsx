@@ -7,6 +7,7 @@ function LeftRail({
   imagePreview, onImageChange, onImageRemove,
   smartCrop = false, onSmartCropChange,
   generateState = 'idle', onGenerate,
+  selectedLabel = null,
   // Files tab
   files = [], selectedFilePath, onSelectFile, onNewFolder, onNewFile,
   platform = 'mobile', onPlatform,
@@ -39,7 +40,7 @@ function LeftRail({
 
       <div className="pane-body" style={{ padding: 0 }}>
         {tab === 'files'    && <FilesContent lang={lang} files={files} selectedFilePath={selectedFilePath} onSelectFile={onSelectFile} onNewFolder={onNewFolder} onNewFile={onNewFile} platform={platform} onPlatform={onPlatform}/>}
-        {tab === 'generate' && <GenerateContent lang={lang} state={generateState} promptText={promptText} onPromptChange={onPromptChange} imagePreview={imagePreview} onImageChange={onImageChange} onImageRemove={onImageRemove} smartCrop={smartCrop} onSmartCropChange={onSmartCropChange} onGenerate={onGenerate}/>}
+        {tab === 'generate' && <GenerateContent lang={lang} state={generateState} promptText={promptText} onPromptChange={onPromptChange} imagePreview={imagePreview} onImageChange={onImageChange} onImageRemove={onImageRemove} smartCrop={smartCrop} onSmartCropChange={onSmartCropChange} onGenerate={onGenerate} selectedLabel={selectedLabel}/>}
         {tab === 'publish'  && <PublishContent lang={lang} abActive={abActive} currentVersion={currentVersion} onPublish={onPublish} onSaveAsA={onSaveAsA} onSaveAsB={onSaveAsB} onStartAB={onStartAB}/>}
       </div>
     </div>
@@ -109,7 +110,7 @@ function FilesContent({ lang, files, selectedFilePath, onSelectFile, onNewFolder
 }
 
 /* ── Generate tab ──────────────────────────────────────────────────────────── */
-function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview, onImageChange, onImageRemove, smartCrop, onSmartCropChange, onGenerate }) {
+function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview, onImageChange, onImageRemove, smartCrop, onSmartCropChange, onGenerate, selectedLabel }) {
   const fileInputRef = React.useRef(null);
   const t = window.SDUI.t;
 
@@ -187,6 +188,15 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
         </div>
 
         <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+          {selectedLabel && (
+            <span
+              className="chip"
+              style={{ cursor: 'pointer', fontSize: 10.5, background: 'var(--brand-soft)', color: 'var(--brand)', borderColor: 'transparent', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}
+              onClick={() => onPromptChange && onPromptChange((promptText ? promptText + ' ' : '') + selectedLabel + ' ')}
+            >
+              <Icon name="wand" size={10}/> {selectedLabel}
+            </span>
+          )}
           {(lang === 'tr' ? ['+ Tipografi', '+ Koyu tema', '+ Animasyon'] : ['+ Typography', '+ Dark theme', '+ Animations']).map((c, i) => (
             <span key={i} className="chip" style={{ cursor: 'pointer', fontSize: 10.5 }}
               onClick={() => onPromptChange && onPromptChange((promptText ? promptText + ', ' : '') + c.replace('+ ', ''))}>
