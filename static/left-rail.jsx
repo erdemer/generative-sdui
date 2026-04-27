@@ -139,7 +139,7 @@ function FilesContent({ lang, files, selectedFilePath, onSelectFile, onNewFolder
 function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview, onImageChange, onImageRemove, smartCrop, onSmartCropChange, onGenerate, selectedLabel }) {
   const fileInputRef = React.useRef(null);
   const t = window.SDUI.t;
-  const [history, setHistory] = useS2(loadHistory);
+  const [history, setHistory] = React.useState(loadHistory);
 
   const handleKey = (e) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
