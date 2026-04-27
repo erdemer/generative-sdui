@@ -1,7 +1,5 @@
 /* SDUI Studio — Mock content for the device screen previews */
 
-const { useState: useS2, useEffect: useE2 } = React;
-
 /* ============ EMPTY DEVICE — initial canvas state ============ */
 function MockEmptyScreen({ lang }) {
   return (
@@ -37,27 +35,14 @@ function MockEmptyScreen({ lang }) {
 /* ============ STREAMING — AI generating ============ */
 const TOTAL = 12;
 
-function MockStreamingScreen({ lang }) {
-  const [count, setCount] = useS2(1);
-
-  useE2(() => {
-    setCount(1);
-    let current = 1;
-    let timer;
-    const tick = () => {
-      if (current >= TOTAL - 1) return; // dur at 11, never show 12/12
-      current += 1;
-      setCount(current);
-      const delay = 400 + current * 180; // 580ms → 2360ms giderek yavaşlar
-      timer = setTimeout(tick, delay);
-    };
-    timer = setTimeout(tick, 400);
-    return () => clearTimeout(timer);
-  }, []);
+function MockStreamingScreen({ lang, progress }) {
+  const count = Math.max(1, Math.min(progress?.current || 1, progress?.total || TOTAL));
+  const total = progress?.total || TOTAL;
+  const phase = progress?.phase;
 
   const label = lang === 'tr'
-    ? `AI tasarımı üretiyor… ${count} / ${TOTAL} bileşen`
-    : `AI generating… ${count} / ${TOTAL} components`;
+    ? `${phase || 'AI tasarımı üretiyor…'} ${count} / ${total} adım`
+    : `${phase || 'AI generating…'} ${count} / ${total} steps`;
 
   return (
     <div style={{ width: '100%', height: '100%', background: '#fff', display: 'flex', flexDirection: 'column' }}>
@@ -80,7 +65,7 @@ function MockStreamingScreen({ lang }) {
       <div style={{ position: 'absolute', bottom: 16, left: 16, right: 16, padding: '10px 12px', background: 'oklch(0.18 0.006 250)', borderRadius: 10, color: '#fff', fontSize: 11, display: 'flex', alignItems: 'center', gap: 8 }}>
         <span className="spinner" style={{ borderColor: 'oklch(1 0 0 / 0.2)', borderTopColor: '#fff' }}/>
         <span style={{ flex: 1 }}>{label}</span>
-        <span style={{ fontFamily: 'var(--font-mono)', opacity: 0.6, fontSize: 10 }}>{count}/{TOTAL}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', opacity: 0.6, fontSize: 10 }}>{count}/{total}</span>
       </div>
     </div>
   );

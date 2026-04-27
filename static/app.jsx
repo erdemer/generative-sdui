@@ -7,6 +7,7 @@ function App() {
   const [appState, setAppState] = useState('empty'); // 'empty' | 'streaming' | 'editing'
   const [currentJson, setCurrentJson] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [generateProgress, setGenerateProgress] = useState(null);
 
   // ── UI preferences ───────────────────────────────────────────────────────
   const [lang, setLangRaw] = useState(pickLang);
@@ -85,8 +86,18 @@ function App() {
   // ── Generate ─────────────────────────────────────────────────────────────
   const handleGenerate = async () => {
     if (!promptText && !imageFile) return;
+    const progressText = {
+      preparing: lang === 'tr' ? 'İstek hazırlanıyor…' : 'Preparing request…',
+      image: lang === 'tr' ? 'Görsel işleniyor…' : 'Processing image…',
+      waiting: lang === 'tr' ? 'AI tasarımı üretiyor…' : 'AI generating…',
+      response: lang === 'tr' ? 'Yanıt alındı…' : 'Response received…',
+      parsing: lang === 'tr' ? 'Tasarım işleniyor…' : 'Processing design…',
+      rendering: lang === 'tr' ? 'Önizleme hazırlanıyor…' : 'Preparing preview…',
+    };
+
     setAppState('streaming');
     setSelectedIds([]);
+    setGenerateProgress({ current: 1, total: 12, phase: progressText.preparing });
 
     const fd = new FormData();
     if (promptText) fd.append('prompt', promptText);
@@ -96,17 +107,37 @@ function App() {
     if (currentJson) fd.append('current_json', JSON.stringify(currentJson));
     fd.append('language', lang);
 
+    let progressTimer = null;
     try {
+      setGenerateProgress({ current: imageFile ? 2 : 3, total: 12, phase: imageFile ? progressText.image : progressText.waiting });
+      progressTimer = setInterval(() => {
+        setGenerateProgress(prev => {
+          const current = prev?.current || 1;
+          if (current >= 9) return prev;
+          return {
+            current: current + 1,
+            total: 12,
+            phase: progressText.waiting,
+          };
+        });
+      }, 900);
+
       const res = await fetch('/generate', { method:'POST', body:fd });
+      if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+      setGenerateProgress({ current: 10, total: 12, phase: progressText.response });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       console.log('[generate] response:', data);
       if (!data?.layout) throw new Error(data?.detail || 'Geçersiz yanıt — layout yok');
 
+      setGenerateProgress({ current: 11, total: 12, phase: progressText.parsing });
       _uid = 0; tagIds(data.layout);
       setCurrentJson(data);
       setVersion(v => v + 1);
+      setGenerateProgress({ current: 12, total: 12, phase: progressText.rendering });
+      await new Promise(resolve => setTimeout(resolve, 180));
       setAppState('editing');
+      setGenerateProgress(null);
       setSavedAt(Date.now());
 
       // Auto-save initial version
@@ -152,6 +183,8 @@ function App() {
       }, 800);
 
     } catch (err) {
+      if (progressTimer) clearInterval(progressTimer);
+      setGenerateProgress(null);
       setAppState(currentJson ? 'editing' : 'empty');
       alert((lang === 'tr' ? 'Hata: ' : 'Error: ') + err.message);
     }
@@ -340,7 +373,7 @@ function App() {
                 <EmptyHero lang={lang} onStart={() => setLeftTab('generate')}/>
               </div>
             )}
-            {appState === 'streaming' && <window.SDUIMocks.MockStreamingScreen lang={lang}/>}
+            {appState === 'streaming' && <window.SDUIMocks.MockStreamingScreen lang={lang} progress={generateProgress}/>}
             {appState === 'editing' && <SDUIRenderer layout={currentJson?.layout} selectedIds={selectedIds} onSelectId={handleSelectNode}/>}
           </window.SDUI.CanvasPane>
 
