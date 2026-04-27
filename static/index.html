@@ -549,7 +549,7 @@ function App() {
   const handleGenerate = async () => {
     if (!promptText && !imageFile) return;
     setAppState('streaming');
-    setSelectedId(null);
+    setSelectedIds([]);
 
     const fd = new FormData();
     if (promptText) fd.append('prompt', promptText);
@@ -694,7 +694,7 @@ function App() {
         setCurrentJson(data);
         setCurrentFilePath(path);
         setAppState('editing');
-        setSelectedId(null);
+        setSelectedIds([]);
       }
     } catch (err) { console.error('File open failed', err); }
   };
