@@ -18,7 +18,7 @@
     /* Ensure canvas pane is positioned for absolute children (toolbar/zoom) */
     .pane.canvas { position: relative; }
     /* SDUI preview inside device screen — scroll if content overflows */
-    .sdui-device-content { width: 100%; height: 100%; overflow-y: auto; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; -webkit-font-smoothing: antialiased; }
+    .sdui-device-content { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; -webkit-font-smoothing: antialiased; }
     .sdui-device-content::-webkit-scrollbar { display: none; }
     /* Skeleton shimmer used in empty state */
     .m-skeleton { background: linear-gradient(90deg,oklch(0.94 0.005 250) 0%,oklch(0.97 0.005 250) 50%,oklch(0.94 0.005 250) 100%); background-size:200% 100%; animation:shimmer 1.6s infinite; border-radius:6px; }
@@ -55,13 +55,14 @@ function computeSDUIStyle(node, p) {
   const type = node.type;
 
   // Container layout
-  if (type === 'Column') {
+  if (type === 'Column' || type === 'LazyColumn') {
     s.display = 'flex'; s.flexDirection = 'column';
-  } else if (type === 'Row') {
-    s.display = 'flex'; s.flexDirection = 'row'; s.flexWrap = 'wrap';
+  } else if (type === 'Row' || type === 'LazyRow') {
+    s.display = 'flex'; s.flexDirection = 'row'; s.flexWrap = 'nowrap';
   } else if (type === 'Card') {
     s.display = 'flex'; s.flexDirection = 'column'; s.overflow = 'hidden';
-    s.backgroundColor = p.backgroundColor || '#ffffff';
+    const cardBg = p.backgroundColor || '#ffffff';
+    if (cardBg.includes('gradient')) s.background = cardBg; else s.backgroundColor = cardBg;
     s.borderRadius = (p.corner ?? p.cornerRadius ?? 12) + 'px';
     if (!p.elevation) s.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
   } else if (type === 'Box') {
@@ -79,10 +80,10 @@ function computeSDUIStyle(node, p) {
   }
 
   // Size
-  if (p.fillMaxSize === 'true' || p.fillMaxSize === true) { s.width = '100%'; s.flex = '1'; s.minHeight = 0; }
+  if (p.fillMaxSize === 'true' || p.fillMaxSize === true) { s.width = '100%'; s.flex = '1'; s.minHeight = 0; s.alignSelf = 'stretch'; }
   if (p.fillWidth === 'true' || p.fillWidth === true) s.width = '100%';
   else if (p.width != null) s.width = typeof p.width === 'number' ? p.width + 'px' : p.width;
-  if (p.weight != null) { s.flex = p.weight; s.minWidth = 0; }
+  if (p.weight != null) { s.flex = String(p.weight); s.minWidth = 0; s.minHeight = 0; }
 
   if (p.fillHeight === 'true' || p.fillHeight === true) s.flex = '1';
   else if (p.height != null) s.height = typeof p.height === 'number' ? p.height + 'px' : p.height;
@@ -98,7 +99,11 @@ function computeSDUIStyle(node, p) {
   if (p.color) s.color = p.color;
 
   // Padding — supports integer OR "top, right, bottom, left" string
-  const toPx = (v) => v != null ? (typeof v === 'number' ? v + 'px' : v + 'px') : undefined;
+  const toPx = (v) => {
+    if (v == null) return undefined;
+    const s = String(v).trim();
+    return /^\d+(\.\d+)?$/.test(s) ? s + 'px' : s; // don't double-add px
+  };
   const parsePadding = (v) => {
     if (v == null) return undefined;
     if (typeof v === 'number') return v + 'px';
@@ -146,7 +151,7 @@ function computeSDUIStyle(node, p) {
   if (p.letterSpacing) s.letterSpacing = p.letterSpacing;
 
   // Column alignment
-  if (type === 'Column') {
+  if (type === 'Column' || type === 'LazyColumn') {
     const va = p.verticalArrangement;
     if (va === 'center') s.justifyContent = 'center';
     else if (va === 'bottom') s.justifyContent = 'flex-end';
@@ -159,8 +164,8 @@ function computeSDUIStyle(node, p) {
     else if (ha === 'end') s.alignItems = 'flex-end';
   }
 
-  // Row / BottomBar alignment
-  if (type === 'Row' || type === 'BottomBar') {
+  // Row / BottomBar / LazyRow alignment
+  if (type === 'Row' || type === 'BottomBar' || type === 'LazyRow') {
     const ha = p.horizontalArrangement;
     if (ha === 'center') s.justifyContent = 'center';
     else if (ha === 'end') s.justifyContent = 'flex-end';
@@ -193,10 +198,12 @@ function computeSDUIStyle(node, p) {
     if (s.flex == null && s.height == null) s.flex = '1';
   }
 
-  // Scroll
+  // Scroll — flex children need minHeight:0 to actually scroll
   if (p.scroll === 'true' || p.scroll === true) {
     s.overflow = 'auto';
     s.WebkitOverflowScrolling = 'touch';
+    s.minHeight = 0;
+    s.flexShrink = 1;
   }
 
   // Border
@@ -234,58 +241,79 @@ function SDUINode({ node, selectedIds, onSelectId }) {
     <SDUINode key={i} node={c} selectedIds={selectedIds} onSelectId={onSelectId}/>
   ));
 
+  // SDUI onClick action (toast / alert / navigate) — separate from select-click
+  const handleAction = (e) => {
+    if (!p.onClick) return;
+    e.stopPropagation();
+    const a = p.onClick;
+    if (a.type === 'toast' || a.type === 'alert') {
+      const msg = a.message || a.destination || '';
+      if (msg) { const t = document.createElement('div'); t.textContent = msg; Object.assign(t.style, { position:'fixed', bottom:'24px', left:'50%', transform:'translateX(-50%)', background:'#1a1a1a', color:'#fff', padding:'8px 16px', borderRadius:'8px', fontSize:'13px', zIndex:9999, pointerEvents:'none', opacity:1, transition:'opacity 0.4s' }); document.body.appendChild(t); setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.remove(), 400); }, 2000); }
+    }
+  };
+
+  const combinedClick = (e) => { handleAction(e); onClick(e); };
+
   switch (node.type) {
     case 'Text':
       return (
-        <div onClick={onClick} style={style}>
+        <div onClick={combinedClick} style={{ ...style, cursor: p.onClick ? 'pointer' : undefined }}>
           {p.text || ''}
         </div>
       );
 
     case 'Image': {
       const src = p.url || '';
+      const seed = node._id || Math.floor(Math.random() * 9999);
       const handleErr = (e) => {
-        if (!e.target.src.includes('picsum')) {
-          e.target.src = `https://picsum.photos/seed/${Math.floor(Math.random()*9999)}/300/200`;
+        if (!e.target.dataset.fallback) {
+          e.target.dataset.fallback = '1';
+          e.target.src = `https://picsum.photos/seed/${seed}/400/300`;
         }
       };
-      return (
-        <img onClick={onClick} style={style} src={src} alt={p.contentDescription || ''} onError={handleErr}/>
-      );
+      return <img onClick={combinedClick} style={style} src={src} alt={p.contentDescription || ''} onError={handleErr}/>;
     }
 
     case 'Button': {
       const btnStyle = {
         ...style,
-        display: 'flex',
-        alignItems: 'center',
+        display: 'flex', alignItems: 'center',
         justifyContent: p.textAlign === 'start' ? 'flex-start' : (p.textAlign === 'end' ? 'flex-end' : 'center'),
-        cursor: 'pointer',
-        userSelect: 'none',
-        border: 0,
-        fontFamily: 'inherit',
-        fontWeight: style.fontWeight || '600',
+        cursor: 'pointer', userSelect: 'none', border: 0,
+        fontFamily: 'inherit', fontWeight: style.fontWeight || '600',
+        padding: style.padding || '10px 20px',
+        borderRadius: style.borderRadius || '8px',
       };
-      return (
-        <div onClick={onClick} style={btnStyle}>{p.text || ''}</div>
-      );
+      return <div onClick={combinedClick} style={btnStyle}>{p.text || ''}</div>;
     }
 
     case 'Icon': {
-      const iconStyle = { ...style, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 };
+      const iconStyle = { ...style, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: p.onClick ? 'pointer' : undefined };
       if (p.size) iconStyle.fontSize = p.size + 'px';
       if (p.color) iconStyle.color = p.color;
       return (
-        <span onClick={onClick} style={iconStyle} className="material-icons" aria-hidden="true">
+        <span onClick={combinedClick} style={iconStyle} className="material-icons" aria-hidden="true">
           {p.name || 'help_outline'}
         </span>
       );
     }
 
     case 'Card':
-      return <div onClick={onClick} style={style}>{children}</div>;
+      return <div onClick={combinedClick} style={{ ...style, cursor: p.onClick ? 'pointer' : undefined }}>{children}</div>;
 
     case 'BottomBar':
+      return <div onClick={onClick} style={style}>{children}</div>;
+
+    case 'HorizontalDivider':
+    case 'Divider':
+      return <div onClick={onClick} style={{ width: '100%', height: p.thickness ?? 1, backgroundColor: p.color || 'rgba(0,0,0,0.08)', flexShrink: 0, ...style }}/>;
+
+    case 'LazyColumn':
+    case 'Column':
+      return <div onClick={onClick} style={style}>{children}</div>;
+
+    case 'LazyRow':
+    case 'Row':
       return <div onClick={onClick} style={style}>{children}</div>;
 
     case 'Spacer':
