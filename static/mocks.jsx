@@ -1,6 +1,6 @@
 /* SDUI Studio — Mock content for the device screen previews */
 
-const { useState: useS2 } = React;
+const { useState: useS2, useEffect: useE2 } = React;
 
 /* ============ EMPTY DEVICE — initial canvas state ============ */
 function MockEmptyScreen({ lang }) {
@@ -36,6 +36,23 @@ function MockEmptyScreen({ lang }) {
 
 /* ============ STREAMING — AI generating ============ */
 function MockStreamingScreen({ lang }) {
+  const steps = lang === 'tr'
+    ? ['Prompt analiz ediliyor…', 'Mizanpaj planlanıyor…', 'Bileşenler oluşturuluyor…', 'Stiller uygulanıyor…', 'Son rötuşlar yapılıyor…']
+    : ['Analysing prompt…', 'Planning layout…', 'Building components…', 'Applying styles…', 'Finishing touches…'];
+
+  const [stepIdx, setStepIdx] = useS2(0);
+  const [dots, setDots] = useS2(0);
+
+  useE2(() => {
+    const stepTimer = setInterval(() => {
+      setStepIdx(i => (i + 1) % steps.length);
+    }, 1400);
+    const dotTimer = setInterval(() => {
+      setDots(d => (d + 1) % 4);
+    }, 420);
+    return () => { clearInterval(stepTimer); clearInterval(dotTimer); };
+  }, []);
+
   return (
     <div style={{ width: '100%', height: '100%', background: '#fff', display: 'flex', flexDirection: 'column' }}>
       <div style={{ height: 44, padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid oklch(0.94 0.005 250)' }}>
@@ -56,7 +73,8 @@ function MockStreamingScreen({ lang }) {
       </div>
       <div style={{ position: 'absolute', bottom: 16, left: 16, right: 16, padding: '10px 12px', background: 'oklch(0.18 0.006 250)', borderRadius: 10, color: '#fff', fontSize: 11, display: 'flex', alignItems: 'center', gap: 8 }}>
         <span className="spinner" style={{ borderColor: 'oklch(1 0 0 / 0.2)', borderTopColor: '#fff' }}/>
-        {lang==='tr' ? 'AI tasarımı üretiyor… 4 / 12 bileşen' : 'AI is generating… 4 / 12 components'}
+        <span style={{ flex: 1 }}>{steps[stepIdx]}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', opacity: 0.5, letterSpacing: 2 }}>{'·'.repeat(dots + 1)}</span>
       </div>
     </div>
   );

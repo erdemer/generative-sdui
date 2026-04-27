@@ -445,7 +445,7 @@ def process_crops(ui_data, original_image: Image.Image):
 
 @app.post("/generate")
 async def generate_ui(
-        prompt: str = Form(...),
+        prompt: str = Form(None),
         image: UploadFile = File(None),
         current_json: str = Form(None),
         smart_crop: bool = Form(False),
@@ -453,6 +453,9 @@ async def generate_ui(
         language: str = Form("tr")
 ):
     try:
+        if not prompt and not image:
+            raise ValueError("prompt veya image gerekli")
+
         parsed_json = None
         pil_image = None
 
@@ -461,7 +464,7 @@ async def generate_ui(
             pil_image = Image.open(io.BytesIO(img_bytes))
 
         # --- MANUEL JSON MODU ---
-        if prompt.strip().startswith("{"):
+        if prompt and prompt.strip().startswith("{"):
             print("📥 Manuel JSON algılandı, işleniyor...")
             parsed_json = json_repair.loads(prompt)
         else:
@@ -478,15 +481,16 @@ async def generate_ui(
             
             if current_json:
                 print("✨ Revize Modu: Mevcut tasarım güncelleniyor...")
+                user_request = prompt or "Analyse the uploaded image and improve the existing design to match it."
                 REFINE_PROMPT = f"""
                 You are modifying an existing SDUI JSON layout based on a user request.
-                
+
                 ### EXISTING JSON:
                 {current_json}
-                
+
                 ### USER REQUEST:
-                {prompt}
-                
+                {user_request}
+
                 ### INSTRUCTIONS:
                 1. Modify the EXISTING JSON to satisfy the user request.
                 2. Preserve the overall structure and existing components unless explicitly asked to change them.
@@ -495,8 +499,10 @@ async def generate_ui(
                 5. Output ONLY the valid, updated JSON. No Markdown.
                 """
                 input_content.append(REFINE_PROMPT)
-            else:
+            elif prompt:
                 input_content.append(prompt)
+            else:
+                input_content.append("Generate a beautiful UI based on the uploaded image.")
                 
             # Language Instruction
             if language == "en":
@@ -515,7 +521,7 @@ async def generate_ui(
         # RESİM KESME İŞLEMİ
         # Resim yüklendiyse VE (Smart Crop seçiliyse YA DA Manuel JSON girdiysek)
         if pil_image and parsed_json:
-            if smart_crop or prompt.strip().startswith("{"):
+            if smart_crop or (prompt and prompt.strip().startswith("{")):
                 print("✂️ Görsel kesim işlemi başlatılıyor...")
                 parsed_json = process_crops(parsed_json, pil_image)
 
