@@ -446,7 +446,7 @@ function JsonPane({ lang, json, onView }) {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 function pickLang() {
-  try { return navigator.language?.toLowerCase().startsWith('tr') ? 'tr' : 'en'; } catch { return 'en'; }
+  try { return localStorage.getItem('sdui_lang') || 'tr'; } catch { return 'tr'; }
 }
 function pickTheme() {
   try { return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; } catch { return 'light'; }
@@ -466,7 +466,8 @@ function App() {
   const [selectedIds, setSelectedIds] = useState([]);
 
   // ── UI preferences ──────────────────────────────────────────────────────
-  const [lang, setLang] = useState(pickLang);
+  const [lang, setLangRaw] = useState(pickLang);
+  const setLang = (v) => { try { localStorage.setItem('sdui_lang', v); } catch {} setLangRaw(v); };
   const [theme, setTheme] = useState(pickTheme);
   const [leftTab, setLeftTab] = useState('generate');
   const [treeView, setTreeView] = useState('tree');

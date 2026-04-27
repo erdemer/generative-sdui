@@ -1,5 +1,30 @@
 /* SDUI Studio — Left-rail tabbed panels with real callbacks */
 
+const HISTORY_KEY = 'sdui_prompt_history';
+const MAX_HISTORY = 8;
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
+}
+function saveToHistory(text) {
+  if (!text?.trim()) return;
+  const prev = loadHistory().filter(e => e.text !== text);
+  const updated = [{ text, at: Date.now() }, ...prev].slice(0, MAX_HISTORY);
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(updated)); } catch {}
+  return updated;
+}
+function relTime(ts, lang) {
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if (mins < 1)   return lang === 'tr' ? 'Az önce' : 'Just now';
+  if (hours < 1)  return lang === 'tr' ? `${mins}d önce` : `${mins}m ago`;
+  if (hours < 24) return lang === 'tr' ? `${hours}s önce` : `${hours}h ago`;
+  if (days === 1) return lang === 'tr' ? 'Dün' : 'Yesterday';
+  return lang === 'tr' ? `${days}g önce` : `${days}d ago`;
+}
+
 function LeftRail({
   lang, tab, onTab,
   // Generate tab
@@ -113,19 +138,19 @@ function FilesContent({ lang, files, selectedFilePath, onSelectFile, onNewFolder
 function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview, onImageChange, onImageRemove, smartCrop, onSmartCropChange, onGenerate, selectedLabel }) {
   const fileInputRef = React.useRef(null);
   const t = window.SDUI.t;
+  const [history, setHistory] = useS2(loadHistory);
 
   const handleKey = (e) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
-      onGenerate && onGenerate();
+      handleGenerate();
     }
   };
 
-  const samples = [
-    { icon: 'image',   label: window.I18N[lang].samplePrompt1, by: lang === 'tr' ? 'Bugün' : 'Today' },
-    { icon: 'lock',    label: window.I18N[lang].samplePrompt2, by: lang === 'tr' ? 'Dün' : 'Yesterday' },
-    { icon: 'sparkle', label: window.I18N[lang].samplePrompt3, by: '2d' },
-  ];
+  const handleGenerate = () => {
+    if (promptText?.trim()) setHistory(saveToHistory(promptText));
+    onGenerate && onGenerate();
+  };
 
   return (
     <div>
@@ -211,7 +236,7 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
             {lang === 'tr' ? 'AI üretiyor…' : 'AI generating…'}
           </button>
         ) : (
-          <button className="btn lg primary" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }} onClick={() => onGenerate && onGenerate()}>
+          <button className="btn lg primary" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }} onClick={handleGenerate}>
             <Icon name="sparkle" size={13}/> {state === 'filled' ? t(lang, 'update') : t(lang, 'generate')}
           </button>
         )}
@@ -219,24 +244,36 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
 
       {/* History */}
       <div style={{ padding: 12 }}>
-        <div style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--fg-3)', marginBottom: 8 }}>
-          {t(lang, 'promptHistoryTitle')}
+        <div style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--fg-3)', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span>{t(lang, 'promptHistoryTitle')}</span>
+          {history.length > 0 && (
+            <button style={{ fontSize: 9.5, color: 'var(--fg-mute)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              onClick={() => { localStorage.removeItem(HISTORY_KEY); setHistory([]); }}>
+              {lang === 'tr' ? 'Temizle' : 'Clear'}
+            </button>
+          )}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {samples.map((s, i) => (
-            <div key={i}
-              onClick={() => onPromptChange && onPromptChange(s.label)}
-              style={{ display: 'flex', gap: 8, padding: 8, borderRadius: 8, background: 'var(--bg-elev)', border: '1px solid var(--line)', cursor: 'pointer' }}>
-              <div style={{ width: 24, height: 24, borderRadius: 6, background: 'var(--brand-soft)', color: 'var(--brand)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-                <Icon name={s.icon} size={12}/>
+        {history.length === 0 ? (
+          <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--fg-mute)', fontSize: 11 }}>
+            {lang === 'tr' ? 'Henüz prompt yok' : 'No prompts yet'}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {history.map((entry, i) => (
+              <div key={i}
+                onClick={() => onPromptChange && onPromptChange(entry.text)}
+                style={{ display: 'flex', gap: 8, padding: 8, borderRadius: 8, background: 'var(--bg-elev)', border: '1px solid var(--line)', cursor: 'pointer' }}>
+                <div style={{ width: 24, height: 24, borderRadius: 6, background: 'var(--brand-soft)', color: 'var(--brand)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                  <Icon name="sparkle" size={12}/>
+                </div>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontSize: 11.5, color: 'var(--fg)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>{entry.text}</div>
+                  <div style={{ fontSize: 10, color: 'var(--fg-3)', marginTop: 2 }}>{relTime(entry.at, lang)}</div>
+                </div>
               </div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 11.5, color: 'var(--fg)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>{s.label}</div>
-                <div style={{ fontSize: 10, color: 'var(--fg-3)', marginTop: 2 }}>{s.by}</div>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
