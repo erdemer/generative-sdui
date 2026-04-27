@@ -523,7 +523,7 @@ function App() {
   function loadFiles() {
     fetch('/api/fs/tree')
       .then(r => r.ok ? r.json() : null)
-      .then(tree => { if (tree) setFiles(flattenFsTree(tree)); })
+      .then(res => { if (res?.tree) setFiles(flattenFsTree(res.tree)); })
       .catch(() => {});
   }
 
