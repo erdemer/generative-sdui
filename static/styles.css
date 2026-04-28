@@ -527,6 +527,16 @@ input, textarea { font-family: inherit; color: inherit; }
   overflow: hidden;
   position: relative;
 }
+/* Status bar safe area indicator — sits on top of content, same z as notch */
+.device-screen::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 44px;
+  background: transparent;
+  pointer-events: none;
+  z-index: 3;
+}
 
 /* Android device: smaller radius, punch-hole camera */
 .device-android { border-radius: 24px; padding: 8px; }

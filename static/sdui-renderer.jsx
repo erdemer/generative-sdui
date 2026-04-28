@@ -161,6 +161,12 @@ function computeSDUIStyle(node, p) {
 
   if (p.alpha != null) s.opacity = p.alpha;
 
+  // Safe area: push content below notch/status bar
+  if (p.statusBarPadding === 'true' || p.statusBarPadding === true) {
+    const existingTop = s.paddingTop ? parseInt(s.paddingTop) : 0;
+    s.paddingTop = (existingTop + 44) + 'px';
+  }
+
   return s;
 }
 
