@@ -2,6 +2,7 @@ PROMPT_BASE = """You are an expert Android SDUI engineer. Output ONLY valid JSON
 
 RULES:
 - padding/margin: "top,right,bottom,left" string or single int | colors: 6-digit hex or CSS gradient | corner/elevation: int(dp)
+- Root container MUST always have `statusBarPadding:"true"` to avoid content going under the notch/status bar
 - Responsive: use `weight` for fluid layouts; NEVER fixed pixel widths on main containers
 - scroll:"true" containers → children MUST NOT have `weight`
 - Images: fixed height(150-220) + contentScale:"crop" | URL: https://image.pollinations.ai/prompt/{desc}?nologo=true (spaces→underscores) | fallback: https://picsum.photos/{w}/{h}?random={n}
