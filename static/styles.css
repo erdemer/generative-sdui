@@ -524,8 +524,10 @@ input, textarea { font-family: inherit; color: inherit; }
   height: 640px;
   background: var(--device-screen);
   border-radius: 32px;
-  overflow: hidden;
+  overflow: clip; /* clip visually but don't block inner scroll containers */
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 /* Status bar safe area indicator — sits on top of content, same z as notch */
 .device-screen::after {
@@ -536,6 +538,15 @@ input, textarea { font-family: inherit; color: inherit; }
   background: transparent;
   pointer-events: none;
   z-index: 3;
+}
+
+/* SDUI content wrapper — fills device screen, enables inner scroll */
+.sdui-device-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* Android device: smaller radius, punch-hole camera */
