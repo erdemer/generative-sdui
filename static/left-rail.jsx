@@ -137,46 +137,57 @@ function FilesContent({ lang, files, selectedFilePath, onSelectFile, onNewFolder
 
 /* ── Clarify card ───────────────────────────────────────────────────────────── */
 function ClarifyCard({ lang, questions, answers, onAnswer, onApply, onSkip }) {
+  const answered = questions.filter(q => answers[q.id]).length;
   return (
-    <div style={{ margin: '10px 0 0', padding: 10, borderRadius: 10, background: 'var(--bg-elev)', border: '1px solid var(--brand-soft)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 10 }}>
-        <Icon name="sparkle" size={11} style={{ color: 'var(--brand)' }}/>
-        <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--brand)' }}>
-          {lang === 'tr' ? 'Daha iyi sonuç için birkaç soru' : 'A few questions for better results'}
+    <div style={{ margin: '10px 0 0', borderRadius: 10, overflow: 'hidden', border: '1px solid var(--brand-soft)' }}>
+      <div style={{ padding: '8px 10px', background: 'var(--brand-soft)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <Icon name="sparkle" size={11} style={{ color: 'var(--brand)' }}/>
+          <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--brand)' }}>
+            {lang === 'tr' ? 'Tasarımı kişiselleştir' : 'Customize your design'}
+          </span>
+        </div>
+        <span style={{ fontSize: 10, color: 'var(--brand)', opacity: 0.7 }}>
+          {answered}/{questions.length} {lang === 'tr' ? 'seçildi' : 'selected'}
         </span>
       </div>
 
-      {questions.map((q, qi) => (
-        <div key={q.id} style={{ marginBottom: qi < questions.length - 1 ? 10 : 0 }}>
-          <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--fg-2)', marginBottom: 5 }}>{q.text}</div>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            {q.options.map((opt, oi) => {
-              const selected = answers[q.id] === opt;
-              return (
-                <span
-                  key={oi}
-                  onClick={() => onAnswer(q.id, selected ? null : opt)}
-                  className="chip"
-                  style={{
-                    cursor: 'pointer', fontSize: 10.5,
-                    ...(selected ? { background: 'var(--brand)', color: '#fff', borderColor: 'transparent' } : {}),
-                  }}
-                >
-                  {opt}
-                </span>
-              );
-            })}
+      <div style={{ padding: 10, background: 'var(--bg-elev)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {questions.map((q) => (
+          <div key={q.id}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+              {answers[q.id] && <Icon name="check" size={10} style={{ color: 'var(--ok)' }}/>}
+              {q.text}
+            </div>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              {q.options.map((opt, oi) => {
+                const selected = answers[q.id] === opt;
+                return (
+                  <span
+                    key={oi}
+                    onClick={() => onAnswer(q.id, selected ? null : opt)}
+                    className="chip"
+                    style={{
+                      cursor: 'pointer', fontSize: 10.5,
+                      ...(selected ? { background: 'var(--brand)', color: '#fff', borderColor: 'transparent', fontWeight: 600 } : {}),
+                    }}
+                  >
+                    {opt}
+                  </span>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
 
-      <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
-        <button className="btn lg primary" style={{ flex: 1, justifyContent: 'center', fontSize: 12 }} onClick={onApply}>
-          <Icon name="sparkle" size={12}/> {lang === 'tr' ? 'Uygula & Üret' : 'Apply & Generate'}
-        </button>
-        <button className="btn" style={{ fontSize: 11, padding: '0 10px' }} onClick={onSkip}>
-          {lang === 'tr' ? 'Atla' : 'Skip'}
-        </button>
+        <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
+          <button className="btn lg primary" style={{ flex: 1, justifyContent: 'center', fontSize: 12 }} onClick={onApply}>
+            <Icon name="sparkle" size={12}/> {lang === 'tr' ? 'Üret' : 'Generate'}
+          </button>
+          <button className="btn" style={{ fontSize: 11, padding: '0 10px' }} onClick={onSkip}>
+            {lang === 'tr' ? 'Atla' : 'Skip'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -209,9 +220,14 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
   };
 
   const buildEnrichedPrompt = (answers) => {
-    const parts = Object.entries(answers).filter(([, v]) => v).map(([, v]) => v);
-    if (!parts.length) return promptText;
-    return promptText + ' [' + parts.join(' · ') + ']';
+    const directives = clarifyQuestions
+      .filter(q => answers[q.id])
+      .map(q => {
+        const label = q.text.replace(/[?？]/g, '').trim();
+        return `${label}: ${answers[q.id]}`;
+      });
+    if (!directives.length) return promptText;
+    return `${promptText}\n\n${directives.join('\n')}`;
   };
 
   const handleGenerateClick = async () => {
