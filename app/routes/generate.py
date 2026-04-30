@@ -4,10 +4,29 @@ from fastapi import APIRouter, Form, File, UploadFile
 from PIL import Image
 
 from app.ai_client import model
-from app.prompts import PROMPT_BASE, PROMPT_WEB, SMART_CROP_PROMPT
+from app.prompts import PROMPT_BASE, PROMPT_WEB, SMART_CROP_PROMPT, CLARIFY_PROMPT
 from app.services.image import process_crops
 
 router = APIRouter()
+
+
+@router.post("/clarify")
+async def clarify_prompt(
+    prompt: str = Form(...),
+    platform: str = Form("mobile"),
+    lang: str = Form("tr"),
+):
+    try:
+        lang_note = "Write questions and options in Turkish." if lang == "tr" else "Write questions and options in English."
+        filled = CLARIFY_PROMPT.format(platform=platform, lang_note=lang_note)
+        resp = model.generate_content([filled + prompt])
+        data = json_repair.loads(resp.text)
+        if not isinstance(data.get("questions"), list):
+            return {"questions": []}
+        return data
+    except Exception as e:
+        print(f"🔥 Clarify hatası: {e}")
+        return {"questions": []}
 
 
 @router.post("/generate")

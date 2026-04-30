@@ -4,6 +4,40 @@ const HISTORY_KEY = 'sdui_prompt_history';
 const MAX_HISTORY = 8;
 var Icon = window.Icon;
 
+/* ── Design palette map — keyed on style keywords from Q1 ─────────────────── */
+const STYLE_PALETTES = [
+  { match: ['koyu', 'dark', 'night', 'gece', 'premium', 'moody'],
+    palette: { bg: '#0d0a08', surface: '#1c1410', accent: '#c8a45a', fg: '#f5ede0', fg3: '#a89070',
+               imageKw: 'moody_dark_atmosphere,warm_candlelight,dark_background' } },
+  { match: ['açık', 'light', 'minimal', 'clean', 'beyaz', 'white', 'aydınlık'],
+    palette: { bg: '#ffffff', surface: '#f4f4f5', accent: '#18181b', fg: '#09090b', fg3: '#71717a',
+               imageKw: 'bright_clean_studio,white_background,minimalist,natural_light' } },
+  { match: ['sıcak', 'warm', 'organik', 'organic', 'doğal', 'natural', 'earth', 'toprak'],
+    palette: { bg: '#fdf6ee', surface: '#fff8f0', accent: '#92400e', fg: '#451a03', fg3: '#78350f',
+               imageKw: 'warm_earth_tones,natural_wood,cozy_atmosphere,golden_hour' } },
+  { match: ['canlı', 'vibrant', 'renkli', 'colorful', 'bold', 'modern'],
+    palette: { bg: '#f8faff', surface: '#ffffff', accent: '#6366f1', fg: '#1e1b4b', fg3: '#6b7280',
+               imageKw: 'vibrant_colors,modern_design,bold_composition,colorful' } },
+  { match: ['pastel', 'soft', 'yumuşak', 'gentle'],
+    palette: { bg: '#fdf4ff', surface: '#ffffff', accent: '#a855f7', fg: '#4a1d96', fg3: '#9ca3af',
+               imageKw: 'pastel_colors,soft_light,dreamy_aesthetic,gentle_tones' } },
+  { match: ['mavi', 'blue', 'ocean', 'deniz', 'navy'],
+    palette: { bg: '#f0f9ff', surface: '#ffffff', accent: '#0ea5e9', fg: '#0c4a6e', fg3: '#64748b',
+               imageKw: 'ocean_blue,fresh_water,cool_tones,sky_background' } },
+  { match: ['yeşil', 'green', 'nature', 'doğa', 'fresh'],
+    palette: { bg: '#f0fdf4', surface: '#ffffff', accent: '#16a34a', fg: '#14532d', fg3: '#6b7280',
+               imageKw: 'lush_green,fresh_nature,botanical,organic_textures' } },
+];
+
+function detectPalette(styleAnswer) {
+  if (!styleAnswer) return null;
+  const lower = styleAnswer.toLowerCase();
+  for (const p of STYLE_PALETTES) {
+    if (p.match.some(m => lower.includes(m))) return p.palette;
+  }
+  return null;
+}
+
 function loadHistory() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
 }
@@ -66,7 +100,7 @@ function LeftRail({
 
       <div className="pane-body" style={{ padding: 0 }}>
         {tab === 'files'    && <FilesContent lang={lang} files={files} selectedFilePath={selectedFilePath} onSelectFile={onSelectFile} onNewFolder={onNewFolder} onNewFile={onNewFile} platform={platform} onPlatform={onPlatform}/>}
-        {tab === 'generate' && <GenerateContent lang={lang} state={generateState} promptText={promptText} onPromptChange={onPromptChange} imagePreview={imagePreview} onImageChange={onImageChange} onImageRemove={onImageRemove} smartCrop={smartCrop} onSmartCropChange={onSmartCropChange} onGenerate={onGenerate} selectedLabel={selectedLabel}/>}
+        {tab === 'generate' && <GenerateContent lang={lang} state={generateState} promptText={promptText} onPromptChange={onPromptChange} imagePreview={imagePreview} onImageChange={onImageChange} onImageRemove={onImageRemove} smartCrop={smartCrop} onSmartCropChange={onSmartCropChange} onGenerate={onGenerate} selectedLabel={selectedLabel} platform={platform}/>}
         {tab === 'publish'  && <PublishContent lang={lang} abActive={abActive} currentVersion={currentVersion} onPublish={onPublish} onSaveAsA={onSaveAsA} onSaveAsB={onSaveAsB} onStartAB={onStartAB}/>}
       </div>
     </div>
@@ -135,20 +169,146 @@ function FilesContent({ lang, files, selectedFilePath, onSelectFile, onNewFolder
   );
 }
 
+/* ── Clarify card ───────────────────────────────────────────────────────────── */
+function ClarifyCard({ lang, questions, answers, onAnswer, onApply, onSkip }) {
+  const answered = questions.filter(q => answers[q.id]).length;
+  return (
+    <div style={{ margin: '10px 0 0', borderRadius: 10, overflow: 'hidden', border: '1px solid var(--brand-soft)' }}>
+      <div style={{ padding: '8px 10px', background: 'var(--brand-soft)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <Icon name="sparkle" size={11} style={{ color: 'var(--brand)' }}/>
+          <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--brand)' }}>
+            {lang === 'tr' ? 'Tasarımı kişiselleştir' : 'Customize your design'}
+          </span>
+        </div>
+        <span style={{ fontSize: 10, color: 'var(--brand)', opacity: 0.7 }}>
+          {answered}/{questions.length} {lang === 'tr' ? 'seçildi' : 'selected'}
+        </span>
+      </div>
+
+      <div style={{ padding: 10, background: 'var(--bg-elev)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {questions.map((q) => (
+          <div key={q.id}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+              {answers[q.id] && <Icon name="check" size={10} style={{ color: 'var(--ok)' }}/>}
+              {q.text}
+            </div>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              {q.options.map((opt, oi) => {
+                const selected = answers[q.id] === opt;
+                return (
+                  <span
+                    key={oi}
+                    onClick={() => onAnswer(q.id, selected ? null : opt)}
+                    className="chip"
+                    style={{
+                      cursor: 'pointer', fontSize: 10.5,
+                      ...(selected ? { background: 'var(--brand)', color: '#fff', borderColor: 'transparent', fontWeight: 600 } : {}),
+                    }}
+                  >
+                    {opt}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
+        <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
+          <button className="btn lg primary" style={{ flex: 1, justifyContent: 'center', fontSize: 12 }} onClick={onApply}>
+            <Icon name="sparkle" size={12}/> {lang === 'tr' ? 'Üret' : 'Generate'}
+          </button>
+          <button className="btn" style={{ fontSize: 11, padding: '0 10px' }} onClick={onSkip}>
+            {lang === 'tr' ? 'Atla' : 'Skip'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Generate tab ──────────────────────────────────────────────────────────── */
-function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview, onImageChange, onImageRemove, smartCrop, onSmartCropChange, onGenerate, selectedLabel }) {
+function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview, onImageChange, onImageRemove, smartCrop, onSmartCropChange, onGenerate, selectedLabel, platform }) {
   const fileInputRef = React.useRef(null);
   const t = window.SDUI.t;
   const [history, setHistory] = React.useState(loadHistory);
+  const [clarifyState, setClarifyState] = React.useState('idle'); // 'idle'|'loading'|'ready'
+  const [clarifyQuestions, setClarifyQuestions] = React.useState([]);
+  const [clarifyAnswers, setClarifyAnswers] = React.useState({});
+  const prevPromptRef = React.useRef(promptText);
 
-  const handleKey = (e) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      handleGenerate();
+  React.useEffect(() => {
+    if (prevPromptRef.current !== promptText) {
+      prevPromptRef.current = promptText;
+      if (clarifyState !== 'idle') { setClarifyState('idle'); setClarifyQuestions([]); setClarifyAnswers({}); }
     }
+  }, [promptText]);
+
+  const shouldClarify = () => {
+    const p = promptText?.trim() || '';
+    return p.length > 0 && p.length < 100 && !imagePreview;
   };
 
-  const handleGenerate = () => {
+  const handleKey = (e) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); handleGenerateClick(); }
+  };
+
+  const buildEnrichedPrompt = (answers) => {
+    const lines = [];
+
+    clarifyQuestions.forEach(q => {
+      if (answers[q.id]) {
+        const label = q.text.replace(/[?？]/g, '').trim();
+        lines.push(`${label}: ${answers[q.id]}`);
+      }
+    });
+
+    // Inject concrete hex palette from style answer (Q1)
+    const styleAnswer = answers[clarifyQuestions[0]?.id];
+    const palette = detectPalette(styleAnswer);
+    if (palette) {
+      lines.push(`Renk paleti: bg=${palette.bg}, surface=${palette.surface}, accent=${palette.accent}, fg=${palette.fg}, fg3=${palette.fg3}`);
+      lines.push(`Görsel anahtar kelimeler: ${palette.imageKw}`);
+    }
+
+    if (!lines.length) return promptText;
+    return `${promptText}\n\n${lines.join('\n')}`;
+  };
+
+  const handleGenerateClick = async () => {
+    if (clarifyState === 'ready') {
+      const enriched = buildEnrichedPrompt(clarifyAnswers);
+      if (enriched !== promptText) onPromptChange && onPromptChange(enriched);
+      if (enriched?.trim()) setHistory(saveToHistory(enriched));
+      setClarifyState('idle'); setClarifyQuestions([]); setClarifyAnswers({});
+      onGenerate && onGenerate(enriched);
+      return;
+    }
+
+    if (shouldClarify() && clarifyState === 'idle') {
+      setClarifyState('loading');
+      try {
+        const fd = new FormData();
+        fd.append('prompt', promptText.trim());
+        fd.append('platform', platform || 'mobile');
+        fd.append('lang', lang);
+        const res = await fetch('/clarify', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data?.questions?.length) {
+          setClarifyQuestions(data.questions);
+          setClarifyState('ready');
+          return;
+        }
+      } catch {}
+      setClarifyState('idle');
+    }
+
+    if (promptText?.trim()) setHistory(saveToHistory(promptText));
+    onGenerate && onGenerate();
+  };
+
+  const handleSkip = () => {
+    setClarifyState('idle'); setClarifyQuestions([]); setClarifyAnswers({});
     if (promptText?.trim()) setHistory(saveToHistory(promptText));
     onGenerate && onGenerate();
   };
@@ -231,13 +391,29 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
           ))}
         </div>
 
+        {clarifyState === 'ready' && (
+          <ClarifyCard
+            lang={lang}
+            questions={clarifyQuestions}
+            answers={clarifyAnswers}
+            onAnswer={(id, val) => setClarifyAnswers(prev => ({ ...prev, [id]: val }))}
+            onApply={handleGenerateClick}
+            onSkip={handleSkip}
+          />
+        )}
+
         {state === 'streaming' ? (
           <button className="btn lg primary" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }} disabled>
             <span className="spinner" style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#fff' }}/>
             {lang === 'tr' ? 'AI üretiyor…' : 'AI generating…'}
           </button>
-        ) : (
-          <button className="btn lg primary" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }} onClick={handleGenerate}>
+        ) : clarifyState === 'loading' ? (
+          <button className="btn lg primary" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }} disabled>
+            <span className="spinner" style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#fff' }}/>
+            {lang === 'tr' ? 'Sorular hazırlanıyor…' : 'Preparing questions…'}
+          </button>
+        ) : clarifyState !== 'ready' && (
+          <button className="btn lg primary" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }} onClick={handleGenerateClick}>
             <Icon name="sparkle" size={13}/> {state === 'filled' ? t(lang, 'update') : t(lang, 'generate')}
           </button>
         )}

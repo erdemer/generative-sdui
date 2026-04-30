@@ -84,8 +84,9 @@ function App() {
   const handleImageRemove = () => { setImageFile(null); setImagePreview(null); };
 
   // ── Generate ─────────────────────────────────────────────────────────────
-  const handleGenerate = async () => {
-    if (!promptText && !imageFile) return;
+  const handleGenerate = async (overridePrompt) => {
+    const effectivePrompt = (typeof overridePrompt === 'string') ? overridePrompt : promptText;
+    if (!effectivePrompt && !imageFile) return;
     const progressText = {
       preparing: lang === 'tr' ? 'İstek hazırlanıyor…' : 'Preparing request…',
       image: lang === 'tr' ? 'Görsel işleniyor…' : 'Processing image…',
@@ -100,7 +101,7 @@ function App() {
     setGenerateProgress({ current: 1, total: 12, phase: progressText.preparing });
 
     const fd = new FormData();
-    if (promptText) fd.append('prompt', promptText);
+    if (effectivePrompt) fd.append('prompt', effectivePrompt);
     fd.append('platform', platform);
     if (imageFile) fd.append('image', imageFile);
     if (smartCrop) fd.append('smart_crop', 'true');
