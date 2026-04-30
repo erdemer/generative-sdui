@@ -4,6 +4,40 @@ const HISTORY_KEY = 'sdui_prompt_history';
 const MAX_HISTORY = 8;
 var Icon = window.Icon;
 
+/* ── Design palette map — keyed on style keywords from Q1 ─────────────────── */
+const STYLE_PALETTES = [
+  { match: ['koyu', 'dark', 'night', 'gece', 'premium', 'moody'],
+    palette: { bg: '#0d0a08', surface: '#1c1410', accent: '#c8a45a', fg: '#f5ede0', fg3: '#a89070',
+               imageKw: 'moody_dark_atmosphere,warm_candlelight,dark_background' } },
+  { match: ['açık', 'light', 'minimal', 'clean', 'beyaz', 'white', 'aydınlık'],
+    palette: { bg: '#ffffff', surface: '#f4f4f5', accent: '#18181b', fg: '#09090b', fg3: '#71717a',
+               imageKw: 'bright_clean_studio,white_background,minimalist,natural_light' } },
+  { match: ['sıcak', 'warm', 'organik', 'organic', 'doğal', 'natural', 'earth', 'toprak'],
+    palette: { bg: '#fdf6ee', surface: '#fff8f0', accent: '#92400e', fg: '#451a03', fg3: '#78350f',
+               imageKw: 'warm_earth_tones,natural_wood,cozy_atmosphere,golden_hour' } },
+  { match: ['canlı', 'vibrant', 'renkli', 'colorful', 'bold', 'modern'],
+    palette: { bg: '#f8faff', surface: '#ffffff', accent: '#6366f1', fg: '#1e1b4b', fg3: '#6b7280',
+               imageKw: 'vibrant_colors,modern_design,bold_composition,colorful' } },
+  { match: ['pastel', 'soft', 'yumuşak', 'gentle'],
+    palette: { bg: '#fdf4ff', surface: '#ffffff', accent: '#a855f7', fg: '#4a1d96', fg3: '#9ca3af',
+               imageKw: 'pastel_colors,soft_light,dreamy_aesthetic,gentle_tones' } },
+  { match: ['mavi', 'blue', 'ocean', 'deniz', 'navy'],
+    palette: { bg: '#f0f9ff', surface: '#ffffff', accent: '#0ea5e9', fg: '#0c4a6e', fg3: '#64748b',
+               imageKw: 'ocean_blue,fresh_water,cool_tones,sky_background' } },
+  { match: ['yeşil', 'green', 'nature', 'doğa', 'fresh'],
+    palette: { bg: '#f0fdf4', surface: '#ffffff', accent: '#16a34a', fg: '#14532d', fg3: '#6b7280',
+               imageKw: 'lush_green,fresh_nature,botanical,organic_textures' } },
+];
+
+function detectPalette(styleAnswer) {
+  if (!styleAnswer) return null;
+  const lower = styleAnswer.toLowerCase();
+  for (const p of STYLE_PALETTES) {
+    if (p.match.some(m => lower.includes(m))) return p.palette;
+  }
+  return null;
+}
+
 function loadHistory() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
 }
@@ -220,14 +254,25 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
   };
 
   const buildEnrichedPrompt = (answers) => {
-    const directives = clarifyQuestions
-      .filter(q => answers[q.id])
-      .map(q => {
+    const lines = [];
+
+    clarifyQuestions.forEach(q => {
+      if (answers[q.id]) {
         const label = q.text.replace(/[?？]/g, '').trim();
-        return `${label}: ${answers[q.id]}`;
-      });
-    if (!directives.length) return promptText;
-    return `${promptText}\n\n${directives.join('\n')}`;
+        lines.push(`${label}: ${answers[q.id]}`);
+      }
+    });
+
+    // Inject concrete hex palette from style answer (Q1)
+    const styleAnswer = answers[clarifyQuestions[0]?.id];
+    const palette = detectPalette(styleAnswer);
+    if (palette) {
+      lines.push(`Renk paleti: bg=${palette.bg}, surface=${palette.surface}, accent=${palette.accent}, fg=${palette.fg}, fg3=${palette.fg3}`);
+      lines.push(`Görsel anahtar kelimeler: ${palette.imageKw}`);
+    }
+
+    if (!lines.length) return promptText;
+    return `${promptText}\n\n${lines.join('\n')}`;
   };
 
   const handleGenerateClick = async () => {
