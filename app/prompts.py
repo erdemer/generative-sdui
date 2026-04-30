@@ -43,6 +43,14 @@ SMART CROP: For EVERY Image component showing a distinct object from the uploade
 Example: shoe at top-left → "image_crop": [50, 50, 400, 350]
 """
 
+CLARIFY_PROMPT = """For a {platform} UI generation prompt, output 2-3 clarifying questions as compact JSON to improve output quality. {lang_note}
+
+Output ONLY: {{"questions":[{{"id":"q1","text":"...","options":["...","...","..."]}}]}}
+
+Rules: max 3 questions · max 4 options · very short text · focus on visual style, color theme, content type.
+
+Prompt: """
+
 UI_VERIFY_PROMPT = """You are a Senior UI/UX Engineer reviewing an SDUI JSON and its rendered screenshot. Fix real issues only — do NOT redesign things that look fine.
 
 PRIORITY 1 — STRUCTURAL (always fix):

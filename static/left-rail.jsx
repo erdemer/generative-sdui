@@ -66,7 +66,7 @@ function LeftRail({
 
       <div className="pane-body" style={{ padding: 0 }}>
         {tab === 'files'    && <FilesContent lang={lang} files={files} selectedFilePath={selectedFilePath} onSelectFile={onSelectFile} onNewFolder={onNewFolder} onNewFile={onNewFile} platform={platform} onPlatform={onPlatform}/>}
-        {tab === 'generate' && <GenerateContent lang={lang} state={generateState} promptText={promptText} onPromptChange={onPromptChange} imagePreview={imagePreview} onImageChange={onImageChange} onImageRemove={onImageRemove} smartCrop={smartCrop} onSmartCropChange={onSmartCropChange} onGenerate={onGenerate} selectedLabel={selectedLabel}/>}
+        {tab === 'generate' && <GenerateContent lang={lang} state={generateState} promptText={promptText} onPromptChange={onPromptChange} imagePreview={imagePreview} onImageChange={onImageChange} onImageRemove={onImageRemove} smartCrop={smartCrop} onSmartCropChange={onSmartCropChange} onGenerate={onGenerate} selectedLabel={selectedLabel} platform={platform}/>}
         {tab === 'publish'  && <PublishContent lang={lang} abActive={abActive} currentVersion={currentVersion} onPublish={onPublish} onSaveAsA={onSaveAsA} onSaveAsB={onSaveAsB} onStartAB={onStartAB}/>}
       </div>
     </div>
@@ -135,20 +135,119 @@ function FilesContent({ lang, files, selectedFilePath, onSelectFile, onNewFolder
   );
 }
 
+/* ── Clarify card ───────────────────────────────────────────────────────────── */
+function ClarifyCard({ lang, questions, answers, onAnswer, onApply, onSkip }) {
+  return (
+    <div style={{ margin: '10px 0 0', padding: 10, borderRadius: 10, background: 'var(--bg-elev)', border: '1px solid var(--brand-soft)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 10 }}>
+        <Icon name="sparkle" size={11} style={{ color: 'var(--brand)' }}/>
+        <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--brand)' }}>
+          {lang === 'tr' ? 'Daha iyi sonuç için birkaç soru' : 'A few questions for better results'}
+        </span>
+      </div>
+
+      {questions.map((q, qi) => (
+        <div key={q.id} style={{ marginBottom: qi < questions.length - 1 ? 10 : 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--fg-2)', marginBottom: 5 }}>{q.text}</div>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {q.options.map((opt, oi) => {
+              const selected = answers[q.id] === opt;
+              return (
+                <span
+                  key={oi}
+                  onClick={() => onAnswer(q.id, selected ? null : opt)}
+                  className="chip"
+                  style={{
+                    cursor: 'pointer', fontSize: 10.5,
+                    ...(selected ? { background: 'var(--brand)', color: '#fff', borderColor: 'transparent' } : {}),
+                  }}
+                >
+                  {opt}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+        <button className="btn lg primary" style={{ flex: 1, justifyContent: 'center', fontSize: 12 }} onClick={onApply}>
+          <Icon name="sparkle" size={12}/> {lang === 'tr' ? 'Uygula & Üret' : 'Apply & Generate'}
+        </button>
+        <button className="btn" style={{ fontSize: 11, padding: '0 10px' }} onClick={onSkip}>
+          {lang === 'tr' ? 'Atla' : 'Skip'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ── Generate tab ──────────────────────────────────────────────────────────── */
-function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview, onImageChange, onImageRemove, smartCrop, onSmartCropChange, onGenerate, selectedLabel }) {
+function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview, onImageChange, onImageRemove, smartCrop, onSmartCropChange, onGenerate, selectedLabel, platform }) {
   const fileInputRef = React.useRef(null);
   const t = window.SDUI.t;
   const [history, setHistory] = React.useState(loadHistory);
+  const [clarifyState, setClarifyState] = React.useState('idle'); // 'idle'|'loading'|'ready'
+  const [clarifyQuestions, setClarifyQuestions] = React.useState([]);
+  const [clarifyAnswers, setClarifyAnswers] = React.useState({});
+  const prevPromptRef = React.useRef(promptText);
 
-  const handleKey = (e) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      handleGenerate();
+  React.useEffect(() => {
+    if (prevPromptRef.current !== promptText) {
+      prevPromptRef.current = promptText;
+      if (clarifyState !== 'idle') { setClarifyState('idle'); setClarifyQuestions([]); setClarifyAnswers({}); }
     }
+  }, [promptText]);
+
+  const shouldClarify = () => {
+    const p = promptText?.trim() || '';
+    return p.length > 0 && p.length < 100 && !imagePreview;
   };
 
-  const handleGenerate = () => {
+  const handleKey = (e) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); handleGenerateClick(); }
+  };
+
+  const buildEnrichedPrompt = (answers) => {
+    const parts = Object.entries(answers).filter(([, v]) => v).map(([, v]) => v);
+    if (!parts.length) return promptText;
+    return promptText + ' [' + parts.join(' · ') + ']';
+  };
+
+  const handleGenerateClick = async () => {
+    if (clarifyState === 'ready') {
+      const enriched = buildEnrichedPrompt(clarifyAnswers);
+      if (enriched !== promptText) onPromptChange && onPromptChange(enriched);
+      if (enriched?.trim()) setHistory(saveToHistory(enriched));
+      setClarifyState('idle'); setClarifyQuestions([]); setClarifyAnswers({});
+      onGenerate && onGenerate(enriched);
+      return;
+    }
+
+    if (shouldClarify() && clarifyState === 'idle') {
+      setClarifyState('loading');
+      try {
+        const fd = new FormData();
+        fd.append('prompt', promptText.trim());
+        fd.append('platform', platform || 'mobile');
+        fd.append('lang', lang);
+        const res = await fetch('/clarify', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data?.questions?.length) {
+          setClarifyQuestions(data.questions);
+          setClarifyState('ready');
+          return;
+        }
+      } catch {}
+      setClarifyState('idle');
+    }
+
+    if (promptText?.trim()) setHistory(saveToHistory(promptText));
+    onGenerate && onGenerate();
+  };
+
+  const handleSkip = () => {
+    setClarifyState('idle'); setClarifyQuestions([]); setClarifyAnswers({});
     if (promptText?.trim()) setHistory(saveToHistory(promptText));
     onGenerate && onGenerate();
   };
@@ -231,13 +330,29 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
           ))}
         </div>
 
+        {clarifyState === 'ready' && (
+          <ClarifyCard
+            lang={lang}
+            questions={clarifyQuestions}
+            answers={clarifyAnswers}
+            onAnswer={(id, val) => setClarifyAnswers(prev => ({ ...prev, [id]: val }))}
+            onApply={handleGenerateClick}
+            onSkip={handleSkip}
+          />
+        )}
+
         {state === 'streaming' ? (
           <button className="btn lg primary" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }} disabled>
             <span className="spinner" style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#fff' }}/>
             {lang === 'tr' ? 'AI üretiyor…' : 'AI generating…'}
           </button>
-        ) : (
-          <button className="btn lg primary" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }} onClick={handleGenerate}>
+        ) : clarifyState === 'loading' ? (
+          <button className="btn lg primary" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }} disabled>
+            <span className="spinner" style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#fff' }}/>
+            {lang === 'tr' ? 'Sorular hazırlanıyor…' : 'Preparing questions…'}
+          </button>
+        ) : clarifyState !== 'ready' && (
+          <button className="btn lg primary" style={{ width: '100%', justifyContent: 'center', marginTop: 12 }} onClick={handleGenerateClick}>
             <Icon name="sparkle" size={13}/> {state === 'filled' ? t(lang, 'update') : t(lang, 'generate')}
           </button>
         )}
