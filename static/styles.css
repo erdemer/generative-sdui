@@ -546,7 +546,13 @@ input, textarea { font-family: inherit; color: inherit; }
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.sdui-device-content::-webkit-scrollbar {
+  display: none;
 }
 
 /* Android device: smaller radius, punch-hole camera */

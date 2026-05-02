@@ -230,6 +230,13 @@ function TreeNode({ node, level, selectedPaths = [], onSelect, path = [] }) {
 /* =================== DEVICE STAGE =================== */
 function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, onZoomIn, onZoomOut, showGrid = true, toolbarRight, footer, hideShell = false }) {
   const [interactive, setInteractive] = useState(false);
+  const passWheelToPreview = (e) => {
+    const scroller = e.currentTarget.parentElement?.querySelector('.sdui-device-content');
+    if (!scroller) return;
+    scroller.scrollTop += e.deltaY;
+    scroller.scrollLeft += e.deltaX;
+    e.preventDefault();
+  };
   
   return (
     <div className="pane canvas">
@@ -277,6 +284,7 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
                 <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'default' }}
                      onMouseDown={e => e.preventDefault()}
                      onClick={e => e.stopPropagation()}
+                     onWheel={passWheelToPreview}
                 />
               )}
             </div>
@@ -291,6 +299,7 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
                 <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'default' }}
                      onMouseDown={e => e.preventDefault()}
                      onClick={e => e.stopPropagation()}
+                     onWheel={passWheelToPreview}
                 />
               )}
             </div>
