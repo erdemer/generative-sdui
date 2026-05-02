@@ -38,6 +38,9 @@ function App() {
   const [savedAt, setSavedAt] = useState(null);
   const [zoom, setZoom] = useState(100);
 
+  // ── Verify / improve ────────────────────────────────────────────────────
+  const [verifyState, setVerifyState] = useState('idle'); // 'idle' | 'running'
+
   // ── File system ──────────────────────────────────────────────────────────
   const [files, setFiles] = useState([]);
   const [currentFilePath, setCurrentFilePath] = useState(null);
@@ -190,6 +193,40 @@ function App() {
       alert((lang === 'tr' ? 'Hata: ' : 'Error: ') + err.message);
     }
   };
+
+  // ── Manual verify / improve quality ─────────────────────────────────────
+  const handleVerify = useCallback(async () => {
+    if (!currentJson || verifyState === 'running') return;
+    setVerifyState('running');
+    try {
+      const deviceScreen = document.querySelector('.device-screen');
+      if (!deviceScreen || typeof html2canvas === 'undefined') { setVerifyState('idle'); return; }
+      const canvas = await html2canvas(deviceScreen, { backgroundColor: '#FFFFFF', scale: 1, useCORS: true, logging: false });
+      canvas.toBlob(async (blob) => {
+        if (!blob) { setVerifyState('idle'); return; }
+        const vfd = new FormData();
+        vfd.append('json_data', JSON.stringify(currentJson));
+        vfd.append('screenshot', blob, 'preview.png');
+        try {
+          const vRes = await fetch('/verify', { method: 'POST', body: vfd });
+          if (!vRes.ok) throw new Error('HTTP ' + vRes.status);
+          const verified = await vRes.json();
+          if (verified?.layout) {
+            setCurrentJson(prev => {
+              _uid = 0; tagIds(verified.layout);
+              return verified;
+            });
+            setSavedAt(Date.now());
+            if (currentFilePath) _saveFile(currentFilePath, verified);
+          }
+        } catch (e) { console.warn('Verify failed:', e); }
+        setVerifyState('idle');
+      }, 'image/png');
+    } catch (e) {
+      console.warn('Verify screenshot failed:', e);
+      setVerifyState('idle');
+    }
+  }, [currentJson, verifyState, currentFilePath]);
 
   // ── Publish ──────────────────────────────────────────────────────────────
   const handlePublish = async () => {
@@ -368,7 +405,22 @@ function App() {
             <window.SDUI.TreePane lang={lang} view={treeView} onView={setTreeView} tree={tree} selectedPaths={selectedIds.map(id => findPath(currentJson?.layout, id) || [])} onSelectNode={(path, multi) => handleSelectNode(path[path.length-1], multi)} breadcrumb={selectedPath.length ? selectedPath.map(String) : null}/>
           )}
 
-          <window.SDUI.CanvasPane lang={lang} device={device} onDevice={setDevice} zoom={zoom} onZoomIn={handleZoomIn} onZoomOut={handleZoomOut} hideShell={appState === 'empty'}>
+          <window.SDUI.CanvasPane lang={lang} device={device} onDevice={setDevice} zoom={zoom} onZoomIn={handleZoomIn} onZoomOut={handleZoomOut} hideShell={appState === 'empty'}
+            toolbarRight={appState === 'editing' ? (
+              <button
+                className="icon-btn"
+                title={lang === 'tr' ? 'Kaliteyi İyileştir (AI Denetim)' : 'Improve Quality (AI Audit)'}
+                onClick={handleVerify}
+                disabled={verifyState === 'running'}
+                style={verifyState === 'running' ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+              >
+                {verifyState === 'running'
+                  ? <span className="spinner" style={{ width: 12, height: 12, borderWidth: 1.5 }}/>
+                  : <Icon name="sparkle" size={13}/>
+                }
+              </button>
+            ) : null}
+          >
             {appState === 'empty' && (
               <div style={{ width:'100%', height:'100%', overflowY:'auto', display:'flex', alignItems:'flex-start', justifyContent:'center', paddingTop:24 }}>
                 <EmptyHero lang={lang} onStart={() => setLeftTab('generate')}/>

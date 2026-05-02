@@ -247,7 +247,6 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
         </div>
         <span style={{ width: 1, height: 16, background: 'var(--line)' }}/>
         <button className={`icon-btn ${interactive?'active':''}`} title={t(lang,"interactive")} onClick={() => setInteractive(!interactive)}><Icon name="play" size={12}/></button>
-        <button className="icon-btn" onClick={() => alert("Preview mode coming soon")}><Icon name="eye" size={13}/></button>
         <span style={{ width: 1, height: 16, background: 'var(--line)' }}/>
         <span style={{ fontSize: 11, color: 'var(--fg-3)', padding: '0 6px' }}>{t(lang,"livePreview")}</span>
         {toolbarRight}
@@ -272,15 +271,28 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
               <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#28c840' }}/>
               <div style={{ flex: 1, height: 18, background: 'rgba(255,255,255,0.1)', borderRadius: 4, marginLeft: 8 }}/>
             </div>
-            <div style={{ width: '100%', height: 480, background: 'var(--device-screen)', overflow: 'hidden', pointerEvents: interactive ? 'auto' : 'none' }}>
+            <div style={{ width: '100%', height: 480, background: 'var(--device-screen)', overflow: 'hidden', position: 'relative' }}>
               {children}
+              {!interactive && (
+                <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'default' }}
+                     onMouseDown={e => e.preventDefault()}
+                     onClick={e => e.stopPropagation()}
+                />
+              )}
             </div>
           </div>
         ) : (
           /* iPhone / Android phone frame */
           <div className={`device-shell ${device === 'pixel' ? 'device-android' : ''}`} style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'all 0.3s ease' }}>
-            <div className="device-screen" style={{ pointerEvents: interactive ? 'auto' : 'none' }}>
+            <div className="device-screen">
               {children}
+              {/* Click-blocker overlay: blocks tap interactions but lets scroll events through */}
+              {!interactive && (
+                <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'default' }}
+                     onMouseDown={e => e.preventDefault()}
+                     onClick={e => e.stopPropagation()}
+                />
+              )}
             </div>
           </div>
         )}
