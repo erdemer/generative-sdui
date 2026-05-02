@@ -185,6 +185,7 @@ function SDUINode({ node, selectedIds, onSelectId }) {
   const children = (node.children || []).map((c, i) => (
     <SDUINode key={i} node={c} selectedIds={selectedIds} onSelectId={onSelectId}/>
   ));
+  const nodeAttrs = { 'data-sdui-id': node._id };
 
   const handleAction = (e) => {
     if (!p.onClick) return;
@@ -205,35 +206,35 @@ function SDUINode({ node, selectedIds, onSelectId }) {
 
   switch (node.type) {
     case 'Text':
-      return <div onClick={combinedClick} style={{ ...style, cursor: p.onClick ? 'pointer' : undefined }}>{p.text || ''}</div>;
+      return <div {...nodeAttrs} onClick={combinedClick} style={{ ...style, cursor: p.onClick ? 'pointer' : undefined }}>{p.text || ''}</div>;
 
     case 'Image': {
       const seed = node._id || 42;
       const onErr = (e) => { if (!e.target.dataset.fb) { e.target.dataset.fb = '1'; e.target.src = `https://picsum.photos/seed/${seed}/400/300`; } };
-      return <img onClick={combinedClick} style={style} src={p.url || ''} alt={p.contentDescription || ''} onError={onErr}/>;
+      return <img {...nodeAttrs} onClick={combinedClick} style={style} src={p.url || ''} alt={p.contentDescription || ''} onError={onErr}/>;
     }
 
     case 'Button': {
       const bs = { ...style, display:'flex', alignItems:'center', justifyContent: p.textAlign === 'start' ? 'flex-start' : p.textAlign === 'end' ? 'flex-end' : 'center', cursor:'pointer', userSelect:'none', border:0, fontFamily:'inherit', fontWeight: style.fontWeight || '600', padding: style.padding || '10px 20px', borderRadius: style.borderRadius || '8px' };
-      return <div onClick={combinedClick} style={bs}>{p.text || ''}</div>;
+      return <div {...nodeAttrs} onClick={combinedClick} style={bs}>{p.text || ''}</div>;
     }
 
     case 'Icon': {
       const is = { ...style, display:'inline-flex', alignItems:'center', justifyContent:'center', flexShrink:0, cursor: p.onClick ? 'pointer' : undefined };
       if (p.size) is.fontSize = p.size + 'px';
       if (p.color) is.color = p.color;
-      return <span onClick={combinedClick} style={is} className="material-icons" aria-hidden="true">{p.name || 'help_outline'}</span>;
+      return <span {...nodeAttrs} onClick={combinedClick} style={is} className="material-icons" aria-hidden="true">{p.name || 'help_outline'}</span>;
     }
 
     case 'Card':
-      return <div onClick={combinedClick} style={{ ...style, cursor: p.onClick ? 'pointer' : undefined }}>{children}</div>;
+      return <div {...nodeAttrs} onClick={combinedClick} style={{ ...style, cursor: p.onClick ? 'pointer' : undefined }}>{children}</div>;
 
     case 'BottomBar':
-      return <div onClick={onClick} style={style}>{children}</div>;
+      return <div {...nodeAttrs} onClick={onClick} style={style}>{children}</div>;
 
     case 'HorizontalDivider':
     case 'Divider':
-      return <div style={{ width:'100%', height: (p.thickness ?? 1) + 'px', backgroundColor: p.color || 'rgba(0,0,0,0.08)', flexShrink:0 }}/>;
+      return <div {...nodeAttrs} style={{ width:'100%', height: (p.thickness ?? 1) + 'px', backgroundColor: p.color || 'rgba(0,0,0,0.08)', flexShrink:0 }}/>;
 
     case 'LazyColumn':
     case 'Column':
@@ -242,7 +243,7 @@ function SDUINode({ node, selectedIds, onSelectId }) {
     case 'Box':
     case 'BottomSheet':
     default:
-      return <div onClick={onClick} style={style}>{children}</div>;
+      return <div {...nodeAttrs} onClick={onClick} style={style}>{children}</div>;
   }
 }
 

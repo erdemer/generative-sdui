@@ -65,7 +65,63 @@ function replaceUnsupportedColors(value) {
   return value.replace(/oklch\([^)]*\)/gi, token => oklchToRgb(token));
 }
 
+function sanitizeCssRules(rules) {
+  if (!rules) return;
+  Array.from(rules).forEach(rule => {
+    try {
+      if (rule.style) {
+        Array.from(rule.style).forEach(prop => {
+          const rawValue = rule.style.getPropertyValue(prop);
+          const normalized = replaceUnsupportedColors(rawValue);
+          if (normalized && normalized !== rawValue) {
+            rule.style.setProperty(prop, normalized, rule.style.getPropertyPriority(prop));
+          }
+        });
+      }
+      if (rule.cssRules) sanitizeCssRules(rule.cssRules);
+    } catch {}
+  });
+}
+
+function sanitizeClonedStylesheets(clonedDoc) {
+  clonedDoc.querySelectorAll('style').forEach(styleNode => {
+    styleNode.textContent = replaceUnsupportedColors(styleNode.textContent);
+  });
+
+  Array.from(clonedDoc.styleSheets).forEach(sheet => {
+    try {
+      sanitizeCssRules(sheet.cssRules);
+    } catch {}
+  });
+}
+
+function sanitizeClonedElement(sourceNode, cloneNode) {
+  if (!sourceNode || !cloneNode?.style) return;
+
+  const computed = window.getComputedStyle(sourceNode);
+  Array.from(computed).forEach(prop => {
+    const rawValue = computed.getPropertyValue(prop);
+    const normalized = replaceUnsupportedColors(rawValue);
+    if (normalized && normalized !== rawValue) {
+      cloneNode.style.setProperty(prop, normalized);
+    }
+  });
+
+  cloneNode.style.cssText = replaceUnsupportedColors(cloneNode.style.cssText);
+  ['fill', 'stroke', 'style'].forEach(attr => {
+    if (cloneNode.hasAttribute?.(attr)) {
+      cloneNode.setAttribute(attr, replaceUnsupportedColors(cloneNode.getAttribute(attr)));
+    }
+  });
+}
+
 function prepareScreenshotClone(source, clonedDoc) {
+  sanitizeClonedStylesheets(clonedDoc);
+
+  const sourceAllNodes = [document.documentElement, ...document.documentElement.querySelectorAll('*')];
+  const cloneAllNodes = [clonedDoc.documentElement, ...clonedDoc.documentElement.querySelectorAll('*')];
+  cloneAllNodes.forEach((cloneNode, index) => sanitizeClonedElement(sourceAllNodes[index], cloneNode));
+
   const clonedSource = clonedDoc.querySelector('.device-screen');
   if (!clonedSource) return;
 
@@ -73,19 +129,14 @@ function prepareScreenshotClone(source, clonedDoc) {
   const cloneNodes = [clonedSource, ...clonedSource.querySelectorAll('*')];
 
   cloneNodes.forEach((cloneNode, index) => {
-    const sourceNode = sourceNodes[index];
-    if (!sourceNode || !cloneNode.style) return;
-    const computed = window.getComputedStyle(sourceNode);
     SCREENSHOT_COLOR_PROPS.forEach(prop => {
+      const sourceNode = sourceNodes[index];
+      if (!sourceNode || !cloneNode.style) return;
+      const computed = window.getComputedStyle(sourceNode);
       const normalized = replaceUnsupportedColors(computed.getPropertyValue(prop));
       if (normalized && normalized !== 'none') cloneNode.style.setProperty(prop, normalized);
     });
-    cloneNode.style.cssText = replaceUnsupportedColors(cloneNode.style.cssText);
-    ['fill', 'stroke'].forEach(attr => {
-      if (cloneNode.hasAttribute?.(attr)) {
-        cloneNode.setAttribute(attr, replaceUnsupportedColors(cloneNode.getAttribute(attr)));
-      }
-    });
+    sanitizeClonedElement(sourceNodes[index], cloneNode);
   });
 }
 
@@ -383,6 +434,15 @@ function App() {
       return [...prev, id];
     });
   }, []);
+
+  useEffect(() => {
+    const onPreviewSelect = (e) => {
+      const { id, multi } = e.detail || {};
+      if (id) handleSelectNode(id, multi);
+    };
+    window.addEventListener('sdui-preview-select', onPreviewSelect);
+    return () => window.removeEventListener('sdui-preview-select', onPreviewSelect);
+  }, [handleSelectNode]);
 
   const handlePropChange = useCallback((propName, value) => {
     if (!selectedIds.length || !currentJson?.layout) return;

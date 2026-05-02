@@ -502,6 +502,11 @@ input, textarea { font-family: inherit; color: inherit; }
   -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
           mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
 }
+.preview-frame-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 .device-shell {
   position: relative;
   background: var(--device-bezel);
@@ -553,6 +558,45 @@ input, textarea { font-family: inherit; color: inherit; }
 }
 .sdui-device-content::-webkit-scrollbar {
   display: none;
+}
+.preview-scrollbar {
+  width: 12px;
+  height: 560px;
+  border-radius: 999px;
+  background: rgba(15, 17, 21, 0.10);
+  border: 1px solid rgba(15, 17, 21, 0.16);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  z-index: 4;
+}
+.preview-scrollbar-thumb {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  min-height: 28px;
+  border-radius: 999px;
+  background: var(--brand);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  cursor: grab;
+}
+.preview-scrollbar-thumb:active {
+  cursor: grabbing;
+}
+.preview-scrollbar.disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.preview-scrollbar.disabled .preview-scrollbar-thumb {
+  background: var(--fg-mute);
+  box-shadow: none;
+  cursor: default;
+}
+[data-theme="dark"] .preview-scrollbar,
+[data-theme="vf-dark"] .preview-scrollbar {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.18);
 }
 
 /* Android device: smaller radius, punch-hole camera */

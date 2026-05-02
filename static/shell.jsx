@@ -2,7 +2,7 @@
    Topbar, panes, tree node, device frame, prompt panel, etc.
 */
 
-const { useState, useMemo, useEffect } = React;
+const { useState, useMemo, useEffect, useRef } = React;
 
 var Icon = window.Icon;
 const t = (lang, key) => (window.I18N[lang] && window.I18N[lang][key]) || key;
@@ -166,7 +166,6 @@ function TreePane({ lang, view = "tree", onView, hasSelection = true, tree, sele
           </button>
         </div>
         <div className="actions">
-          <button className="icon-btn"><Icon name="plus" size={14}/></button>
           <button className="icon-btn"><Icon name="more-h" size={14}/></button>
         </div>
       </div>
@@ -202,14 +201,19 @@ function TreePane({ lang, view = "tree", onView, hasSelection = true, tree, sele
 }
 
 function TreeNode({ node, level, selectedPaths = [], onSelect, path = [] }) {
+  const rowRef = useRef(null);
   const myPath = [...path, node.id];
   const myPathStr = myPath.join('/');
   const selected = selectedPaths.some(p => p.join('/') === myPathStr);
   const open = node.open !== false;
   const indent = level * 14;
+  useEffect(() => {
+    if (selected) rowRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [selected]);
   return (
     <>
       <div
+        ref={rowRef}
         className={"tree-node" + (selected ? " selected" : "")}
         style={{ paddingLeft: 6 + indent }}
         onClick={(e) => { e.stopPropagation(); onSelect && onSelect(myPath, e.shiftKey || e.metaKey); }}
@@ -228,14 +232,131 @@ function TreeNode({ node, level, selectedPaths = [], onSelect, path = [] }) {
 }
 
 /* =================== DEVICE STAGE =================== */
+function PreviewScrollbar({ metrics, onTrack, onThumbStart }) {
+  const scrollable = metrics.scrollHeight > metrics.clientHeight + 1;
+  const thumbHeight = scrollable
+    ? Math.max(28, Math.min(100, (metrics.clientHeight / metrics.scrollHeight) * 100))
+    : 100;
+  const maxTop = 100 - thumbHeight;
+  const thumbTop = scrollable
+    ? (metrics.scrollTop / Math.max(1, metrics.scrollHeight - metrics.clientHeight)) * maxTop
+    : 0;
+
+  return (
+    <div
+      className={`preview-scrollbar ${scrollable ? '' : 'disabled'}`}
+      aria-hidden="true"
+      onMouseDown={onTrack}
+    >
+      <div
+        className="preview-scrollbar-thumb"
+        style={{ height: `${thumbHeight}%`, top: `${thumbTop}%` }}
+        onMouseDown={onThumbStart}
+      />
+    </div>
+  );
+}
+
 function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, onZoomIn, onZoomOut, showGrid = true, toolbarRight, footer, hideShell = false }) {
   const [interactive, setInteractive] = useState(false);
+  const stageRef = useRef(null);
+  const dragRef = useRef(null);
+  const [scrollMetrics, setScrollMetrics] = useState({ scrollTop: 0, clientHeight: 1, scrollHeight: 1 });
+
+  const getPreviewScroller = () => stageRef.current?.querySelector('.sdui-device-content');
+
+  const syncScrollMetrics = () => {
+    const scroller = getPreviewScroller();
+    if (!scroller) {
+      setScrollMetrics({ scrollTop: 0, clientHeight: 1, scrollHeight: 1 });
+      return;
+    }
+    setScrollMetrics({
+      scrollTop: scroller.scrollTop,
+      clientHeight: scroller.clientHeight || 1,
+      scrollHeight: scroller.scrollHeight || 1,
+    });
+  };
+
+  useEffect(() => {
+    const scroller = getPreviewScroller();
+    syncScrollMetrics();
+    if (!scroller) return;
+
+    const onScroll = () => syncScrollMetrics();
+    scroller.addEventListener('scroll', onScroll, { passive: true });
+    const resizeObserver = new ResizeObserver(syncScrollMetrics);
+    resizeObserver.observe(scroller);
+    if (scroller.firstElementChild) resizeObserver.observe(scroller.firstElementChild);
+    const timeout = setTimeout(syncScrollMetrics, 80);
+
+    return () => {
+      scroller.removeEventListener('scroll', onScroll);
+      resizeObserver.disconnect();
+      clearTimeout(timeout);
+    };
+  }, [children, device, hideShell]);
+
+  useEffect(() => {
+    const onMouseMove = (e) => {
+      if (!dragRef.current) return;
+      const scroller = getPreviewScroller();
+      if (!scroller) return;
+      const { startY, startScrollTop, trackHeight } = dragRef.current;
+      const maxScroll = Math.max(1, scroller.scrollHeight - scroller.clientHeight);
+      const thumbHeight = Math.max(28, (scroller.clientHeight / scroller.scrollHeight) * trackHeight);
+      const maxThumbTop = Math.max(1, trackHeight - thumbHeight);
+      scroller.scrollTop = startScrollTop + ((e.clientY - startY) / maxThumbTop) * maxScroll;
+    };
+    const onMouseUp = () => { dragRef.current = null; };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, []);
+
   const passWheelToPreview = (e) => {
-    const scroller = e.currentTarget.parentElement?.querySelector('.sdui-device-content');
+    const scroller = getPreviewScroller();
     if (!scroller) return;
     scroller.scrollTop += e.deltaY;
     scroller.scrollLeft += e.deltaX;
     e.preventDefault();
+  };
+
+  const selectPreviewNodeAtPoint = (e) => {
+    const overlay = e.currentTarget;
+    overlay.style.pointerEvents = 'none';
+    const target = document.elementFromPoint(e.clientX, e.clientY);
+    overlay.style.pointerEvents = '';
+    const nodeEl = target?.closest?.('[data-sdui-id]');
+    const id = nodeEl?.dataset?.sduiId;
+    if (!id) return;
+    window.dispatchEvent(new CustomEvent('sdui-preview-select', {
+      detail: { id, multi: e.shiftKey || e.metaKey },
+    }));
+  };
+
+  const handleScrollbarTrack = (e) => {
+    if (e.target.classList.contains('preview-scrollbar-thumb')) return;
+    const scroller = getPreviewScroller();
+    if (!scroller) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const ratio = (e.clientY - rect.top) / Math.max(1, rect.height);
+    scroller.scrollTop = ratio * (scroller.scrollHeight - scroller.clientHeight);
+  };
+
+  const handleScrollbarThumbStart = (e) => {
+    const scroller = getPreviewScroller();
+    if (!scroller) return;
+    e.preventDefault();
+    e.stopPropagation();
+    dragRef.current = {
+      startY: e.clientY,
+      startScrollTop: scroller.scrollTop,
+      trackHeight: e.currentTarget.parentElement.getBoundingClientRect().height,
+    };
   };
   
   return (
@@ -259,50 +380,55 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
         {toolbarRight}
       </div>
 
-      <div className="device-stage">
+      <div className="device-stage" ref={stageRef}>
         {hideShell ? (
           <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'transform 0.2s', width: '100%', height: '100%', pointerEvents: interactive ? 'auto' : 'none' }}>
             {children}
           </div>
         ) : device === 'web' ? (
           /* Web: browser-like frame */
-          <div style={{ 
-            transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'all 0.3s ease',
-            width: 580, background: 'var(--device-bezel)', borderRadius: 12, padding: 0,
-            boxShadow: 'var(--shadow-lg)', overflow: 'hidden'
-          }}>
-            {/* Browser chrome bar */}
-            <div style={{ height: 32, background: 'var(--device-bezel)', display: 'flex', alignItems: 'center', padding: '0 12px', gap: 6 }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f57' }}/>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffbd2e' }}/>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#28c840' }}/>
-              <div style={{ flex: 1, height: 18, background: 'rgba(255,255,255,0.1)', borderRadius: 4, marginLeft: 8 }}/>
+          <div className="preview-frame-wrap" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'all 0.3s ease' }}>
+            <div style={{
+              width: 580, background: 'var(--device-bezel)', borderRadius: 12, padding: 0,
+              boxShadow: 'var(--shadow-lg)', overflow: 'hidden'
+            }}>
+              {/* Browser chrome bar */}
+              <div style={{ height: 32, background: 'var(--device-bezel)', display: 'flex', alignItems: 'center', padding: '0 12px', gap: 6 }}>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f57' }}/>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffbd2e' }}/>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#28c840' }}/>
+                <div style={{ flex: 1, height: 18, background: 'rgba(255,255,255,0.1)', borderRadius: 4, marginLeft: 8 }}/>
+              </div>
+              <div style={{ width: '100%', height: 480, background: 'var(--device-screen)', overflow: 'hidden', position: 'relative' }}>
+                {children}
+                {!interactive && (
+                  <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'default' }}
+                       onMouseDown={e => e.preventDefault()}
+                       onClick={e => { e.stopPropagation(); selectPreviewNodeAtPoint(e); }}
+                       onWheel={passWheelToPreview}
+                  />
+                )}
+              </div>
             </div>
-            <div style={{ width: '100%', height: 480, background: 'var(--device-screen)', overflow: 'hidden', position: 'relative' }}>
-              {children}
-              {!interactive && (
-                <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'default' }}
-                     onMouseDown={e => e.preventDefault()}
-                     onClick={e => e.stopPropagation()}
-                     onWheel={passWheelToPreview}
-                />
-              )}
-            </div>
+            <PreviewScrollbar metrics={scrollMetrics} onTrack={handleScrollbarTrack} onThumbStart={handleScrollbarThumbStart}/>
           </div>
         ) : (
           /* iPhone / Android phone frame */
-          <div className={`device-shell ${device === 'pixel' ? 'device-android' : ''}`} style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'all 0.3s ease' }}>
-            <div className="device-screen">
-              {children}
-              {/* Click-blocker overlay: blocks tap interactions but lets scroll events through */}
-              {!interactive && (
-                <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'default' }}
-                     onMouseDown={e => e.preventDefault()}
-                     onClick={e => e.stopPropagation()}
-                     onWheel={passWheelToPreview}
-                />
-              )}
+          <div className="preview-frame-wrap" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'all 0.3s ease' }}>
+            <div className={`device-shell ${device === 'pixel' ? 'device-android' : ''}`}>
+              <div className="device-screen">
+                {children}
+                {/* Click-blocker overlay: blocks tap interactions but lets scroll events through */}
+                {!interactive && (
+                  <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'default' }}
+                       onMouseDown={e => e.preventDefault()}
+                       onClick={e => { e.stopPropagation(); selectPreviewNodeAtPoint(e); }}
+                       onWheel={passWheelToPreview}
+                  />
+                )}
+              </div>
             </div>
+            <PreviewScrollbar metrics={scrollMetrics} onTrack={handleScrollbarTrack} onThumbStart={handleScrollbarThumbStart}/>
           </div>
         )}
       </div>
