@@ -2,6 +2,103 @@
 
 const { useState, useEffect, useCallback } = React;
 
+const SCREENSHOT_COLOR_PROPS = [
+  'background', 'background-color', 'background-image',
+  'border-color', 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color',
+  'box-shadow', 'caret-color', 'color', 'column-rule-color', 'fill', 'outline-color',
+  'stroke', 'text-decoration-color', 'text-shadow',
+];
+
+function normalizeHue(h) {
+  const value = parseFloat(h);
+  if (!Number.isFinite(value)) return 0;
+  if (h.endsWith('turn')) return value * 360;
+  if (h.endsWith('rad')) return value * (180 / Math.PI);
+  if (h.endsWith('grad')) return value * 0.9;
+  return value;
+}
+
+function parseOklchPart(part, isLightness = false) {
+  const value = parseFloat(part);
+  if (!Number.isFinite(value)) return 0;
+  if (isLightness && part.endsWith('%')) return value / 100;
+  return value;
+}
+
+function linearToSrgb(value) {
+  const v = Math.max(0, Math.min(1, value));
+  return v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
+}
+
+function oklchToRgb(color) {
+  const match = color.match(/^oklch\((.*)\)$/i);
+  if (!match) return color;
+
+  const [main, alphaPart] = match[1].split('/').map(part => part.trim());
+  const parts = main.split(/\s+/).filter(Boolean);
+  if (parts.length < 3) return color;
+
+  const l = parseOklchPart(parts[0], true);
+  const c = parseOklchPart(parts[1]);
+  const h = normalizeHue(parts[2]) * Math.PI / 180;
+  const a = c * Math.cos(h);
+  const b = c * Math.sin(h);
+
+  const lPrime = l + 0.3963377774 * a + 0.2158037573 * b;
+  const mPrime = l - 0.1055613458 * a - 0.0638541728 * b;
+  const sPrime = l - 0.0894841775 * a - 1.2914855480 * b;
+  const lmsL = lPrime * lPrime * lPrime;
+  const lmsM = mPrime * mPrime * mPrime;
+  const lmsS = sPrime * sPrime * sPrime;
+
+  const r = Math.round(linearToSrgb(+4.0767416621 * lmsL - 3.3077115913 * lmsM + 0.2309699292 * lmsS) * 255);
+  const g = Math.round(linearToSrgb(-1.2684380046 * lmsL + 2.6097574011 * lmsM - 0.3413193965 * lmsS) * 255);
+  const blue = Math.round(linearToSrgb(-0.0041960863 * lmsL - 0.7034186147 * lmsM + 1.7076147010 * lmsS) * 255);
+
+  if (!alphaPart) return `rgb(${r}, ${g}, ${blue})`;
+  const alpha = alphaPart.endsWith('%') ? parseFloat(alphaPart) / 100 : parseFloat(alphaPart);
+  return `rgba(${r}, ${g}, ${blue}, ${Number.isFinite(alpha) ? alpha : 1})`;
+}
+
+function replaceUnsupportedColors(value) {
+  if (!value || typeof value !== 'string' || !value.includes('oklch(')) return value;
+  return value.replace(/oklch\([^)]*\)/gi, token => oklchToRgb(token));
+}
+
+function prepareScreenshotClone(source, clonedDoc) {
+  const clonedSource = clonedDoc.querySelector('.device-screen');
+  if (!clonedSource) return;
+
+  const sourceNodes = [source, ...source.querySelectorAll('*')];
+  const cloneNodes = [clonedSource, ...clonedSource.querySelectorAll('*')];
+
+  cloneNodes.forEach((cloneNode, index) => {
+    const sourceNode = sourceNodes[index];
+    if (!sourceNode || !cloneNode.style) return;
+    const computed = window.getComputedStyle(sourceNode);
+    SCREENSHOT_COLOR_PROPS.forEach(prop => {
+      const normalized = replaceUnsupportedColors(computed.getPropertyValue(prop));
+      if (normalized && normalized !== 'none') cloneNode.style.setProperty(prop, normalized);
+    });
+    cloneNode.style.cssText = replaceUnsupportedColors(cloneNode.style.cssText);
+    ['fill', 'stroke'].forEach(attr => {
+      if (cloneNode.hasAttribute?.(attr)) {
+        cloneNode.setAttribute(attr, replaceUnsupportedColors(cloneNode.getAttribute(attr)));
+      }
+    });
+  });
+}
+
+function captureDeviceScreen(deviceScreen) {
+  return html2canvas(deviceScreen, {
+    backgroundColor: '#FFFFFF',
+    scale: 1,
+    useCORS: true,
+    logging: false,
+    onclone: clonedDoc => prepareScreenshotClone(deviceScreen, clonedDoc),
+  });
+}
+
 function App() {
   // ── Core state ───────────────────────────────────────────────────────────
   const [appState, setAppState] = useState('empty'); // 'empty' | 'streaming' | 'editing'
@@ -152,7 +249,7 @@ function App() {
         try {
           const deviceScreen = document.querySelector('.device-screen');
           if (!deviceScreen || typeof html2canvas === 'undefined') return;
-          const canvas = await html2canvas(deviceScreen, { backgroundColor:'#FFFFFF', scale:1, useCORS:true, logging:false });
+          const canvas = await captureDeviceScreen(deviceScreen);
           canvas.toBlob(async (blob) => {
             if (!blob) return;
             const vfd = new FormData();
@@ -201,7 +298,7 @@ function App() {
     try {
       const deviceScreen = document.querySelector('.device-screen');
       if (!deviceScreen || typeof html2canvas === 'undefined') { setVerifyState('idle'); return; }
-      const canvas = await html2canvas(deviceScreen, { backgroundColor: '#FFFFFF', scale: 1, useCORS: true, logging: false });
+      const canvas = await captureDeviceScreen(deviceScreen);
       canvas.toBlob(async (blob) => {
         if (!blob) { setVerifyState('idle'); return; }
         const vfd = new FormData();
