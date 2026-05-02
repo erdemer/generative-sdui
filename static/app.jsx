@@ -210,16 +210,13 @@ function App() {
 
     let progressTimer = null;
     try {
-      setGenerateProgress({ current: imageFile ? 2 : 3, total: 12, phase: imageFile ? progressText.image : progressText.waiting });
+      setGenerateProgress({ current: imageFile ? 2 : 3, total: 12, phase: imageFile ? progressText.image : progressText.waiting, waiting: false });
       progressTimer = setInterval(() => {
         setGenerateProgress(prev => {
           const current = prev?.current || 1;
-          if (current >= 9) return prev;
-          return {
-            current: current + 1,
-            total: 12,
-            phase: progressText.waiting,
-          };
+          // At 7 switch to indeterminate "waiting" mode — no frozen number shown
+          if (current >= 7) return { ...prev, waiting: true };
+          return { current: current + 1, total: 12, phase: progressText.waiting, waiting: false };
         });
       }, 900);
 

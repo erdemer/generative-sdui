@@ -41,8 +41,18 @@ function MockStreamingScreen({ lang, progress }) {
   const count = Math.max(1, Math.min(progress?.current || 1, progress?.total || TOTAL));
   const total = progress?.total || TOTAL;
   const phase = progress?.phase;
+  const waiting = progress?.waiting === true;
 
-  const label = lang === 'tr'
+  // Animated dots for the indeterminate waiting state
+  const [dots, setDots] = React.useState('');
+  React.useEffect(() => {
+    if (!waiting) { setDots(''); return; }
+    const id = setInterval(() => setDots(d => d.length >= 3 ? '' : d + '.'), 500);
+    return () => clearInterval(id);
+  }, [waiting]);
+
+  const waitingLabel = lang === 'tr' ? 'AI tasarım oluşturuyor' : 'AI is generating';
+  const normalLabel  = lang === 'tr'
     ? `${phase || 'AI tasarımı üretiyor…'} ${count} / ${total} adım`
     : `${phase || 'AI generating…'} ${count} / ${total} steps`;
 
@@ -66,8 +76,14 @@ function MockStreamingScreen({ lang, progress }) {
       </div>
       <div style={{ position: 'absolute', bottom: 16, left: 16, right: 16, padding: '10px 12px', background: 'oklch(0.18 0.006 250)', borderRadius: 10, color: '#fff', fontSize: 11, display: 'flex', alignItems: 'center', gap: 8 }}>
         <span className="spinner" style={{ borderColor: 'oklch(1 0 0 / 0.2)', borderTopColor: '#fff' }}/>
-        <span style={{ flex: 1 }}>{label}</span>
-        <span style={{ fontFamily: 'var(--font-mono)', opacity: 0.6, fontSize: 10 }}>{count}/{total}</span>
+        <span style={{ flex: 1 }}>{waiting ? waitingLabel : normalLabel}</span>
+        {/* Only show step counter while progressing — hide when frozen waiting for AI */}
+        {!waiting && (
+          <span style={{ fontFamily: 'var(--font-mono)', opacity: 0.6, fontSize: 10 }}>{count}/{total}</span>
+        )}
+        {waiting && (
+          <span style={{ fontFamily: 'var(--font-mono)', opacity: 0.5, fontSize: 12, minWidth: 18 }}>{dots}</span>
+        )}
       </div>
     </div>
   );
