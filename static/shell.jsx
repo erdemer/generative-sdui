@@ -318,11 +318,22 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
   }, []);
 
   const passWheelToPreview = (e) => {
-    const scroller = getPreviewScroller();
-    if (!scroller) return;
-    scroller.scrollTop += e.deltaY;
-    scroller.scrollLeft += e.deltaX;
-    e.preventDefault();
+    // Temporarily hide the overlay so elementsFromPoint can see through it,
+    // then find the first actually-scrollable element underneath.
+    const overlay = e.currentTarget;
+    overlay.style.pointerEvents = 'none';
+    const hits = document.elementsFromPoint(e.clientX, e.clientY);
+    overlay.style.pointerEvents = '';
+
+    for (const el of hits) {
+      const st = window.getComputedStyle(el);
+      const oy = st.overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) {
+        el.scrollTop += e.deltaY;
+        e.preventDefault();
+        return;
+      }
+    }
   };
 
   const selectPreviewNodeAtPoint = (e) => {
