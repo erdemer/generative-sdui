@@ -4,7 +4,7 @@ import json_repair
 from fastapi import APIRouter, Form, File, UploadFile
 from PIL import Image
 
-from app.ai_client import model
+from app.ai_client import generate_with_retry
 from app.prompts import UI_VERIFY_PROMPT
 
 router = APIRouter()
@@ -27,7 +27,7 @@ async def verify_ui(
             "\n\n### RENDERED SCREENSHOT:",
             pil_screenshot,
         ]
-        response = model.generate_content(verify_input)
+        response = generate_with_retry(verify_input)
         verified = json_repair.loads(response.text)
 
         if verified != original:

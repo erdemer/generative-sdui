@@ -3,7 +3,7 @@ import json_repair
 from fastapi import APIRouter, Form, File, UploadFile
 from PIL import Image
 
-from app.ai_client import model
+from app.ai_client import generate_with_retry
 from app.prompts import PROMPT_BASE, PROMPT_WEB, SMART_CROP_PROMPT, CLARIFY_PROMPT
 from app.services.image import process_crops
 
@@ -19,7 +19,7 @@ async def clarify_prompt(
     try:
         lang_note = "Write questions and options in Turkish." if lang == "tr" else "Write questions and options in English."
         filled = CLARIFY_PROMPT.format(platform=platform, lang_note=lang_note)
-        resp = model.generate_content([filled + prompt])
+        resp = generate_with_retry([filled + prompt])
         data = json_repair.loads(resp.text)
         if not isinstance(data.get("questions"), list):
             return {"questions": []}
@@ -91,7 +91,7 @@ You are modifying an existing SDUI JSON layout based on a user request.
                     input_content.append(SMART_CROP_PROMPT)
                 input_content.append(pil_image)
 
-            response = model.generate_content(input_content)
+            response = generate_with_retry(input_content)
             parsed_json = json_repair.loads(response.text)
 
         if pil_image and parsed_json:
