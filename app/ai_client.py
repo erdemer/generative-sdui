@@ -4,7 +4,7 @@ from google.api_core.exceptions import ResourceExhausted
 from app.config import GOOGLE_API_KEY
 
 genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel(model_name="gemini-3-flash")
+model = genai.GenerativeModel(model_name="gemini-3-flash-preview")
 
 _MAX_RETRIES = 4
 _BACKOFF_BASE = 2  # seconds: 2, 4, 8, 16
