@@ -152,6 +152,9 @@ function computeSDUIStyle(node, p) {
     s.WebkitOverflowScrolling = 'touch';
     s.minHeight = 0;
     s.flexShrink = 1;
+    // Must also grow to fill available space — without flex:1 the container
+    // has no bounded height and scroll never activates
+    if (s.flex == null && s.height == null) s.flex = '1';
   }
 
   // Border
@@ -236,11 +239,23 @@ function SDUINode({ node, selectedIds, onSelectId }) {
     case 'Divider':
       return <div {...nodeAttrs} style={{ width:'100%', height: (p.thickness ?? 1) + 'px', backgroundColor: p.color || 'rgba(0,0,0,0.08)', flexShrink:0 }}/>;
 
+    case 'Box': {
+      // Box is a z-layer stack: first child sizes the box,
+      // remaining children are absolutely positioned overlays (inset:0)
+      const boxChildren = (node.children || []).map((c, i) =>
+        i === 0
+          ? <SDUINode key={i} node={c} selectedIds={selectedIds} onSelectId={onSelectId}/>
+          : <div key={i} style={{ position:'absolute', top:0, left:0, right:0, bottom:0, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+              <SDUINode node={c} selectedIds={selectedIds} onSelectId={onSelectId}/>
+            </div>
+      );
+      return <div {...nodeAttrs} onClick={onClick} style={style}>{boxChildren}</div>;
+    }
+
     case 'LazyColumn':
     case 'Column':
     case 'LazyRow':
     case 'Row':
-    case 'Box':
     case 'BottomSheet':
     default:
       return <div {...nodeAttrs} onClick={onClick} style={style}>{children}</div>;
