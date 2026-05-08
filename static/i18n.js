@@ -372,6 +372,7 @@ window.Icon = ({ name, size = 16, stroke = 1.6, className = "", style }) => {
     case "lock": return (<svg {...props}><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>);
     case "type": return (<svg {...props}><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg>);
     case "vodafone": return (<svg {...props} viewBox="0 0 100 100" stroke="none"><path fill="#e60000" d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 82c-17.7 0-32-14.3-32-32s14.3-32 32-32c7.3 0 14 2.4 19.4 6.6C60 17.4 44 14 34 24c-10 10-10 26.2 0 36.2 8 8 20 10.2 30.2 5.6C58.4 73.6 50 78 44 78c-11 0-20-9-20-20s9-20 20-20c5 0 9.5 1.8 13 4.8-3-6-9.5-10-16.8-10C29 32.8 20 41.8 20 53s9 20.2 20.2 20.2c8.2 0 15.3-4.9 18.5-11.9C55 68 48.5 72 42 72c-8.3 0-15-6.7-15-15s6.7-15 15-15 15 6.7 15 15c0 2.8-.8 5.4-2.1 7.6"/></svg>);
+    case "figma": return (<svg {...props} fill="currentColor" stroke="none"><path d="M8 24c2.2 0 4-1.8 4-4v-4H8c-2.2 0-4 1.8-4 4s1.8 4 4 4z"/><path d="M4 12c0-2.2 1.8-4 4-4h4v8H8c-2.2 0-4-1.8-4-4z"/><path d="M4 4c0-2.2 1.8-4 4-4h4v8H8C5.8 8 4 6.2 4 4z"/><path d="M12 0h4c2.2 0 4 1.8 4 4s-1.8 4-4 4h-4V0z"/><circle cx="16" cy="12" r="4"/></svg>);
     default: return null;
   }
 };
