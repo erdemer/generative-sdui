@@ -262,6 +262,25 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
   const stageRef = useRef(null);
   const dragRef = useRef(null);
   const [scrollMetrics, setScrollMetrics] = useState({ scrollTop: 0, clientHeight: 1, scrollHeight: 1 });
+  const [fitScale, setFitScale] = useState(1);
+
+  // Auto-fit: shrink the device frame when stage is too small to show it fully
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const FRAME_H = device === 'web' ? 512 : 688; // approx rendered height incl shell
+    const FRAME_W = device === 'web' ? 604 : 368;
+    const PADDING = 64; // breathing room
+    const calc = () => {
+      const scaleH = Math.min(1, (el.offsetHeight - PADDING) / FRAME_H);
+      const scaleW = Math.min(1, (el.offsetWidth  - PADDING) / FRAME_W);
+      setFitScale(Math.min(scaleH, scaleW));
+    };
+    calc();
+    const ro = new ResizeObserver(calc);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [device]);
 
   const getPreviewScroller = () => stageRef.current?.querySelector('.sdui-device-content');
 
@@ -398,7 +417,7 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
           </div>
         ) : device === 'web' ? (
           /* Web: browser-like frame */
-          <div className="preview-frame-wrap" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'all 0.3s ease' }}>
+          <div className="preview-frame-wrap" style={{ transform: `scale(${(zoom / 100) * fitScale})`, transformOrigin: 'center center', transition: 'transform 0.2s ease' }}>
             <div style={{
               width: 580, background: 'var(--device-bezel)', borderRadius: 12, padding: 0,
               boxShadow: 'var(--shadow-lg)', overflow: 'hidden'
@@ -425,7 +444,7 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
           </div>
         ) : (
           /* iPhone / Android phone frame */
-          <div className="preview-frame-wrap" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center', transition: 'all 0.3s ease' }}>
+          <div className="preview-frame-wrap" style={{ transform: `scale(${(zoom / 100) * fitScale})`, transformOrigin: 'center center', transition: 'transform 0.2s ease' }}>
             <div className={`device-shell ${device === 'pixel' ? 'device-android' : ''}`}>
               <div className="device-screen">
                 {children}

@@ -182,7 +182,7 @@
 
 /* ================ Reset / base ================ */
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
 body {
   font-family: var(--font-sans);
   font-feature-settings: "ss01", "cv11";
@@ -199,15 +199,14 @@ input, textarea { font-family: inherit; color: inherit; }
 /* ================ Reusable atoms ================ */
 
 .studio {
-  width: 1440px;
-  height: 900px;
+  width: 100vw;
+  height: 100vh;
   background: var(--bg);
   color: var(--fg);
   display: grid;
   grid-template-rows: 48px 1fr;
   font-size: 13px;
   overflow: hidden;
-  border: 1px solid var(--line);
 }
 
 /* Top bar */
