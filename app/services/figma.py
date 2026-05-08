@@ -1,9 +1,23 @@
-"""Figma REST API client — extracts design tokens (colors, typography)."""
+"""Figma REST API client — extracts design tokens (colors, typography, components)."""
 
 import re
 import httpx
 
 FIGMA_BASE = "https://api.figma.com/v1"
+
+# Component type heuristics
+_COMPONENT_TYPES = [
+    ("button",      ["button", "btn", "cta", "action"]),
+    ("card",        ["card", "tile", "item-card", "product card", "content card"]),
+    ("input",       ["input", "text field", "textfield", "search", "field", "text-input"]),
+    ("chip",        ["chip", "badge", "tag", "pill", "label"]),
+    ("list_item",   ["list item", "list-item", "row item", "cell", "list row"]),
+    ("bottom_bar",  ["bottom bar", "tab bar", "bottom nav", "navigation bar", "tabbar"]),
+    ("header",      ["header", "navbar", "nav bar", "top bar", "app bar", "topbar"]),
+    ("avatar",      ["avatar", "profile picture", "user icon", "profile image"]),
+    ("modal",       ["modal", "bottom sheet", "dialog", "sheet", "popup"]),
+    ("icon_button", ["icon button", "fab", "floating action", "icon-button"]),
+]
 
 # Semantic role heuristics (ordered — first match wins)
 _COLOR_ROLES = [
@@ -75,6 +89,76 @@ def _assign_typo_roles(raw_typo: dict) -> dict:
         if role and role not in roles:
             roles[role] = style
     return roles
+
+
+def _extract_component_props(doc: dict) -> dict:
+    """Extract SDUI-relevant properties from a Figma component node document."""
+    props: dict = {}
+
+    # Background color
+    fills = doc.get("fills", [])
+    solid_fills = [f for f in fills if f.get("type") == "SOLID" and f.get("visible", True)]
+    if solid_fills:
+        c = solid_fills[0]["color"]
+        props["bg"] = _rgb_to_hex(c["r"], c["g"], c["b"])
+
+    # Corner radius
+    corner = doc.get("cornerRadius") or doc.get("rectangleCornerRadii")
+    if isinstance(corner, (int, float)) and corner > 0:
+        props["corner"] = round(corner)
+    elif isinstance(corner, list) and any(v > 0 for v in corner):
+        props["corner"] = round(corner[0])
+
+    # Size from bounding box
+    bbox = doc.get("absoluteBoundingBox") or doc.get("size")
+    if bbox:
+        h = bbox.get("height", 0)
+        w = bbox.get("width", 0)
+        if 0 < h <= 300:
+            props["height"] = round(h)
+        if 0 < w <= 500:
+            props["width"] = round(w)
+
+    # Padding
+    pad_keys = ["paddingLeft", "paddingRight", "paddingTop", "paddingBottom"]
+    pads = {k: doc.get(k, 0) for k in pad_keys}
+    if any(v > 0 for v in pads.values()):
+        if pads["paddingTop"] == pads["paddingBottom"] and pads["paddingLeft"] == pads["paddingRight"]:
+            props["padding"] = f'{round(pads["paddingTop"])},{round(pads["paddingLeft"])}'
+        else:
+            props["padding"] = f'{round(pads["paddingTop"])},{round(pads["paddingRight"])},{round(pads["paddingBottom"])},{round(pads["paddingLeft"])}'
+
+    # Border (strokes)
+    strokes = [s for s in doc.get("strokes", []) if s.get("type") == "SOLID"]
+    if strokes:
+        c = strokes[0]["color"]
+        props["border"] = _rgb_to_hex(c["r"], c["g"], c["b"])
+        if doc.get("strokeWeight"):
+            props["borderWidth"] = round(doc["strokeWeight"])
+
+    # Shadow / elevation from effects
+    shadows = [e for e in doc.get("effects", []) if e.get("type") in ("DROP_SHADOW", "INNER_SHADOW") and e.get("visible", True)]
+    if shadows:
+        props["elevation"] = len(shadows)  # 1 shadow ≈ elevation 1
+
+    # Text color from first text child
+    for child in doc.get("children", []):
+        if child.get("type") == "TEXT":
+            child_fills = [f for f in child.get("fills", []) if f.get("type") == "SOLID"]
+            if child_fills:
+                c = child_fills[0]["color"]
+                props["textColor"] = _rgb_to_hex(c["r"], c["g"], c["b"])
+            break
+
+    return props
+
+
+def _detect_component_type(name: str) -> str:
+    lower = name.lower().replace("/", " ").replace("-", " ").replace("_", " ")
+    for ctype, keywords in _COMPONENT_TYPES:
+        if any(kw in lower for kw in keywords):
+            return ctype
+    return "other"
 
 
 async def import_design_system(file_url: str, token: str) -> dict:
@@ -153,10 +237,40 @@ async def import_design_system(file_url: str, token: str) -> dict:
                     "letterSpacing": style.get("letterSpacing"),
                 }
 
+        # ── 3. Components ──────────────────────────────────────────────────
+        components: dict[str, dict] = {}
+        try:
+            comp_r = await client.get(f"{FIGMA_BASE}/files/{file_key}/components", headers=headers)
+            if comp_r.status_code == 200:
+                comp_list = comp_r.json().get("meta", {}).get("components", [])
+                # Take up to 40 components, prefer named ones
+                comp_nodes = [c["node_id"] for c in comp_list[:40]]
+                comp_names = {c["node_id"]: c["name"] for c in comp_list[:40]}
+
+                if comp_nodes:
+                    ids_str = ",".join(comp_nodes)
+                    nodes_r = await client.get(
+                        f"{FIGMA_BASE}/files/{file_key}/nodes?ids={ids_str}",
+                        headers=headers
+                    )
+                    if nodes_r.status_code == 200:
+                        for node_id, node_info in (nodes_r.json().get("nodes") or {}).items():
+                            doc = (node_info or {}).get("document", {})
+                            name = comp_names.get(node_id, doc.get("name", node_id))
+                            ctype = _detect_component_type(name)
+                            props = _extract_component_props(doc)
+                            if props:  # only include components with extractable properties
+                                key = f"{ctype}/{name}" if ctype != "other" else name
+                                # For known types, keep only the first (primary) variant
+                                if ctype not in ("other",) and ctype in {k.split("/")[0] for k in components}:
+                                    pass  # already have this type, add as variant
+                                components[key] = {"type": ctype, "name": name, **props}
+        except Exception:
+            pass
+
     color_result = _assign_color_roles(raw_colors)
     typo_result = _assign_typo_roles(raw_typo)
 
-    # Detect primary font family
     font_families = list({
         v["fontFamily"]
         for v in raw_typo.values()
@@ -170,6 +284,8 @@ async def import_design_system(file_url: str, token: str) -> dict:
         "extra_colors": color_result["extra"],
         "typography": typo_result,
         "font_families": font_families[:3],
+        "components": components,
         "raw_color_count": len(raw_colors),
         "raw_typo_count": len(raw_typo),
+        "raw_component_count": len(components),
     }

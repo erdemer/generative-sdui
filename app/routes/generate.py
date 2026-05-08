@@ -8,6 +8,20 @@ from app.ai_client import generate_with_retry
 from app.prompts import PROMPT_BASE, PROMPT_WEB, SMART_CROP_PROMPT, CLARIFY_PROMPT, build_design_system_block
 from app.services.image import process_crops
 
+
+def _merge_design_systems(ds_list: list[dict]) -> dict:
+    """Merge multiple active design systems — later entries override earlier ones."""
+    merged: dict = {"colors": {}, "extra_colors": [], "typography": {}, "font_families": [], "components": {}}
+    for ds in ds_list:
+        merged["colors"].update(ds.get("colors") or {})
+        merged["extra_colors"].extend(ds.get("extra_colors") or [])
+        merged["typography"].update(ds.get("typography") or {})
+        for ff in (ds.get("font_families") or []):
+            if ff not in merged["font_families"]:
+                merged["font_families"].append(ff)
+        merged["components"].update(ds.get("components") or {})
+    return merged
+
 router = APIRouter()
 
 
@@ -54,11 +68,12 @@ async def generate_ui(
             parsed_json = json_repair.loads(prompt)
         else:
             base_prompt = PROMPT_WEB if platform == "web" else PROMPT_BASE
-            ds_block = build_design_system_block(state.active_design_system)
-            if ds_block:
-                # Inject design system AFTER the system instructions, BEFORE the user prompt
+            active_ds = [d for d in state.design_systems if d.get("active")]
+            if active_ds:
+                merged = _merge_design_systems(active_ds)
+                ds_block = build_design_system_block(merged)
                 base_prompt = base_prompt + "\n\n" + ds_block
-                print("🎨 Design system enjekte edildi")
+                print(f"🎨 {len(active_ds)} design system enjekte edildi")
             input_content = [base_prompt]
             print(f"{'🌐 Web' if platform == 'web' else '📱 Mobile'} modu")
 
