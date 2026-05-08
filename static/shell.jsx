@@ -219,7 +219,7 @@ function TreeNode({ node, level, selectedPaths = [], onSelect, path = [] }) {
         onClick={(e) => { e.stopPropagation(); onSelect && onSelect(myPath, e.shiftKey || e.metaKey); }}
       >
         {node.children?.length ? <Icon name={open?"chev-d":"chev-r"} size={11} stroke={2.2} className="chev"/> : <span style={{ width: 14 }}/>}
-        <span className={`type-tag tt-${node.type.toLowerCase()}`}>{node.type}</span>
+        <span className={`type-tag tt-${(node.type||'unknown').toLowerCase()}`}>{node.type||'?'}</span>
         <span className="name">{node.name || node.label || ""}</span>
         {node.sduiLabel && <span className="chip" style={{ marginLeft: 'auto', background: 'var(--brand-soft)', color: 'var(--brand)' }}>{node.sduiLabel}</span>}
         {node.children?.length ? <span style={{ fontSize: 10, color: 'var(--fg-3)', marginLeft: !node.sduiLabel ? 'auto' : 4 }}>{node.children.length}</span> : null}

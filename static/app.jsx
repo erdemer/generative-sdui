@@ -387,7 +387,7 @@ function App() {
   const handlePublish = async () => {
     if (!currentJson) { alert(lang === 'tr' ? 'Yayınlanacak tasarım yok.' : 'No design to publish.'); return; }
     try {
-      const res = await fetch('/update_layout', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ layout:currentJson, platform }) });
+      const res = await fetch('/update_layout', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ layout:currentJson.layout ?? currentJson, platform }) });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       setSavedAt(Date.now());
       alert(lang === 'tr' ? '✅ Tasarım yayınlandı!' : '✅ Design published!');
