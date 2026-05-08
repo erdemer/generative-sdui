@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 from app.config import STATIC_DIR
-from app.routes import generate, verify, layout, ab_test, filesystem
+from app.routes import generate, verify, layout, ab_test, filesystem, design_system
 
 app = FastAPI(title="SDUI Studio")
 
@@ -21,6 +21,7 @@ app.include_router(verify.router)
 app.include_router(layout.router)
 app.include_router(ab_test.router)
 app.include_router(filesystem.router)
+app.include_router(design_system.router)
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 

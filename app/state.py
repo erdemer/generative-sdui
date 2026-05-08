@@ -7,3 +7,6 @@ current_layout = None   # legacy fallback
 variant_a = None
 variant_b = None
 ab_test_active = False
+
+# Active Figma design system (set via /api/design-system/import, cleared via DELETE)
+active_design_system = None

@@ -193,6 +193,16 @@ function App() {
   const [files, setFiles] = useState([]);
   const [currentFilePath, setCurrentFilePath] = useState(null);
 
+  // ── Design system ─────────────────────────────────────────────────────────
+  const [designSystem, setDesignSystem] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/design-system')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.design_system) setDesignSystem(d.design_system); })
+      .catch(() => {});
+  }, []);
+
   // Tick for relative time display
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -551,7 +561,7 @@ function App() {
         <window.SDUI.TopBar lang={lang} theme={theme} onToggleTheme={cycleTheme} onToggleLang={setLang} breadcrumb={breadcrumb} savedAt={formatRelTime(savedAt, lang)} showAB={abActive} onPublish={handlePublish} platform={platform} onPlatform={handlePlatformChange}/>
 
         <div className="workspace">
-          <window.LeftRail lang={lang} tab={leftTab} onTab={setLeftTab} promptText={promptText} onPromptChange={setPromptText} imagePreview={imagePreview} onImageChange={handleImageChange} onImageRemove={handleImageRemove} smartCrop={smartCrop} onSmartCropChange={setSmartCrop} generateState={generateState} onGenerate={handleGenerate} files={files} selectedFilePath={currentFilePath} onSelectFile={handleSelectFile} onNewFolder={handleNewFolder} onNewFile={handleNewFile} platform={platform} onPlatform={handlePlatformChange} selectedLabel={selectedLabel} abActive={abActive} currentVersion={`v${version}`} onPublish={handlePublish} onSaveAsA={handleSaveAsA} onSaveAsB={handleSaveAsB} onStartAB={handleStartAB}/>
+          <window.LeftRail lang={lang} tab={leftTab} onTab={setLeftTab} promptText={promptText} onPromptChange={setPromptText} imagePreview={imagePreview} onImageChange={handleImageChange} onImageRemove={handleImageRemove} smartCrop={smartCrop} onSmartCropChange={setSmartCrop} generateState={generateState} onGenerate={handleGenerate} files={files} selectedFilePath={currentFilePath} onSelectFile={handleSelectFile} onNewFolder={handleNewFolder} onNewFile={handleNewFile} platform={platform} onPlatform={handlePlatformChange} selectedLabel={selectedLabel} abActive={abActive} currentVersion={`v${version}`} onPublish={handlePublish} onSaveAsA={handleSaveAsA} onSaveAsB={handleSaveAsB} onStartAB={handleStartAB} designSystem={designSystem} onDesignSystemChange={setDesignSystem}/>
 
           {treeView === 'json' ? (
             <JsonPane lang={lang} json={currentJson} onView={setTreeView}/>

@@ -74,18 +74,22 @@ function LeftRail({
   // Publish tab
   abActive = false, currentVersion = 'v1',
   onPublish, onSaveAsA, onSaveAsB, onStartAB,
+  // Design system
+  designSystem, onDesignSystemChange,
 }) {
   const t = window.SDUI.t;
+  const hasDS = !!designSystem;
   return (
     <div className="pane" style={{ width: 280, flexShrink: 0 }}>
       <div style={{ display: 'flex', borderBottom: '1px solid var(--line)', padding: '6px 6px 0' }}>
         {[
           { id: 'files',    icon: 'folder',  label: t(lang, 'files') },
           { id: 'generate', icon: 'sparkle', label: lang === 'tr' ? 'Üret' : 'Generate' },
+          { id: 'design',   icon: 'figma',   label: lang === 'tr' ? 'Tasarım' : 'Design', dot: hasDS },
           { id: 'publish',  icon: 'rocket',  label: t(lang, 'publish') },
         ].map(x => (
           <button key={x.id} onClick={() => onTab && onTab(x.id)} style={{
-            flex: 1, height: 36,
+            flex: 1, height: 36, position: 'relative',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             gap: 2, fontSize: 10, fontWeight: 500,
             color: tab === x.id ? 'var(--brand)' : 'var(--fg-3)',
@@ -94,13 +98,17 @@ function LeftRail({
           }}>
             <Icon name={x.icon} size={14}/>
             {x.label}
+            {x.dot && (
+              <span style={{ position: 'absolute', top: 4, right: 6, width: 6, height: 6, borderRadius: '50%', background: 'var(--ok)' }}/>
+            )}
           </button>
         ))}
       </div>
 
       <div className="pane-body" style={{ padding: 0 }}>
         {tab === 'files'    && <FilesContent lang={lang} files={files} selectedFilePath={selectedFilePath} onSelectFile={onSelectFile} onNewFolder={onNewFolder} onNewFile={onNewFile} platform={platform} onPlatform={onPlatform}/>}
-        {tab === 'generate' && <GenerateContent lang={lang} state={generateState} promptText={promptText} onPromptChange={onPromptChange} imagePreview={imagePreview} onImageChange={onImageChange} onImageRemove={onImageRemove} smartCrop={smartCrop} onSmartCropChange={onSmartCropChange} onGenerate={onGenerate} selectedLabel={selectedLabel} platform={platform}/>}
+        {tab === 'generate' && <GenerateContent lang={lang} state={generateState} promptText={promptText} onPromptChange={onPromptChange} imagePreview={imagePreview} onImageChange={onImageChange} onImageRemove={onImageRemove} smartCrop={smartCrop} onSmartCropChange={onSmartCropChange} onGenerate={onGenerate} selectedLabel={selectedLabel} platform={platform} designSystem={designSystem}/>}
+        {tab === 'design'   && <DesignSystemContent lang={lang} designSystem={designSystem} onDesignSystemChange={onDesignSystemChange}/>}
         {tab === 'publish'  && <PublishContent lang={lang} abActive={abActive} currentVersion={currentVersion} onPublish={onPublish} onSaveAsA={onSaveAsA} onSaveAsB={onSaveAsB} onStartAB={onStartAB}/>}
       </div>
     </div>
@@ -228,7 +236,7 @@ function ClarifyCard({ lang, questions, answers, onAnswer, onApply, onSkip }) {
 }
 
 /* ── Generate tab ──────────────────────────────────────────────────────────── */
-function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview, onImageChange, onImageRemove, smartCrop, onSmartCropChange, onGenerate, selectedLabel, platform }) {
+function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview, onImageChange, onImageRemove, smartCrop, onSmartCropChange, onGenerate, selectedLabel, platform, designSystem }) {
   const fileInputRef = React.useRef(null);
   const t = window.SDUI.t;
   const [history, setHistory] = React.useState(loadHistory);
@@ -313,10 +321,32 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
     onGenerate && onGenerate();
   };
 
+  const dsColors = designSystem?.colors || {};
+
   return (
     <div>
+      {/* Design system badge */}
+      {designSystem && (
+        <div style={{ margin: '8px 12px 0', padding: '6px 10px', background: 'var(--ok-soft, #f0fdf4)', border: '1px solid var(--ok, #16a34a)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 7 }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--ok, #16a34a)', flexShrink: 0 }}/>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--ok, #16a34a)' }}>
+              {lang === 'tr' ? 'Figma Design System aktif' : 'Figma Design System active'}
+            </div>
+            <div style={{ display: 'flex', gap: 3, marginTop: 3 }}>
+              {Object.values(dsColors).slice(0, 6).map((hex, i) => (
+                <span key={i} style={{ width: 12, height: 12, borderRadius: 3, background: hex, border: '1px solid rgba(0,0,0,0.1)' }}/>
+              ))}
+              {designSystem.font_families?.[0] && (
+                <span style={{ fontSize: 9.5, color: 'var(--fg-3)', marginLeft: 4, alignSelf: 'center' }}>{designSystem.font_families[0]}</span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Reference image */}
-      <div style={{ padding: 12, borderBottom: '1px solid var(--line)' }}>
+      <div style={{ padding: 12, borderBottom: '1px solid var(--line)', marginTop: designSystem ? 8 : 0 }}>
         <div style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--fg-3)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
           <Icon name="image" size={11}/> {t(lang, 'referenceImage')}
         </div>
@@ -451,6 +481,187 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Design System tab ─────────────────────────────────────────────────────── */
+function DesignSystemContent({ lang, designSystem, onDesignSystemChange }) {
+  const [url, setUrl] = React.useState('');
+  const [token, setToken] = React.useState(() => {
+    try { return localStorage.getItem('figma_token') || ''; } catch { return ''; }
+  });
+  const [status, setStatus] = React.useState('idle'); // 'idle' | 'loading' | 'error'
+  const [errorMsg, setErrorMsg] = React.useState('');
+
+  const saveToken = (v) => {
+    setToken(v);
+    try { localStorage.setItem('figma_token', v); } catch {}
+  };
+
+  const handleImport = async () => {
+    if (!url.trim() || !token.trim()) return;
+    setStatus('loading');
+    setErrorMsg('');
+    try {
+      const fd = new FormData();
+      fd.append('figma_url', url.trim());
+      fd.append('figma_token', token.trim());
+      const res = await fetch('/api/design-system/import', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Import failed');
+      onDesignSystemChange && onDesignSystemChange(data.design_system);
+      setStatus('idle');
+      setUrl('');
+    } catch (e) {
+      setErrorMsg(e.message);
+      setStatus('error');
+    }
+  };
+
+  const handleClear = async () => {
+    await fetch('/api/design-system', { method: 'DELETE' });
+    onDesignSystemChange && onDesignSystemChange(null);
+  };
+
+  const ds = designSystem;
+  const colors = ds?.colors || {};
+  const typo = ds?.typography || {};
+  const fonts = ds?.font_families || [];
+
+  return (
+    <div>
+      {/* Active design system summary */}
+      {ds ? (
+        <div style={{ padding: 12, borderBottom: '1px solid var(--line)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--ok)', display: 'inline-block' }}/>
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ok)' }}>
+                {lang === 'tr' ? 'Design system aktif' : 'Design system active'}
+              </span>
+            </div>
+            <button
+              onClick={handleClear}
+              style={{ fontSize: 10, color: 'var(--fg-mute)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
+              {lang === 'tr' ? 'Kaldır' : 'Remove'}
+            </button>
+          </div>
+
+          <div style={{ fontSize: 10, color: 'var(--fg-3)', marginBottom: 10 }}>
+            {ds.raw_color_count || 0} {lang === 'tr' ? 'renk' : 'colors'} · {ds.raw_typo_count || 0} {lang === 'tr' ? 'metin stili' : 'text styles'}
+            {fonts.length > 0 && ` · ${fonts[0]}`}
+          </div>
+
+          {/* Color swatches */}
+          {Object.keys(colors).length > 0 && (
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--fg-3)', marginBottom: 5 }}>
+                {lang === 'tr' ? 'Renk paleti' : 'Color palette'}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {Object.entries(colors).map(([role, hex]) => (
+                  <div key={role} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <span style={{ width: 18, height: 18, borderRadius: 4, background: hex, border: '1px solid var(--line)', flexShrink: 0 }}/>
+                    <span style={{ fontSize: 10.5, color: 'var(--fg-2)', flex: 1, fontWeight: 500 }}>{role}</span>
+                    <span style={{ fontSize: 9.5, color: 'var(--fg-3)', fontFamily: 'var(--font-mono)' }}>{hex}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Typography summary */}
+          {Object.keys(typo).length > 0 && (
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--fg-3)', marginBottom: 5 }}>
+                {lang === 'tr' ? 'Tipografi' : 'Typography'}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {Object.entries(typo).slice(0, 5).map(([role, t]) => (
+                  <div key={role} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--fg-3)', width: 40, flexShrink: 0 }}>{role}</span>
+                    <span style={{ fontSize: 10, color: 'var(--fg-2)' }}>
+                      {t.fontFamily || ''}{t.fontSize ? ` ${t.fontSize}sp` : ''}{t.fontWeight ? ` ·${t.fontWeight}` : ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div style={{ padding: '20px 12px', textAlign: 'center', color: 'var(--fg-3)' }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--panel-2)', margin: '0 auto 10px', display: 'grid', placeItems: 'center', color: 'var(--fg-mute)' }}>
+            <Icon name="figma" size={18}/>
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--fg-2)', fontWeight: 500, marginBottom: 4 }}>
+            {lang === 'tr' ? 'Design system yok' : 'No design system'}
+          </div>
+          <div style={{ fontSize: 11, lineHeight: 1.5 }}>
+            {lang === 'tr'
+              ? 'Figma dosya URL\'si ve token ile içe aktar.'
+              : 'Import from a Figma file URL and token.'}
+          </div>
+        </div>
+      )}
+
+      {/* Import form */}
+      <div style={{ padding: 12 }}>
+        <div style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--fg-3)', marginBottom: 8 }}>
+          {ds
+            ? (lang === 'tr' ? 'Farklı dosyadan içe aktar' : 'Import from another file')
+            : (lang === 'tr' ? 'Figma\'dan içe aktar' : 'Import from Figma')}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <input
+            className="textarea"
+            style={{ height: 32, fontSize: 11.5, padding: '0 8px', resize: 'none', minHeight: 'unset' }}
+            placeholder={lang === 'tr' ? 'Figma dosya URL\'si' : 'Figma file URL'}
+            value={url}
+            onChange={e => setUrl(e.target.value)}
+          />
+          <input
+            className="textarea"
+            style={{ height: 32, fontSize: 11.5, padding: '0 8px', resize: 'none', minHeight: 'unset' }}
+            type="password"
+            placeholder={lang === 'tr' ? 'Figma API token' : 'Figma API token'}
+            value={token}
+            onChange={e => saveToken(e.target.value)}
+          />
+
+          {status === 'error' && (
+            <div style={{ fontSize: 10.5, color: 'var(--err, #ef4444)', lineHeight: 1.4, padding: '4px 6px', background: 'var(--err-soft, #fef2f2)', borderRadius: 6 }}>
+              {errorMsg}
+            </div>
+          )}
+
+          <button
+            className="btn lg primary"
+            style={{ width: '100%', justifyContent: 'center', opacity: (!url.trim() || !token.trim()) ? 0.5 : 1 }}
+            disabled={!url.trim() || !token.trim() || status === 'loading'}
+            onClick={handleImport}
+          >
+            {status === 'loading'
+              ? <><span className="spinner" style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#fff' }}/>{lang === 'tr' ? 'İçe aktarılıyor…' : 'Importing…'}</>
+              : <><Icon name="figma" size={12}/>{lang === 'tr' ? 'Design System\'i İçe Aktar' : 'Import Design System'}</>
+            }
+          </button>
+        </div>
+
+        <div style={{ marginTop: 10, padding: '8px 10px', background: 'var(--bg-elev)', border: '1px solid var(--line)', borderRadius: 8 }}>
+          <div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 4 }}>
+            {lang === 'tr' ? 'Nasıl token alınır?' : 'How to get a token?'}
+          </div>
+          <div style={{ fontSize: 10, color: 'var(--fg-3)', lineHeight: 1.55 }}>
+            {lang === 'tr'
+              ? 'Figma → Profil → Settings → Account → Personal access tokens → + bölümünden oluştur.'
+              : 'Figma → Profile → Settings → Account → Personal access tokens → +.'}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -6,3 +6,4 @@ python-dotenv
 json_repair
 pillow
 requests
+httpx

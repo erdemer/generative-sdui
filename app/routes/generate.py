@@ -3,8 +3,9 @@ import json_repair
 from fastapi import APIRouter, Form, File, UploadFile
 from PIL import Image
 
+import app.state as state
 from app.ai_client import generate_with_retry
-from app.prompts import PROMPT_BASE, PROMPT_WEB, SMART_CROP_PROMPT, CLARIFY_PROMPT
+from app.prompts import PROMPT_BASE, PROMPT_WEB, SMART_CROP_PROMPT, CLARIFY_PROMPT, build_design_system_block
 from app.services.image import process_crops
 
 router = APIRouter()
@@ -52,7 +53,13 @@ async def generate_ui(
             print("📥 Manuel JSON modu")
             parsed_json = json_repair.loads(prompt)
         else:
-            input_content = [PROMPT_WEB if platform == "web" else PROMPT_BASE]
+            base_prompt = PROMPT_WEB if platform == "web" else PROMPT_BASE
+            ds_block = build_design_system_block(state.active_design_system)
+            if ds_block:
+                # Inject design system AFTER the system instructions, BEFORE the user prompt
+                base_prompt = base_prompt + "\n\n" + ds_block
+                print("🎨 Design system enjekte edildi")
+            input_content = [base_prompt]
             print(f"{'🌐 Web' if platform == 'web' else '📱 Mobile'} modu")
 
             if current_json:

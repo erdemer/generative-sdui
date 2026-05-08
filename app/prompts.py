@@ -1,3 +1,73 @@
+def build_design_system_block(ds: dict) -> str:
+    """Build a strict design-system constraint block to prepend to any generation prompt."""
+    if not ds:
+        return ""
+
+    lines = [
+        "╔══════════════════════════════════════════════════════════════╗",
+        "║  FIGMA DESIGN SYSTEM — MANDATORY COMPLIANCE                  ║",
+        "║  You MUST use ONLY the values below. Never invent new ones.  ║",
+        "╚══════════════════════════════════════════════════════════════╝",
+        "",
+    ]
+
+    colors = ds.get("colors", {})
+    if colors:
+        lines.append("COLOR PALETTE (use these exact hex values — no exceptions):")
+        role_labels = {
+            "bg":      "Background (bg)",
+            "surface": "Surface / Cards (surface)",
+            "accent":  "Accent / Primary / CTA (accent)",
+            "fg":      "Foreground / Text (fg)",
+            "fg3":     "Secondary Text (fg3)",
+        }
+        for role, label in role_labels.items():
+            if role in colors:
+                lines.append(f"  {label}: {colors[role]}")
+        # Extra named colors the AI can reference by name
+        extra = ds.get("extra_colors", [])
+        if extra:
+            lines.append("  Additional brand colors (use by name if needed):")
+            for e in extra[:8]:
+                lines.append(f"    {e['name']}: {e['hex']}")
+        lines.append("")
+
+    typo = ds.get("typography", {})
+    font_families = ds.get("font_families", [])
+    if font_families or typo:
+        lines.append("TYPOGRAPHY (use these exact fonts and sizes):")
+        if font_families:
+            lines.append(f"  Primary font: {font_families[0]}")
+            if len(font_families) > 1:
+                lines.append(f"  Secondary font: {font_families[1]}")
+        role_labels_t = {"h1": "H1 (hero)", "h2": "H2 (section)", "h3": "H3 (card title)", "body": "Body", "caption": "Caption"}
+        for role, label in role_labels_t.items():
+            if role in typo:
+                t = typo[role]
+                parts = []
+                if t.get("fontFamily"):
+                    parts.append(t["fontFamily"])
+                if t.get("fontSize"):
+                    parts.append(f'{t["fontSize"]}sp')
+                if t.get("fontWeight"):
+                    parts.append(f'weight:{t["fontWeight"]}')
+                if parts:
+                    lines.append(f"  {label}: {', '.join(parts)}")
+        lines.append("")
+
+    lines += [
+        "STRICT RULES:",
+        "  • backgroundColor, color, accent, fg, fg3 → use ONLY the hex values above",
+        "  • Do NOT use any other colors. If unsure, use bg or surface.",
+        "  • For text on dark surfaces use fg; for secondary info use fg3",
+        "  • For all buttons, active states, prices, icons → use accent",
+        "  • If font families were provided, set them as the default font throughout",
+        "",
+    ]
+
+    return "\n".join(lines)
+
+
 PROMPT_BASE = """You are a senior Android SDUI engineer. Output ONLY valid JSON, no Markdown, no explanation.
 
 TECHNICAL RULES:
