@@ -551,7 +551,7 @@ function DesignSystemContent({ lang, designSystem, onDesignSystemChange }) {
           </div>
 
           <div style={{ fontSize: 10, color: 'var(--fg-3)', marginBottom: 10 }}>
-            {ds.raw_color_count || 0} {lang === 'tr' ? 'renk' : 'colors'} · {ds.raw_typo_count || 0} {lang === 'tr' ? 'metin stili' : 'text styles'}
+            {ds.raw_color_count || 0} {lang === 'tr' ? 'renk' : 'colors'} · {ds.raw_typo_count || 0} {lang === 'tr' ? 'metin stili' : 'text styles'} · {ds.raw_component_count || 0} {lang === 'tr' ? 'component' : 'components'}
             {fonts.length > 0 && ` · ${fonts[0]}`}
           </div>
 
@@ -575,7 +575,7 @@ function DesignSystemContent({ lang, designSystem, onDesignSystemChange }) {
 
           {/* Typography summary */}
           {Object.keys(typo).length > 0 && (
-            <div>
+            <div style={{ marginBottom: 10 }}>
               <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--fg-3)', marginBottom: 5 }}>
                 {lang === 'tr' ? 'Tipografi' : 'Typography'}
               </div>
@@ -588,6 +588,39 @@ function DesignSystemContent({ lang, designSystem, onDesignSystemChange }) {
                     </span>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Components summary */}
+          {Object.keys(ds.components || {}).length > 0 && (
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--fg-3)', marginBottom: 5 }}>
+                {lang === 'tr' ? 'Componentler' : 'Components'}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {Object.entries(ds.components).slice(0, 8).map(([key, comp]) => {
+                  const pills = [];
+                  if (comp.bg)      pills.push({ label: comp.bg, color: comp.bg });
+                  if (comp.corner)  pills.push({ label: `r${comp.corner}` });
+                  if (comp.height)  pills.push({ label: `h${comp.height}` });
+                  if (comp.padding) pills.push({ label: `p${comp.padding}` });
+                  return (
+                    <div key={key} style={{ padding: '5px 7px', background: 'var(--bg-elev)', border: '1px solid var(--line)', borderRadius: 6 }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {comp.name}
+                      </div>
+                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                        {pills.map((p, i) => (
+                          <span key={i} style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 4, background: p.color ? p.color + '22' : 'var(--panel-2)', color: 'var(--fg-3)', border: '1px solid var(--line)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                            {p.color && <span style={{ width: 7, height: 7, borderRadius: 2, background: p.color, flexShrink: 0 }}/>}
+                            {p.label}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

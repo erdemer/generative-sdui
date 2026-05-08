@@ -55,6 +55,38 @@ def build_design_system_block(ds: dict) -> str:
                     lines.append(f"  {label}: {', '.join(parts)}")
         lines.append("")
 
+    components = ds.get("components", {})
+    if components:
+        lines.append("COMPONENTS (replicate these exact specs — do NOT invent new values):")
+        type_labels = {
+            "button":     "Button",
+            "card":       "Card",
+            "input":      "Input / TextField",
+            "chip":       "Chip / Badge",
+            "list_item":  "List Item / Row",
+            "bottom_bar": "Bottom Bar / Tab Bar",
+            "header":     "Header / Navbar",
+            "avatar":     "Avatar",
+            "modal":      "Modal / Sheet",
+            "icon_button":"Icon Button",
+            "other":      "Component",
+        }
+        for key, comp in list(components.items())[:16]:
+            ctype = comp.get("type", "other")
+            label = type_labels.get(ctype, "Component")
+            name = comp.get("name", key)
+            parts = []
+            if comp.get("bg"):        parts.append(f'bg={comp["bg"]}')
+            if comp.get("textColor"): parts.append(f'color={comp["textColor"]}')
+            if comp.get("corner"):    parts.append(f'corner={comp["corner"]}')
+            if comp.get("height"):    parts.append(f'height={comp["height"]}')
+            if comp.get("padding"):   parts.append(f'padding={comp["padding"]}')
+            if comp.get("border"):    parts.append(f'border={comp["border"]}')
+            if comp.get("elevation"): parts.append(f'elevation={comp["elevation"]}')
+            if parts:
+                lines.append(f"  {label} [{name}]: {', '.join(parts)}")
+        lines.append("")
+
     lines += [
         "STRICT RULES:",
         "  • backgroundColor, color, accent, fg, fg3 → use ONLY the hex values above",
@@ -62,6 +94,8 @@ def build_design_system_block(ds: dict) -> str:
         "  • For text on dark surfaces use fg; for secondary info use fg3",
         "  • For all buttons, active states, prices, icons → use accent",
         "  • If font families were provided, set them as the default font throughout",
+        "  • COMPONENTS: when generating a Button/Card/Input, use the exact specs above",
+        "  • Match corner radius, padding, colors exactly from the component specs",
         "",
     ]
 
