@@ -8,5 +8,6 @@ variant_a = None
 variant_b = None
 ab_test_active = False
 
-# Active Figma design system (set via /api/design-system/import, cleared via DELETE)
-active_design_system = None
+# Design systems list — each entry: {id, name, active, ...figma tokens}
+# Persisted to disk via app/services/ds_store.py
+design_systems: list[dict] = []

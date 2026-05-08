@@ -5,8 +5,13 @@ from fastapi.responses import FileResponse
 
 from app.config import STATIC_DIR
 from app.routes import generate, verify, layout, ab_test, filesystem, design_system
+import app.state as state
+from app.services import ds_store
 
 app = FastAPI(title="SDUI Studio")
+
+# Load persisted design systems on startup
+state.design_systems = ds_store.load()
 
 app.add_middleware(
     CORSMiddleware,

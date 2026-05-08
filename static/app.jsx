@@ -193,13 +193,13 @@ function App() {
   const [files, setFiles] = useState([]);
   const [currentFilePath, setCurrentFilePath] = useState(null);
 
-  // ── Design system ─────────────────────────────────────────────────────────
-  const [designSystem, setDesignSystem] = useState(null);
+  // ── Design systems (multi) ────────────────────────────────────────────────
+  const [designSystems, setDesignSystems] = useState([]);
 
   useEffect(() => {
-    fetch('/api/design-system')
+    fetch('/api/design-system/list')
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.design_system) setDesignSystem(d.design_system); })
+      .then(d => { if (Array.isArray(d?.design_systems)) setDesignSystems(d.design_systems); })
       .catch(() => {});
   }, []);
 
@@ -561,7 +561,7 @@ function App() {
         <window.SDUI.TopBar lang={lang} theme={theme} onToggleTheme={cycleTheme} onToggleLang={setLang} breadcrumb={breadcrumb} savedAt={formatRelTime(savedAt, lang)} showAB={abActive} onPublish={handlePublish} platform={platform} onPlatform={handlePlatformChange}/>
 
         <div className="workspace">
-          <window.LeftRail lang={lang} tab={leftTab} onTab={setLeftTab} promptText={promptText} onPromptChange={setPromptText} imagePreview={imagePreview} onImageChange={handleImageChange} onImageRemove={handleImageRemove} smartCrop={smartCrop} onSmartCropChange={setSmartCrop} generateState={generateState} onGenerate={handleGenerate} files={files} selectedFilePath={currentFilePath} onSelectFile={handleSelectFile} onNewFolder={handleNewFolder} onNewFile={handleNewFile} platform={platform} onPlatform={handlePlatformChange} selectedLabel={selectedLabel} abActive={abActive} currentVersion={`v${version}`} onPublish={handlePublish} onSaveAsA={handleSaveAsA} onSaveAsB={handleSaveAsB} onStartAB={handleStartAB} designSystem={designSystem} onDesignSystemChange={setDesignSystem}/>
+          <window.LeftRail lang={lang} tab={leftTab} onTab={setLeftTab} promptText={promptText} onPromptChange={setPromptText} imagePreview={imagePreview} onImageChange={handleImageChange} onImageRemove={handleImageRemove} smartCrop={smartCrop} onSmartCropChange={setSmartCrop} generateState={generateState} onGenerate={handleGenerate} files={files} selectedFilePath={currentFilePath} onSelectFile={handleSelectFile} onNewFolder={handleNewFolder} onNewFile={handleNewFile} platform={platform} onPlatform={handlePlatformChange} selectedLabel={selectedLabel} abActive={abActive} currentVersion={`v${version}`} onPublish={handlePublish} onSaveAsA={handleSaveAsA} onSaveAsB={handleSaveAsB} onStartAB={handleStartAB} designSystems={designSystems} onDesignSystemsChange={setDesignSystems}/>
 
           {treeView === 'json' ? (
             <JsonPane lang={lang} json={currentJson} onView={setTreeView}/>
