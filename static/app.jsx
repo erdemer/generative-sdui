@@ -151,6 +151,11 @@ function captureDeviceScreen(deviceScreen) {
 }
 
 function App() {
+  // ── Auth ─────────────────────────────────────────────────────────────────
+  const [auth, setAuth] = useState(() => window.SDUIAuth?.loadAuth?.() || null);
+  const [showApprovals, setShowApprovals] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
   // ── Core state ───────────────────────────────────────────────────────────
   const [appState, setAppState] = useState('empty'); // 'empty' | 'streaming' | 'editing'
   const [currentJson, setCurrentJson] = useState(null);
@@ -387,12 +392,51 @@ function App() {
   const handlePublish = async () => {
     if (!currentJson) { alert(lang === 'tr' ? 'Yayınlanacak tasarım yok.' : 'No design to publish.'); return; }
     try {
-      const res = await fetch('/update_layout', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ layout:currentJson.layout ?? currentJson, platform }) });
+      const res = await fetch('/update_layout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(window.SDUIAuth?.authHeaders?.(auth) || {}) },
+        body: JSON.stringify({
+          layout: currentJson.layout ?? currentJson,
+          screen_name: currentJson.screen_name || 'Untitled',
+          platform,
+        }),
+      });
+      if (res.status === 401) { handleLogout(); return; }
       if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json().catch(() => ({}));
       setSavedAt(Date.now());
-      alert(lang === 'tr' ? '✅ Tasarım yayınlandı!' : '✅ Design published!');
+      if (data?.status === 'pending_approval') {
+        alert(lang === 'tr'
+          ? '📝 Yayın isteği onaya gönderildi. Admin onayladığında yayına geçecek.'
+          : '📝 Publish request sent for approval. It will go live after an admin approves.');
+      } else {
+        alert(lang === 'tr' ? '✅ Tasarım yayınlandı!' : '✅ Design published!');
+      }
     } catch (err) { alert((lang === 'tr' ? 'Yayınlama başarısız: ' : 'Publish failed: ') + err.message); }
   };
+
+  const handleLogout = () => {
+    if (auth?.token) {
+      fetch('/api/auth/logout', { method: 'POST', headers: window.SDUIAuth.authHeaders(auth) }).catch(() => {});
+    }
+    window.SDUIAuth?.clearAuth?.();
+    setAuth(null);
+    setShowApprovals(false);
+  };
+
+  // Poll pending count for admins so the badge stays fresh.
+  useEffect(() => {
+    if (auth?.role !== 'admin') { setPendingCount(0); return; }
+    const fetchPending = () => {
+      fetch('/api/approvals/list?status_filter=pending', { headers: window.SDUIAuth.authHeaders(auth) })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d) setPendingCount(d.total || 0); })
+        .catch(() => {});
+    };
+    fetchPending();
+    const id = setInterval(fetchPending, 10000);
+    return () => clearInterval(id);
+  }, [auth]);
 
   const handleSaveAsA = () => { if (currentJson) { setAbVariantA(currentJson); alert(lang === 'tr' ? 'Varyant A kaydedildi' : 'Variant A saved'); } };
   const handleSaveAsB = () => { if (currentJson) { setAbVariantB(currentJson); alert(lang === 'tr' ? 'Varyant B kaydedildi' : 'Variant B saved'); } };
@@ -555,10 +599,19 @@ function App() {
   }
 
   // ── Render ───────────────────────────────────────────────────────────────
+  if (!auth) {
+    return <window.SDUIAuth.LoginOverlay lang={lang} onLogin={setAuth}/>;
+  }
+
   return (
     <>
       <div className="studio" data-theme={theme}>
-        <window.SDUI.TopBar lang={lang} theme={theme} onToggleTheme={cycleTheme} onToggleLang={setLang} breadcrumb={breadcrumb} savedAt={formatRelTime(savedAt, lang)} showAB={abActive} onPublish={handlePublish} platform={platform} onPlatform={handlePlatformChange}/>
+        <window.SDUI.TopBar lang={lang} theme={theme} onToggleTheme={cycleTheme} onToggleLang={setLang} breadcrumb={breadcrumb} savedAt={formatRelTime(savedAt, lang)} showAB={abActive} onPublish={handlePublish} platform={platform} onPlatform={handlePlatformChange}
+          auth={auth}
+          pendingCount={pendingCount}
+          onOpenApprovals={() => setShowApprovals(true)}
+          onLogout={handleLogout}
+        />
 
         <div className="workspace">
           <window.LeftRail lang={lang} tab={leftTab} onTab={setLeftTab} promptText={promptText} onPromptChange={setPromptText} imagePreview={imagePreview} onImageChange={handleImageChange} onImageRemove={handleImageRemove} smartCrop={smartCrop} onSmartCropChange={setSmartCrop} generateState={generateState} onGenerate={handleGenerate} files={files} selectedFilePath={currentFilePath} onSelectFile={handleSelectFile} onNewFolder={handleNewFolder} onNewFile={handleNewFile} platform={platform} onPlatform={handlePlatformChange} selectedLabel={selectedLabel} abActive={abActive} currentVersion={`v${version}`} onPublish={handlePublish} onSaveAsA={handleSaveAsA} onSaveAsB={handleSaveAsB} onStartAB={handleStartAB} designSystems={designSystems} onDesignSystemsChange={setDesignSystems}/>
@@ -597,6 +650,20 @@ function App() {
           <window.SDUI.AttributesPane lang={lang} selection={attrSelection} onChangeProp={handlePropChange} onDuplicate={handleDuplicate} onDelete={handleDelete} onRefine={handleRefine}/>
         </div>
       </div>
+
+      {showApprovals && (
+        <window.SDUIAuth.ApprovalsPanel
+          lang={lang}
+          auth={auth}
+          onClose={() => setShowApprovals(false)}
+          onApproved={() => {
+            // Refresh current preview after a successful approval
+            fetch(`/current-ui?platform=${platform}`).then(r => r.ok ? r.json() : null).then(data => {
+              if (data?.layout) { _uid = 0; tagIds(data.layout); setCurrentJson(data); setAppState('editing'); }
+            }).catch(() => {});
+          }}
+        />
+      )}
 
       <window.TweaksPanel title="Tweaks">
         <window.TweakSection label={lang === 'tr' ? 'Görünüm' : 'Appearance'}>

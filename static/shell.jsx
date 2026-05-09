@@ -8,7 +8,11 @@ var Icon = window.Icon;
 const t = (lang, key) => (window.I18N[lang] && window.I18N[lang][key]) || key;
 
 /* =================== TOPBAR =================== */
-function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt = "1m", showAB = false, onPublish, platform = 'mobile', onPlatform }) {
+function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt = "1m", showAB = false, onPublish, platform = 'mobile', onPlatform,
+                 auth, pendingCount = 0, onOpenApprovals, onLogout }) {
+  const isAdmin = auth?.role === 'admin';
+  const userInitials = (auth?.username || '?').slice(0, 2).toUpperCase();
+  const publishLabel = isAdmin ? t(lang, 'publish') : (lang === 'tr' ? 'Onaya Gönder' : 'Submit for Approval');
   return (
     <div className="topbar">
       <div className="topbar-left">
@@ -43,12 +47,37 @@ function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt 
         <button className="icon-btn" onClick={onToggleTheme} title={lang==='tr'?'Tema değiştir':'Cycle theme'}>
           <Icon name={theme && theme.indexOf('dark')>=0 ? 'moon' : 'sun'} size={15}/>
         </button>
-        <button className="icon-btn" onClick={() => alert("Invite / Share coming soon!")}><Icon name="users" size={15}/></button>
-        <div style={{ display: 'flex', marginLeft: 4 }}>
-          <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'oklch(0.65 0.15 25)', border: '2px solid var(--panel)', color: '#fff', fontSize: 10, fontWeight: 600, display: 'grid', placeItems: 'center' }}>EA</div>
-          <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'oklch(0.62 0.13 240)', border: '2px solid var(--panel)', color: '#fff', fontSize: 10, fontWeight: 600, display: 'grid', placeItems: 'center', marginLeft: -8 }}>MK</div>
-        </div>
-        <button className="btn primary" onClick={onPublish}><Icon name="rocket" size={13}/> {t(lang,"publish")}</button>
+        {auth && onOpenApprovals && (
+          <button className="icon-btn" onClick={onOpenApprovals} title={isAdmin ? (lang==='tr'?'Yayın Onayları':'Publish Approvals') : (lang==='tr'?'Yayın İsteklerim':'My Publish Requests')} style={{ position: 'relative' }}>
+            <Icon name="rocket" size={15}/>
+            {isAdmin && pendingCount > 0 && (
+              <span style={{ position: 'absolute', top: -2, right: -2, minWidth: 14, height: 14, borderRadius: 7, background: 'oklch(0.62 0.18 25)', color: '#fff', fontSize: 9, fontWeight: 700, padding: '0 4px', display: 'grid', placeItems: 'center', border: '1.5px solid var(--panel)' }}>
+                {pendingCount > 9 ? '9+' : pendingCount}
+              </span>
+            )}
+          </button>
+        )}
+        {auth ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
+            <div title={`${auth.username} · ${auth.role}`} style={{
+              width: 26, height: 26, borderRadius: '50%',
+              background: isAdmin ? 'oklch(0.62 0.18 25)' : 'oklch(0.62 0.13 240)',
+              color: '#fff', fontSize: 10, fontWeight: 700, display: 'grid', placeItems: 'center',
+              border: '2px solid var(--panel)',
+            }}>{userInitials}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--fg)' }}>{auth.username}</span>
+              <span style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: isAdmin ? 'oklch(0.55 0.18 25)' : 'var(--fg-3)' }}>{auth.role}</span>
+            </div>
+            {onLogout && <button className="icon-btn" onClick={onLogout} title={lang==='tr'?'Çıkış':'Logout'}><Icon name="x" size={13}/></button>}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', marginLeft: 4 }}>
+            <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'oklch(0.65 0.15 25)', border: '2px solid var(--panel)', color: '#fff', fontSize: 10, fontWeight: 600, display: 'grid', placeItems: 'center' }}>EA</div>
+            <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'oklch(0.62 0.13 240)', border: '2px solid var(--panel)', color: '#fff', fontSize: 10, fontWeight: 600, display: 'grid', placeItems: 'center', marginLeft: -8 }}>MK</div>
+          </div>
+        )}
+        <button className="btn primary" onClick={onPublish}><Icon name="rocket" size={13}/> {publishLabel}</button>
       </div>
     </div>
   );
