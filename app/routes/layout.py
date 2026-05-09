@@ -6,6 +6,7 @@ from fastapi import APIRouter, Body, Header
 
 import app.state as state
 from app.routes.auth import get_session
+from app.services import approvals_store
 
 router = APIRouter()
 
@@ -34,6 +35,7 @@ async def update_layout(
             "reject_reason": None,
         }
         state.pending_publishes.append(item)
+        approvals_store.save(state.pending_publishes)
         print(f"📝 Onay bekliyor: {sess['username']} → {screen_name} ({platform})")
         return {"status": "pending_approval", "id": item["id"]}
 
