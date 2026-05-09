@@ -284,108 +284,169 @@ function ApprovalsPanel({ lang, auth, onClose, onApproved }) {
   const isAdmin = auth?.role === 'admin';
   const statusBadge = (s) => {
     const map = {
-      pending:  { bg: 'oklch(0.94 0.05 80)',  fg: 'oklch(0.45 0.13 80)',  label: tr ? 'Bekliyor' : 'Pending' },
-      approved: { bg: 'oklch(0.94 0.06 145)', fg: 'oklch(0.42 0.14 145)', label: tr ? 'Onaylandı' : 'Approved' },
-      rejected: { bg: 'oklch(0.94 0.06 25)',  fg: 'oklch(0.46 0.16 25)',  label: tr ? 'Reddedildi' : 'Rejected' },
+      pending:  { bg: 'rgba(234,179,8,0.15)',   fg: '#ca8a04',  darkFg: '#fbbf24', label: tr ? 'Bekliyor' : 'Pending' },
+      approved: { bg: 'rgba(34,197,94,0.15)',   fg: '#16a34a',  darkFg: '#4ade80', label: tr ? 'Onaylandı' : 'Approved' },
+      rejected: { bg: 'rgba(239,68,68,0.15)',   fg: '#dc2626',  darkFg: '#f87171', label: tr ? 'Reddedildi' : 'Rejected' },
     };
     const c = map[s] || map.pending;
-    return <span className="chip" style={{ background: c.bg, color: c.fg, fontWeight: 600, fontSize: 10 }}>{c.label}</span>;
+    return (
+      <span style={{
+        display: 'inline-flex', alignItems: 'center', height: 20, padding: '0 8px',
+        borderRadius: 999, fontSize: 11, fontWeight: 600,
+        background: c.bg, color: 'var(--fg-2)',
+        border: '1px solid currentColor', opacity: 0.9,
+      }}>
+        {c.label}
+      </span>
+    );
   };
 
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9000,
-      background: 'rgba(15, 17, 21, 0.45)',
+      background: 'rgba(0,0,0,0.5)',
       display: 'flex', justifyContent: 'flex-end',
     }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{
-        width: 540, height: '100%', background: 'var(--panel)',
-        borderLeft: '1px solid var(--line)',
+        width: 480, height: '100%',
+        background: 'var(--bg-elev)',
+        borderLeft: '1px solid var(--line-strong)',
         display: 'flex', flexDirection: 'column',
-        boxShadow: '-12px 0 32px rgba(0,0,0,0.18)',
+        boxShadow: '-20px 0 48px rgba(0,0,0,0.35)',
       }}>
-        <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--line)', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Icon name="rocket" size={16} style={{ color: 'var(--brand)' }}/>
+        {/* Header */}
+        <div style={{
+          padding: '16px 20px', borderBottom: '1px solid var(--line)',
+          display: 'flex', alignItems: 'center', gap: 12,
+          background: 'var(--panel)',
+        }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 8,
+            background: 'var(--brand-soft)', display: 'grid', placeItems: 'center',
+          }}>
+            <Icon name="rocket" size={16} style={{ color: 'var(--brand)' }}/>
+          </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--fg)' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--fg)', letterSpacing: '-0.01em' }}>
               {isAdmin ? (tr ? 'Yayın Onayları' : 'Publish Approvals') : (tr ? 'Yayın İsteklerim' : 'My Publish Requests')}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--fg-3)' }}>
-              {isAdmin ? (tr ? 'Kullanıcı yayın istekleri burada onaylanır.' : 'Approve or reject incoming publish requests.') : (tr ? 'Gönderdiğin istekler ve durumları.' : 'Your submitted requests and their status.')}
+            <div style={{ fontSize: 11, color: 'var(--fg-3)', marginTop: 1 }}>
+              {isAdmin ? (tr ? 'Kullanıcı isteklerini onayla veya reddet' : 'Approve or reject incoming requests') : (tr ? 'Gönderdiğin istekler ve durumları' : 'Your submitted requests and their status')}
             </div>
           </div>
-          <button className="icon-btn" onClick={onClose} title={tr ? 'Kapat' : 'Close'}><Icon name="x" size={14}/></button>
+          <button className="icon-btn" onClick={onClose}><Icon name="x" size={14}/></button>
         </div>
 
-        <div style={{ padding: '8px 18px', borderBottom: '1px solid var(--line)' }}>
-          <div className="seg" style={{ height: 26 }}>
+        {/* Filter tabs */}
+        <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--line)', background: 'var(--panel)' }}>
+          <div className="seg" style={{ width: '100%' }}>
             {[
-              { id: 'pending',  label: tr ? 'Bekliyor' : 'Pending' },
-              { id: 'approved', label: tr ? 'Onaylı' : 'Approved' },
-              { id: 'rejected', label: tr ? 'Reddedildi' : 'Rejected' },
-              { id: 'all',      label: tr ? 'Tümü' : 'All' },
+              { id: 'pending',  label: tr ? 'Bekliyor' : 'Bekliyor' },
+              { id: 'approved', label: tr ? 'Onaylı' : 'Onaylı' },
+              { id: 'rejected', label: tr ? 'Reddedildi' : 'Reddedildi' },
+              { id: 'all',      label: tr ? 'Tümü' : 'Tümü' },
             ].map(o => (
-              <button key={o.id} className={filter === o.id ? 'on' : ''} onClick={() => setFilter(o.id)} style={{ height: 20, flex: 1, justifyContent: 'center' }}>
+              <button key={o.id} className={filter === o.id ? 'on' : ''} onClick={() => setFilter(o.id)}
+                      style={{ flex: 1, justifyContent: 'center', fontSize: 11 }}>
                 {o.label}
               </button>
             ))}
           </div>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px' }}>
-          {loading && <div style={{ textAlign: 'center', color: 'var(--fg-3)', padding: 24, fontSize: 12 }}>{tr ? 'Yükleniyor…' : 'Loading…'}</div>}
+        {/* List */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', background: 'var(--canvas)' }}>
+          {loading && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 32, color: 'var(--fg-3)', fontSize: 12 }}>
+              <span className="spinner"/>
+              {tr ? 'Yükleniyor…' : 'Yükleniyor…'}
+            </div>
+          )}
           {!loading && items.length === 0 && (
-            <div style={{ textAlign: 'center', color: 'var(--fg-3)', padding: 36, fontSize: 12 }}>
-              {tr ? 'Bu durumda istek yok.' : 'No requests in this state.'}
+            <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--panel-2)', margin: '0 auto 12px', display: 'grid', placeItems: 'center', color: 'var(--fg-mute)' }}>
+                <Icon name="rocket" size={18}/>
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 4 }}>
+                {tr ? 'İstek yok' : 'İstek yok'}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--fg-3)' }}>
+                {tr ? 'Bu durumda bekleyen istek bulunmuyor.' : 'Bu durumda bekleyen istek bulunmuyor.'}
+              </div>
             </div>
           )}
           {!loading && items.map((it) => (
             <div key={it.id} style={{
-              border: '1px solid var(--line)', borderRadius: 10, padding: 12, marginBottom: 8,
-              background: 'var(--panel)',
+              background: 'var(--bg-elev)',
+              border: '1px solid var(--line-strong)',
+              borderRadius: 12, padding: '14px 14px 10px',
+              marginBottom: 10,
+              boxShadow: 'var(--shadow-sm)',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg)' }}>{it.screen_name}</span>
-                <span className="chip" style={{ fontSize: 10 }}>{it.platform}</span>
-                {statusBadge(it.status)}
-                <span style={{ flex: 1 }}/>
-                <span style={{ fontSize: 10.5, color: 'var(--fg-3)', fontFamily: 'var(--font-mono)' }}>#{it.id.slice(0, 6)}</span>
+              {/* Card header */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--fg)', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {it.screen_name}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                    <span className="chip" style={{ fontSize: 10, height: 18, padding: '0 7px' }}>{it.platform}</span>
+                    {statusBadge(it.status)}
+                  </div>
+                </div>
+                <span style={{ fontSize: 10, color: 'var(--fg-mute)', fontFamily: 'var(--font-mono)', flexShrink: 0, marginTop: 2 }}>
+                  #{it.id.slice(0, 6)}
+                </span>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--fg-3)', marginBottom: 8 }}>
-                <Icon name="users" size={10}/> <b>{it.user}</b> · {new Date(it.submitted_at).toLocaleString()}
+
+              {/* Meta */}
+              <div style={{
+                fontSize: 11, color: 'var(--fg-3)', marginBottom: 8,
+                padding: '8px 10px', background: 'var(--panel-2)', borderRadius: 7,
+              }}>
+                <span style={{ fontWeight: 600, color: 'var(--fg-2)' }}>{it.user}</span>
+                {' · '}
+                {new Date(it.submitted_at).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' })}
               </div>
+
               {it.reviewed_by && (
-                <div style={{ fontSize: 10.5, color: 'var(--fg-3)', marginBottom: 6 }}>
-                  {it.status === 'approved' ? '✅' : '❌'} {it.reviewed_by} · {it.reviewed_at && new Date(it.reviewed_at).toLocaleString()}
-                  {it.reject_reason ? <> — <i>"{it.reject_reason}"</i></> : null}
+                <div style={{ fontSize: 11, color: 'var(--fg-3)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>{it.status === 'approved' ? '✅' : '❌'}</span>
+                  <span><b style={{ color: 'var(--fg-2)' }}>{it.reviewed_by}</b> · {it.reviewed_at && new Date(it.reviewed_at).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                  {it.reject_reason && <span style={{ color: 'var(--fg-mute)' }}> — "{it.reject_reason}"</span>}
                 </div>
               )}
-              <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                <button className="btn ghost" style={{ height: 24, fontSize: 11 }} onClick={() => openPreview(it.id)}>
+
+              {/* Actions */}
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <button className="btn ghost" style={{ height: 26, fontSize: 11, padding: '0 10px' }} onClick={() => openPreview(it.id)}>
                   <Icon name="code" size={11}/> JSON
                 </button>
                 {isAdmin && it.status === 'pending' && (
                   <>
-                    <button className="btn primary" style={{ height: 24, fontSize: 11, marginLeft: 'auto' }}
-                            disabled={busyId === it.id} onClick={() => handleApprove(it.id)}>
-                      <Icon name="check" size={11}/> {tr ? 'Onayla' : 'Approve'}
-                    </button>
-                    <button className="btn" style={{ height: 24, fontSize: 11 }}
+                    <span style={{ flex: 1 }}/>
+                    <button className="btn" style={{ height: 26, fontSize: 11, padding: '0 10px' }}
                             disabled={busyId === it.id} onClick={() => handleReject(it.id)}>
-                      <Icon name="x" size={11}/> {tr ? 'Reddet' : 'Reject'}
+                      <Icon name="x" size={11}/> {tr ? 'Reddet' : 'Reddet'}
+                    </button>
+                    <button className="btn primary" style={{ height: 26, fontSize: 11, padding: '0 10px' }}
+                            disabled={busyId === it.id} onClick={() => handleApprove(it.id)}>
+                      <Icon name="check" size={11}/> {tr ? 'Onayla' : 'Onayla'}
                     </button>
                   </>
                 )}
               </div>
 
               {previewId === it.id && (
-                <div style={{ marginTop: 10, padding: 10, background: 'var(--panel-2)', borderRadius: 8, maxHeight: 220, overflow: 'auto' }}>
+                <div style={{ marginTop: 10, background: 'var(--canvas)', border: '1px solid var(--line)', borderRadius: 8, maxHeight: 200, overflow: 'auto' }}>
                   {previewData ? (
-                    <pre style={{ margin: 0, fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--fg)', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                    <pre style={{ margin: 0, padding: '10px 12px', fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--fg)', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
                       {JSON.stringify(previewData.layout, null, 2)}
                     </pre>
                   ) : (
-                    <div style={{ fontSize: 11, color: 'var(--fg-3)' }}>{tr ? 'Yükleniyor…' : 'Loading…'}</div>
+                    <div style={{ padding: 12, fontSize: 11, color: 'var(--fg-3)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span className="spinner"/>{tr ? 'Yükleniyor…' : 'Yükleniyor…'}
+                    </div>
                   )}
                 </div>
               )}
