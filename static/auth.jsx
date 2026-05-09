@@ -78,74 +78,136 @@ function LoginOverlay({ lang, onLogin }) {
     }
   };
 
+  const inputStyle = {
+    width: '100%', height: 42,
+    background: '#fff',
+    border: '1.5px solid #e2e5ea',
+    borderRadius: 10,
+    padding: '0 14px',
+    fontSize: 14,
+    color: '#111827',
+    outline: 'none',
+    transition: 'border-color .15s, box-shadow .15s',
+    boxSizing: 'border-box',
+  };
+
+  const roleBtnBase = {
+    flex: 1, height: 38, borderRadius: 8, fontSize: 13, fontWeight: 600,
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+    cursor: 'pointer', border: '1.5px solid transparent', transition: 'all .15s',
+  };
+
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'rgba(15, 17, 21, 0.55)', backdropFilter: 'blur(8px)',
+      background: 'linear-gradient(135deg, #1a0a0a 0%, #2d0f0f 30%, #1c1c2e 70%, #0f172a 100%)',
       display: 'grid', placeItems: 'center',
     }}>
+      {/* Decorative glow spots */}
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', top: '15%', left: '20%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(220,38,38,0.18) 0%, transparent 70%)', filter: 'blur(40px)' }}/>
+        <div style={{ position: 'absolute', bottom: '20%', right: '15%', width: 320, height: 320, borderRadius: '50%', background: 'radial-gradient(circle, rgba(220,38,38,0.12) 0%, transparent 70%)', filter: 'blur(40px)' }}/>
+      </div>
+
       <form onSubmit={handleSubmit} style={{
-        width: 360, background: 'var(--panel)', border: '1px solid var(--line)',
-        borderRadius: 14, padding: 24, boxShadow: 'var(--shadow-lg)',
+        position: 'relative', zIndex: 1,
+        width: 400,
+        background: '#ffffff',
+        borderRadius: 20,
+        padding: '32px 32px 28px',
+        boxShadow: '0 24px 64px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.25)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-          <img src="/static/logo.png" alt="" style={{ width: 32, height: 32 }}/>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+          <img src="/static/logo.png" alt="" style={{ width: 40, height: 40, borderRadius: 10 }}/>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--fg)' }}>SDUI Studio</div>
-            <div style={{ fontSize: 11, color: 'var(--fg-3)' }}>{tr ? 'Devam etmek için giriş yapın' : 'Sign in to continue'}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#111827', letterSpacing: '-0.02em' }}>SDUI Studio</div>
+            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 1 }}>{tr ? 'Devam etmek için giriş yapın' : 'Sign in to continue'}</div>
           </div>
         </div>
 
-        <div style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--fg-3)', marginBottom: 6 }}>
+        {/* Role toggle */}
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#9ca3af', marginBottom: 8 }}>
           {tr ? 'Giriş Tipi' : 'Login Type'}
         </div>
-        <div className="seg" style={{ width: '100%', marginBottom: 14 }}>
-          <button type="button" className={role === 'user' ? 'on' : ''} style={{ flex: 1, justifyContent: 'center' }} onClick={() => setRole('user')}>
-            <Icon name="users" size={12}/> {tr ? 'Kullanıcı' : 'User'}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20, background: '#f3f4f6', borderRadius: 10, padding: 4 }}>
+          <button type="button" onClick={() => setRole('user')} style={{
+            ...roleBtnBase,
+            background: role === 'user' ? '#fff' : 'transparent',
+            color: role === 'user' ? '#111827' : '#6b7280',
+            boxShadow: role === 'user' ? '0 1px 4px rgba(0,0,0,0.12)' : 'none',
+            border: role === 'user' ? '1.5px solid #e5e7eb' : '1.5px solid transparent',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.5"/><path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            {tr ? 'Kullanıcı' : 'User'}
           </button>
-          <button type="button" className={role === 'admin' ? 'on' : ''} style={{ flex: 1, justifyContent: 'center' }} onClick={() => setRole('admin')}>
-            <Icon name="lightning" size={12}/> Admin
+          <button type="button" onClick={() => setRole('admin')} style={{
+            ...roleBtnBase,
+            background: role === 'admin' ? '#dc2626' : 'transparent',
+            color: role === 'admin' ? '#fff' : '#6b7280',
+            boxShadow: role === 'admin' ? '0 2px 8px rgba(220,38,38,0.35)' : 'none',
+            border: role === 'admin' ? '1.5px solid #dc2626' : '1.5px solid transparent',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L10 6h4.5l-3.6 2.6 1.4 4.4L8 10.5l-4.3 2.5 1.4-4.4L1.5 6H6L8 1.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>
+            Admin
           </button>
         </div>
 
-        <div style={{ marginBottom: 10 }}>
-          <label style={{ fontSize: 11, color: 'var(--fg-3)', display: 'block', marginBottom: 4 }}>{tr ? 'Kullanıcı Adı' : 'Username'}</label>
-          <input className="input" style={{ width: '100%', height: 32 }} value={username} autoFocus
-                 placeholder={role === 'admin' ? 'admin' : (tr ? 'örn: ali' : 'e.g. alice')}
-                 onChange={e => setUsername(e.target.value)}/>
+        {/* Fields */}
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>
+            {tr ? 'Kullanıcı Adı' : 'Kullanıcı Adı'}
+          </label>
+          <input
+            style={inputStyle}
+            value={username} autoFocus
+            placeholder={role === 'admin' ? 'admin' : (tr ? 'örn: ali' : 'e.g. alice')}
+            onChange={e => setUsername(e.target.value)}
+            onFocus={e => { e.target.style.borderColor = '#dc2626'; e.target.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.12)'; }}
+            onBlur={e => { e.target.style.borderColor = '#e2e5ea'; e.target.style.boxShadow = 'none'; }}
+          />
         </div>
-        <div style={{ marginBottom: 10 }}>
-          <label style={{ fontSize: 11, color: 'var(--fg-3)', display: 'block', marginBottom: 4 }}>{tr ? 'Şifre' : 'Password'}</label>
-          <input className="input" type="password" style={{ width: '100%', height: 32 }} value={password}
-                 placeholder={role === 'admin' ? 'admin123' : '••••'}
-                 onChange={e => setPassword(e.target.value)}/>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>
+            {tr ? 'Şifre' : 'Şifre'}
+          </label>
+          <input
+            style={inputStyle}
+            type="password"
+            value={password}
+            placeholder="••••••••"
+            onChange={e => setPassword(e.target.value)}
+            onFocus={e => { e.target.style.borderColor = '#dc2626'; e.target.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.12)'; }}
+            onBlur={e => { e.target.style.borderColor = '#e2e5ea'; e.target.style.boxShadow = 'none'; }}
+          />
         </div>
 
         {error && (
-          <div style={{ padding: '8px 10px', background: 'var(--err-soft, #fde8e8)', color: 'var(--err, #b42318)', borderRadius: 6, fontSize: 11.5, marginBottom: 10 }}>
+          <div style={{ padding: '10px 14px', background: '#fef2f2', color: '#b91c1c', borderRadius: 8, fontSize: 12.5, fontWeight: 500, marginBottom: 14, border: '1px solid #fecaca' }}>
             {error}
           </div>
         )}
 
-        <button type="submit" className="btn primary" disabled={busy}
-                style={{ width: '100%', justifyContent: 'center', marginTop: 4 }}>
-          {busy ? (tr ? 'Giriş yapılıyor…' : 'Signing in…') : (tr ? 'Giriş Yap' : 'Sign In')}
+        <button type="submit" disabled={busy} style={{
+          width: '100%', height: 46, borderRadius: 12,
+          background: busy ? '#f87171' : '#dc2626',
+          color: '#fff', border: 'none', fontSize: 15, fontWeight: 700,
+          cursor: busy ? 'not-allowed' : 'pointer',
+          boxShadow: busy ? 'none' : '0 4px 14px rgba(220,38,38,0.4)',
+          transition: 'all .15s',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          letterSpacing: '-0.01em',
+        }}>
+          {busy ? (
+            <><span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }}/>{tr ? 'Giriş yapılıyor…' : 'Giriş yapılıyor…'}</>
+          ) : (tr ? 'Giriş Yap' : 'Giriş Yap')}
         </button>
 
-        <div style={{ marginTop: 14, padding: 10, background: 'var(--panel-2)', borderRadius: 8, fontSize: 10.5, color: 'var(--fg-3)', lineHeight: 1.5 }}>
-          {tr ? (
-            <>
-              <b>Demo bilgileri:</b><br/>
-              Admin → <code>admin / admin123</code><br/>
-              Kullanıcı → herhangi bir ad ve şifre. Yayın istekleri admin onayına düşer.
-            </>
-          ) : (
-            <>
-              <b>Demo credentials:</b><br/>
-              Admin → <code>admin / admin123</code><br/>
-              User → any username & password. Publish requests need admin approval.
-            </>
-          )}
+        {/* Demo hint */}
+        <div style={{ marginTop: 20, padding: '12px 14px', background: '#f9fafb', borderRadius: 10, fontSize: 11.5, color: '#6b7280', lineHeight: 1.6, border: '1px solid #e5e7eb' }}>
+          <div style={{ fontWeight: 700, color: '#374151', marginBottom: 4 }}>Demo bilgileri</div>
+          <div>Admin → <code style={{ background: '#e5e7eb', padding: '1px 5px', borderRadius: 4, fontSize: 11, color: '#111827', fontFamily: 'monospace' }}>admin / admin123</code></div>
+          <div style={{ marginTop: 2 }}>{tr ? 'Kullanıcı → herhangi bir ad ve şifre. Yayın istekleri admin onayına düşer.' : 'User → any username & password. Publish requests need admin approval.'}</div>
         </div>
       </form>
     </div>

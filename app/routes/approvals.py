@@ -5,6 +5,7 @@ from fastapi import APIRouter, Body, HTTPException, Header
 
 import app.state as state
 from app.routes.auth import get_session
+from app.services import approvals_store
 
 router = APIRouter(prefix="/api/approvals")
 
@@ -76,6 +77,7 @@ async def submit_request(
         "reject_reason": None,
     }
     state.pending_publishes.append(item)
+    approvals_store.save(state.pending_publishes)
     print(f"📝 Onay bekliyor: {sess['username']} → {screen_name} ({platform})")
     return {"status": "pending_approval", "id": item["id"]}
 
@@ -105,6 +107,7 @@ async def approve_request(
     item["status"] = "approved"
     item["reviewed_by"] = sess["username"]
     item["reviewed_at"] = _now_iso()
+    approvals_store.save(state.pending_publishes)
     print(f"✅ Onaylandı: {request_id} ({item['user']} → {sess['username']})")
     return {"status": "success", "id": request_id}
 
@@ -129,5 +132,6 @@ async def reject_request(
     item["reviewed_by"] = sess["username"]
     item["reviewed_at"] = _now_iso()
     item["reject_reason"] = reason
+    approvals_store.save(state.pending_publishes)
     print(f"❌ Reddedildi: {request_id} ({sess['username']})")
     return {"status": "success", "id": request_id}
