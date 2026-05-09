@@ -1,7 +1,11 @@
 import random
-from fastapi import APIRouter, Body
+import uuid
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Body, Header
 
 import app.state as state
+from app.routes.auth import get_session
 
 router = APIRouter()
 
@@ -11,14 +15,37 @@ async def update_layout(
     layout: dict = Body(...),
     screen_name: str = Body("Untitled"),
     platform: str = Body("mobile"),
+    authorization: str | None = Header(None),
 ):
+    sess = get_session(authorization)
+
+    # Authenticated non-admin → goes to approval queue instead of going live.
+    if sess and sess["role"] != "admin":
+        item = {
+            "id": uuid.uuid4().hex[:12],
+            "user": sess["username"],
+            "screen_name": screen_name,
+            "platform": platform,
+            "layout": layout,
+            "submitted_at": datetime.now(timezone.utc).isoformat(),
+            "status": "pending",
+            "reviewed_by": None,
+            "reviewed_at": None,
+            "reject_reason": None,
+        }
+        state.pending_publishes.append(item)
+        print(f"📝 Onay bekliyor: {sess['username']} → {screen_name} ({platform})")
+        return {"status": "pending_approval", "id": item["id"]}
+
+    # Admin or no session → publish directly (legacy behavior preserved).
     full_data = {"screen_name": screen_name, "layout": layout}
     if platform == "web":
         state.current_layout_web = full_data
     else:
         state.current_layout_mobile = full_data
     state.current_layout = full_data
-    print(f"✅ Layout güncellendi (platform: {platform})")
+    who = sess["username"] if sess else "anonymous"
+    print(f"✅ Layout güncellendi (platform: {platform}, by: {who})")
     return {"status": "success"}
 
 
