@@ -311,7 +311,18 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
     return () => ro.disconnect();
   }, [device]);
 
-  const getPreviewScroller = () => stageRef.current?.querySelector('.sdui-device-content');
+  const getPreviewScroller = () => {
+    const content = stageRef.current?.querySelector('.sdui-device-content');
+    if (!content) return null;
+    // If the device-content itself overflows, use it directly
+    if (content.scrollHeight > content.clientHeight + 4) return content;
+    // Otherwise find the first inner scroll container (e.g. LazyColumn with scroll=true)
+    const inner = [...content.querySelectorAll('*')].find(el => {
+      const oy = getComputedStyle(el).overflowY;
+      return (oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 4;
+    });
+    return inner || content;
+  };
 
   const syncScrollMetrics = () => {
     const scroller = getPreviewScroller();

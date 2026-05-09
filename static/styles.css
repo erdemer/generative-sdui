@@ -558,6 +558,9 @@ input, textarea { font-family: inherit; color: inherit; }
 .sdui-device-content::-webkit-scrollbar {
   display: none;
 }
+/* Hide ALL native scrollbars inside the device — custom scrollbar handles it */
+.device-screen *::-webkit-scrollbar { display: none; }
+.device-screen * { scrollbar-width: none; }
 .preview-scrollbar {
   width: 12px;
   height: 560px;
