@@ -429,7 +429,10 @@ function App() {
     if (auth?.role !== 'admin') { setPendingCount(0); return; }
     const fetchPending = () => {
       fetch('/api/approvals/list?status_filter=pending', { headers: window.SDUIAuth.authHeaders(auth) })
-        .then(r => r.ok ? r.json() : null)
+        .then(r => {
+          if (r.status === 401) { window.SDUIAuth.clearAuth(); setAuth(null); return null; }
+          return r.ok ? r.json() : null;
+        })
         .then(d => { if (d) setPendingCount(d.total || 0); })
         .catch(() => {});
     };
