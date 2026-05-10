@@ -9,8 +9,14 @@ function computeSDUIStyle(node, p) {
     s.display = 'flex'; s.flexDirection = 'column';
   } else if (type === 'Row' || type === 'LazyRow') {
     s.display = 'flex'; s.flexDirection = 'row'; s.flexWrap = 'nowrap';
+    // Don't let rows get vertically compressed by their parent column —
+    // children (images with explicit height) overflow visually & intersect
+    // with the next section when this happens.
+    s.flexShrink = 0;
+    if (type === 'LazyRow') s.overflowX = 'auto';
   } else if (type === 'Card') {
     s.display = 'flex'; s.flexDirection = 'column'; s.overflow = 'hidden';
+    s.flexShrink = 0;
     const cardBg = p.backgroundColor || '#ffffff';
     if (cardBg.includes('gradient')) s.background = cardBg; else s.backgroundColor = cardBg;
     s.borderRadius = (p.corner ?? p.cornerRadius ?? 12) + 'px';
