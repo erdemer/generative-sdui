@@ -36,7 +36,18 @@ function computeSDUIStyle(node, p) {
   }
 
   // Size
-  if (p.fillMaxSize === 'true' || p.fillMaxSize === true) { s.width = '100%'; s.flex = '1'; s.minHeight = 0; s.alignSelf = 'stretch'; }
+  if (p.fillMaxSize === 'true' || p.fillMaxSize === true) {
+    s.width = '100%';
+    // For Column-like containers, fill at least the viewport but allow growth
+    // when content is taller. Setting minHeight:0 (old behavior) caused content
+    // to overflow visually and intersect with later sections.
+    if (type === 'Column' || type === 'LazyColumn') {
+      s.minHeight = '100%';
+    } else {
+      s.flex = '1'; s.minHeight = 0;
+    }
+    s.alignSelf = 'stretch';
+  }
   if (p.fillWidth === 'true' || p.fillWidth === true) s.width = '100%';
   else if (p.width != null) s.width = typeof p.width === 'number' ? p.width + 'px' : p.width;
   if (p.weight != null) { s.flex = String(p.weight); s.minWidth = 0; s.minHeight = 0; }
