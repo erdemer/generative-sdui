@@ -154,8 +154,13 @@ function computeSDUIStyle(node, p) {
   // Image
   if (type === 'Image') {
     s.objectFit = p.contentScale === 'fit' ? 'contain' : 'cover';
-    if (!p.width) s.width = '100%';
+    // Only force 100% width if NO dimension is specified (hero/full-bleed pattern).
+    // Sized thumbnails (e.g. height:68 in a row card) must keep natural aspect ratio
+    // — otherwise width:100% pushes siblings out of the row and overlaps text.
+    if (!p.width && !p.height && !p.fillWidth) s.width = '100%';
     s.display = 'block';
+    // Sized images shouldn't shrink in flex containers (avatar circles, thumbs).
+    if (p.width != null || p.height != null) s.flexShrink = 0;
   }
 
   // Spacer
@@ -165,13 +170,22 @@ function computeSDUIStyle(node, p) {
 
   // Scroll
   if (p.scroll === 'true' || p.scroll === true) {
-    s.overflow = 'auto';
-    s.WebkitOverflowScrolling = 'touch';
-    s.minHeight = 0;
-    s.flexShrink = 1;
-    // Must also grow to fill available space — without flex:1 the container
-    // has no bounded height and scroll never activates
-    if (s.flex == null && s.height == null) s.flex = '1';
+    if (type === 'Row' || type === 'LazyRow') {
+      // Row scrolls horizontally; do NOT touch vertical flex — otherwise
+      // the row gets vertically squeezed when its parent column has weighted
+      // siblings, causing image children to clip & intersect next sections.
+      s.overflowX = 'auto';
+      s.overflowY = 'visible';
+      s.flexShrink = 0;
+    } else {
+      s.overflow = 'auto';
+      s.WebkitOverflowScrolling = 'touch';
+      s.minHeight = 0;
+      s.flexShrink = 1;
+      // Must also grow to fill available space — without flex:1 the container
+      // has no bounded height and scroll never activates
+      if (s.flex == null && s.height == null) s.flex = '1';
+    }
   }
 
   // Border
