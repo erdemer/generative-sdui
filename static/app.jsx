@@ -655,6 +655,7 @@ function App() {
         <window.SDUIAuth.ApprovalsPanel
           lang={lang}
           auth={auth}
+          theme={theme}
           onClose={() => setShowApprovals(false)}
           onApproved={() => {
             // Refresh current preview after a successful approval

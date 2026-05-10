@@ -215,7 +215,7 @@ function LoginOverlay({ lang, onLogin }) {
 }
 
 /* =================== APPROVALS PANEL =================== */
-function ApprovalsPanel({ lang, auth, onClose, onApproved }) {
+function ApprovalsPanel({ lang, auth, theme, onClose, onApproved }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending'); // 'pending' | 'approved' | 'rejected' | 'all'
@@ -282,11 +282,16 @@ function ApprovalsPanel({ lang, auth, onClose, onApproved }) {
   };
 
   const isAdmin = auth?.role === 'admin';
+  const isDark = theme && theme.includes('dark');
 
-  const STATUS = {
-    pending:  { color: '#d97706', bg: '#fef3c7', border: '#fde68a', accent: '#f59e0b', label: tr ? 'Bekliyor' : 'Bekliyor' },
-    approved: { color: '#059669', bg: '#d1fae5', border: '#a7f3d0', accent: '#10b981', label: tr ? 'Onaylandı' : 'Onaylandı' },
-    rejected: { color: '#dc2626', bg: '#fee2e2', border: '#fecaca', accent: '#ef4444', label: tr ? 'Reddedildi' : 'Reddedildi' },
+  const STATUS = isDark ? {
+    pending:  { color: '#fbbf24', bg: 'rgba(251,191,36,0.12)',  border: 'rgba(251,191,36,0.25)', accent: '#f59e0b', label: tr ? 'Bekliyor'    : 'Bekliyor'    },
+    approved: { color: '#34d399', bg: 'rgba(52,211,153,0.12)',  border: 'rgba(52,211,153,0.25)', accent: '#10b981', label: tr ? 'Onaylandı'   : 'Onaylandı'   },
+    rejected: { color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.25)',accent: '#ef4444', label: tr ? 'Reddedildi'  : 'Reddedildi'  },
+  } : {
+    pending:  { color: '#d97706', bg: '#fef3c7', border: '#fde68a', accent: '#f59e0b', label: tr ? 'Bekliyor'    : 'Bekliyor'    },
+    approved: { color: '#059669', bg: '#d1fae5', border: '#a7f3d0', accent: '#10b981', label: tr ? 'Onaylandı'   : 'Onaylandı'   },
+    rejected: { color: '#dc2626', bg: '#fee2e2', border: '#fecaca', accent: '#ef4444', label: tr ? 'Reddedildi'  : 'Reddedildi'  },
   };
 
   const statusBadge = (s) => {
