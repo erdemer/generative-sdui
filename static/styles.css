@@ -561,6 +561,15 @@ input, textarea { font-family: inherit; color: inherit; }
 /* Hide ALL native scrollbars inside the device — custom scrollbar handles it */
 .device-screen *::-webkit-scrollbar { display: none; }
 .device-screen * { scrollbar-width: none; }
+
+/* Guarantee the root rendered SDUI element fills the viewport but never gets
+   compressed — regardless of the flex props the AI assigns to it. Without this
+   the root Column would shrink to fit and its children (rows, cards) would
+   overflow visually and intersect with sibling sections. */
+.sdui-device-content > * {
+  flex-shrink: 0 !important;
+  min-height: 100% !important;
+}
 .preview-scrollbar {
   width: 12px;
   height: 560px;
