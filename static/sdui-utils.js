@@ -27,7 +27,9 @@ function buildTreeNode(node) {
 
 function findPath(node, targetId, path = []) {
   const myPath = [...path, node._id];
-  if (node._id === targetId) return myPath;
+  // String coerce — DOM data-sdui-id is always string but layout _id is often
+  // a number. Strict equality silently fails and the tree never highlights.
+  if (String(node._id) === String(targetId)) return myPath;
   for (const c of (node.children || [])) {
     const r = findPath(c, targetId, myPath);
     if (r) return r;
@@ -36,7 +38,7 @@ function findPath(node, targetId, path = []) {
 }
 
 function findIndexPath(node, targetId, path = []) {
-  if (node._id === targetId) return path;
+  if (String(node._id) === String(targetId)) return path;
   const children = node.children || [];
   for (let i = 0; i < children.length; i++) {
     const r = findIndexPath(children[i], targetId, [...path, i]);
@@ -56,7 +58,7 @@ function getNodeByIndexPath(node, path) {
 
 function findById(node, id) {
   if (!node) return null;
-  if (node._id === id) return node;
+  if (String(node._id) === String(id)) return node;
   for (const c of (node.children || [])) {
     const r = findById(c, id);
     if (r) return r;

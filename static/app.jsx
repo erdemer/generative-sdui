@@ -505,7 +505,7 @@ function App() {
     if (!selectedIds.length || !currentJson?.layout) return;
     const updateNode = (node) => {
       let changed = false;
-      if (selectedIds.includes(node._id)) {
+      if (selectedIds.some(id => String(id) === String(node._id))) {
         if (!node.props) node.props = {};
         if (value === undefined) delete node.props[propName];
         else node.props[propName] = value;
