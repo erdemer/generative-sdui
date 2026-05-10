@@ -207,7 +207,9 @@ function computeSDUIStyle(node, p) {
 function SDUINode({ node, selectedIds, onSelectId }) {
   if (!node) return null;
   const p = node.props || {};
-  const isSelected = selectedIds && selectedIds.includes(node._id);
+  // String coerce on both sides — selectedIds may have come from DOM (string)
+  // while node._id is from JSON (typically number). Strict includes fails.
+  const isSelected = selectedIds && selectedIds.some(id => String(id) === String(node._id));
   const baseStyle = computeSDUIStyle(node, p);
   const selStyle = isSelected
     ? { outline: '2px solid var(--brand)', outlineOffset: 1, position: 'relative', zIndex: 1 }
