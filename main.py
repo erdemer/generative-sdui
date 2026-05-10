@@ -6,12 +6,13 @@ from fastapi.responses import FileResponse
 from app.config import STATIC_DIR
 from app.routes import generate, verify, layout, ab_test, filesystem, design_system, auth, approvals
 import app.state as state
-from app.services import ds_store, approvals_store
+from app.services import ds_store, approvals_store, sessions_store
 
 app = FastAPI(title="SDUI Studio")
 
 # Load persisted state on startup
 state.design_systems = ds_store.load()
+state.sessions = sessions_store.load()
 approvals_store.init_db()
 state.pending_publishes = approvals_store.load()
 

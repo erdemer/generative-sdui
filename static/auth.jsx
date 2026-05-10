@@ -229,13 +229,19 @@ function ApprovalsPanel({ lang, auth, theme, onClose, onApproved }) {
     setLoading(true);
     try {
       const res = await fetch(`/api/approvals/list?status_filter=${filter}`, { headers: authHeaders(auth) });
+      if (res.status === 401) {
+        clearAuth();
+        onClose?.();
+        window.location.reload();
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         setItems(data.items || []);
       }
     } catch {}
     setLoading(false);
-  }, [filter, auth]);
+  }, [filter, auth, onClose]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -310,22 +316,25 @@ function ApprovalsPanel({ lang, auth, theme, onClose, onApproved }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9000,
-      background: 'rgba(0,0,0,0.4)',
+      background: isDark ? 'rgba(0,0,0,0.65)' : 'rgba(0,0,0,0.35)',
       display: 'flex', justifyContent: 'flex-end',
+      backdropFilter: 'blur(2px)',
     }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{
         width: 460, height: '100%',
-        background: 'var(--bg-elev)',
-        borderLeft: '1px solid var(--line-strong)',
+        background: isDark ? 'oklch(0.18 0.013 25)' : '#f8f9fb',
+        borderLeft: isDark ? '1px solid oklch(0.30 0.018 25)' : '1px solid #e2e5ea',
         display: 'flex', flexDirection: 'column',
-        boxShadow: '-24px 0 56px rgba(0,0,0,0.22)',
+        boxShadow: isDark
+          ? '-32px 0 80px rgba(0,0,0,0.7), -1px 0 0 rgba(255,255,255,0.04)'
+          : '-32px 0 80px rgba(0,0,0,0.18), -1px 0 0 rgba(0,0,0,0.06)',
       }}>
         {/* Header */}
         <div style={{
           padding: '14px 18px',
-          borderBottom: '1px solid var(--line)',
+          borderBottom: isDark ? '1px solid oklch(0.28 0.018 25)' : '1px solid #e2e5ea',
           display: 'flex', alignItems: 'center', gap: 12,
-          background: 'var(--bg-elev)',
+          background: isDark ? 'oklch(0.20 0.016 25)' : '#ffffff',
         }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10, flexShrink: 0,
@@ -346,7 +355,7 @@ function ApprovalsPanel({ lang, auth, theme, onClose, onApproved }) {
         </div>
 
         {/* Filter tabs */}
-        <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--line)', background: 'var(--panel)' }}>
+        <div style={{ padding: '8px 16px', borderBottom: isDark ? '1px solid oklch(0.28 0.018 25)' : '1px solid #e2e5ea', background: isDark ? 'oklch(0.20 0.016 25)' : '#ffffff' }}>
           <div className="seg" style={{ width: '100%', height: 30 }}>
             {[
               { id: 'pending',  label: tr ? 'Bekliyor' : 'Bekliyor' },
@@ -363,7 +372,7 @@ function ApprovalsPanel({ lang, auth, theme, onClose, onApproved }) {
         </div>
 
         {/* List */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px', background: 'var(--canvas)' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px', background: isDark ? 'oklch(0.15 0.010 25)' : '#eef0f4' }}>
           {loading && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 32, color: 'var(--fg-3)', fontSize: 12 }}>
               <span className="spinner"/>
@@ -384,12 +393,14 @@ function ApprovalsPanel({ lang, auth, theme, onClose, onApproved }) {
             const sc = STATUS[it.status] || STATUS.pending;
             return (
               <div key={it.id} style={{
-                background: 'var(--bg-elev)',
-                border: '1px solid var(--line)',
+                background: isDark ? 'oklch(0.20 0.014 25)' : '#ffffff',
+                border: isDark ? '1px solid oklch(0.28 0.018 25)' : '1px solid #e2e5ea',
                 borderLeft: `3px solid ${sc.accent}`,
                 borderRadius: 10,
                 marginBottom: 8,
-                boxShadow: '0 1px 4px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04)',
+                boxShadow: isDark
+                  ? '0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3)'
+                  : '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.07)',
                 overflow: 'hidden',
               }}>
                 {/* Card top */}

@@ -3,6 +3,7 @@ import uuid
 from fastapi import APIRouter, Body, HTTPException, Header
 
 import app.state as state
+from app.services import sessions_store
 
 router = APIRouter(prefix="/api/auth")
 
@@ -38,6 +39,7 @@ async def login(
 
     token = uuid.uuid4().hex
     state.sessions[token] = {"username": username, "role": role}
+    sessions_store.save(state.sessions)
     print(f"🔑 Login: {username} as {role}")
     return {"token": token, "username": username, "role": role}
 
@@ -55,4 +57,5 @@ async def logout(authorization: str | None = Header(None)):
     if authorization:
         token = authorization.replace("Bearer ", "").strip()
         state.sessions.pop(token, None)
+        sessions_store.save(state.sessions)
     return {"status": "success"}
