@@ -48,10 +48,13 @@ function computeSDUIStyle(node, p) {
     }
     s.alignSelf = 'stretch';
   }
-  if (p.fillWidth === 'true' || p.fillWidth === true) s.width = '100%';
+  // Compose uses fillMaxWidth/fillMaxHeight; tolerate both spellings.
+  const fillW = p.fillWidth === 'true' || p.fillWidth === true || p.fillMaxWidth === 'true' || p.fillMaxWidth === true;
+  const fillH = p.fillHeight === 'true' || p.fillHeight === true || p.fillMaxHeight === 'true' || p.fillMaxHeight === true;
+  if (fillW) s.width = '100%';
   else if (p.width != null) s.width = typeof p.width === 'number' ? p.width + 'px' : p.width;
   if (p.weight != null) { s.flex = String(p.weight); s.minWidth = 0; s.minHeight = 0; }
-  if (p.fillHeight === 'true' || p.fillHeight === true) s.flex = '1';
+  if (fillH) s.flex = '1';
   else if (p.height != null) s.height = typeof p.height === 'number' ? p.height + 'px' : p.height;
   if (p.minHeight != null) s.minHeight = p.minHeight + 'px';
   if (p.maxHeight != null) s.maxHeight = p.maxHeight + 'px';
@@ -154,10 +157,11 @@ function computeSDUIStyle(node, p) {
   // Image
   if (type === 'Image') {
     s.objectFit = p.contentScale === 'fit' ? 'contain' : 'cover';
+    const fillsWidth = p.fillWidth === 'true' || p.fillWidth === true || p.fillMaxWidth === 'true' || p.fillMaxWidth === true;
     // Only force 100% width if NO dimension is specified (hero/full-bleed pattern).
     // Sized thumbnails (e.g. height:68 in a row card) must keep natural aspect ratio
     // — otherwise width:100% pushes siblings out of the row and overlaps text.
-    if (!p.width && !p.height && !p.fillWidth) s.width = '100%';
+    if (!p.width && !p.height && !fillsWidth) s.width = '100%';
     s.display = 'block';
     // Sized images shouldn't shrink in flex containers (avatar circles, thumbs).
     if (p.width != null || p.height != null) s.flexShrink = 0;
@@ -273,12 +277,37 @@ function SDUINode({ node, selectedIds, onSelectId }) {
       return <div {...nodeAttrs} style={{ width:'100%', height: (p.thickness ?? 1) + 'px', backgroundColor: p.color || 'rgba(0,0,0,0.08)', flexShrink:0 }}/>;
 
     case 'Box': {
-      // Box is a z-layer stack: first child sizes the box,
-      // remaining children are absolutely positioned overlays (inset:0)
+      // Box is a z-layer stack: first child sizes the box, remaining children
+      // are absolutely positioned overlays. Honor contentAlignment so e.g.
+      // a hero with bottomCenter aligns its CTA button to the bottom instead
+      // of stretching it across the entire image.
+      const align = (p.contentAlignment || '').toLowerCase();
+      const overlayStyleFor = (child) => {
+        const cp = child.props || {};
+        const fills = cp.fillMaxSize === 'true' || cp.fillMaxSize === true;
+        const base = { position: 'absolute', display: 'flex', flexDirection: 'column' };
+        // A child that explicitly fills the box (e.g. gradient overlay) gets
+        // full inset regardless of contentAlignment.
+        if (fills || !align) {
+          return { ...base, top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' };
+        }
+        switch (align) {
+          case 'topstart':     return { ...base, top: 0, left: 0 };
+          case 'topcenter':    return { ...base, top: 0, left: 0, right: 0, alignItems: 'center' };
+          case 'topend':       return { ...base, top: 0, right: 0 };
+          case 'centerstart':  return { ...base, top: '50%', left: 0, transform: 'translateY(-50%)' };
+          case 'center':       return { ...base, top: '50%', left: '50%', transform: 'translate(-50%,-50%)' };
+          case 'centerend':    return { ...base, top: '50%', right: 0, transform: 'translateY(-50%)' };
+          case 'bottomstart':  return { ...base, bottom: 0, left: 0 };
+          case 'bottomcenter': return { ...base, bottom: 0, left: 0, right: 0, alignItems: 'center' };
+          case 'bottomend':    return { ...base, bottom: 0, right: 0 };
+          default:             return { ...base, top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' };
+        }
+      };
       const boxChildren = (node.children || []).map((c, i) =>
         i === 0
           ? <SDUINode key={i} node={c} selectedIds={selectedIds} onSelectId={onSelectId}/>
-          : <div key={i} style={{ position:'absolute', top:0, left:0, right:0, bottom:0, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+          : <div key={i} style={overlayStyleFor(c)}>
               <SDUINode node={c} selectedIds={selectedIds} onSelectId={onSelectId}/>
             </div>
       );
