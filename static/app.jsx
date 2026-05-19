@@ -170,6 +170,14 @@ function App() {
   const [treeView, setTreeView] = useState('tree');
   const [device, setDevice] = useState('iphone');
 
+  // ── Brand rules ─────────────────────────────────────────────────────────
+  const [brandRules, setBrandRules] = useState('');
+  useEffect(() => {
+    fetch('/api/brand/rules').then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setBrandRules(d.rules ?? d.default ?? ''); })
+      .catch(() => {});
+  }, []);
+
   // ── Generate inputs ──────────────────────────────────────────────────────
   const [promptText, setPromptText] = useState('');
   const [imageFile, setImageFile] = useState(null);
@@ -617,7 +625,7 @@ function App() {
         />
 
         <div className="workspace">
-          <window.LeftRail lang={lang} tab={leftTab} onTab={setLeftTab} promptText={promptText} onPromptChange={setPromptText} imagePreview={imagePreview} onImageChange={handleImageChange} onImageRemove={handleImageRemove} smartCrop={smartCrop} onSmartCropChange={setSmartCrop} generateState={generateState} onGenerate={handleGenerate} files={files} selectedFilePath={currentFilePath} onSelectFile={handleSelectFile} onNewFolder={handleNewFolder} onNewFile={handleNewFile} platform={platform} onPlatform={handlePlatformChange} selectedLabel={selectedLabel} abActive={abActive} currentVersion={`v${version}`} onPublish={handlePublish} onSaveAsA={handleSaveAsA} onSaveAsB={handleSaveAsB} onStartAB={handleStartAB} designSystems={designSystems} onDesignSystemsChange={setDesignSystems}/>
+          <window.LeftRail lang={lang} tab={leftTab} onTab={setLeftTab} promptText={promptText} onPromptChange={setPromptText} imagePreview={imagePreview} onImageChange={handleImageChange} onImageRemove={handleImageRemove} smartCrop={smartCrop} onSmartCropChange={setSmartCrop} generateState={generateState} onGenerate={handleGenerate} files={files} selectedFilePath={currentFilePath} onSelectFile={handleSelectFile} onNewFolder={handleNewFolder} onNewFile={handleNewFile} platform={platform} onPlatform={handlePlatformChange} selectedLabel={selectedLabel} abActive={abActive} currentVersion={`v${version}`} onPublish={handlePublish} onSaveAsA={handleSaveAsA} onSaveAsB={handleSaveAsB} onStartAB={handleStartAB} designSystems={designSystems} onDesignSystemsChange={setDesignSystems} brandRules={brandRules} onBrandRulesChange={setBrandRules}/>
 
           {treeView === 'json' ? (
             <JsonPane lang={lang} json={currentJson} onView={setTreeView}/>
