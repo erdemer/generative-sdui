@@ -9,7 +9,8 @@ const t = (lang, key) => (window.I18N[lang] && window.I18N[lang][key]) || key;
 
 /* =================== TOPBAR =================== */
 function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt = "1m", showAB = false, onPublish, platform = 'mobile', onPlatform,
-                 auth, pendingCount = 0, onOpenApprovals, onLogout }) {
+                 auth, pendingCount = 0, onOpenApprovals, onLogout,
+                 onOpenFlows, flowsActive = false }) {
   const isAdmin = auth?.role === 'admin';
   const userInitials = (auth?.username || '?').slice(0, 2).toUpperCase();
   const publishLabel = isAdmin ? t(lang, 'publish') : (lang === 'tr' ? 'Onaya Gönder' : 'Submit for Approval');
@@ -30,14 +31,29 @@ function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt 
         )}
       </div>
       <div className="topbar-center">
-        <div className="seg">
-          <button className={platform==='mobile'?'on':''} onClick={()=>onPlatform && onPlatform('mobile')}><Icon name="device-mobile" size={13}/> {t(lang,"mobile")}</button>
-          <button className={platform==='web'?'on':''} onClick={()=>onPlatform && onPlatform('web')}><Icon name="device-desktop" size={13}/> {t(lang,"web")}</button>
-        </div>
-        <div className="seg" style={{ marginLeft: 4 }}>
-          <button className={lang==='tr'?'on':''} onClick={()=>onToggleLang && onToggleLang('tr')}>TR</button>
-          <button className={lang==='en'?'on':''} onClick={()=>onToggleLang && onToggleLang('en')}>EN</button>
-        </div>
+        {onOpenFlows && (
+          <div className="seg" style={{ marginRight: 8 }}>
+            <button className={!flowsActive ? 'on' : ''} onClick={() => flowsActive && onOpenFlows(false)} title="Studio">
+              <Icon name="device-mobile" size={13}/> Studio
+            </button>
+            <button className={flowsActive ? 'on' : ''} onClick={() => !flowsActive && onOpenFlows(true)} title="Personalization Flow"
+              style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span className="material-icons" style={{ fontSize: 13, verticalAlign: 'middle' }}>device_hub</span> Flows
+            </button>
+          </div>
+        )}
+        {!flowsActive && (
+          <>
+            <div className="seg">
+              <button className={platform==='mobile'?'on':''} onClick={()=>onPlatform && onPlatform('mobile')}><Icon name="device-mobile" size={13}/> {t(lang,"mobile")}</button>
+              <button className={platform==='web'?'on':''} onClick={()=>onPlatform && onPlatform('web')}><Icon name="device-desktop" size={13}/> {t(lang,"web")}</button>
+            </div>
+            <div className="seg" style={{ marginLeft: 4 }}>
+              <button className={lang==='tr'?'on':''} onClick={()=>onToggleLang && onToggleLang('tr')}>TR</button>
+              <button className={lang==='en'?'on':''} onClick={()=>onToggleLang && onToggleLang('en')}>EN</button>
+            </div>
+          </>
+        )}
       </div>
       <div className="topbar-right">
         <div className="chip ok" style={{ marginRight: 4 }}>

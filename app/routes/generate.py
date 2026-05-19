@@ -1,11 +1,12 @@
 import io
+import json
 import json_repair
 from fastapi import APIRouter, Form, File, UploadFile
 from PIL import Image
 
 import app.state as state
 from app.ai_client import generate_with_retry
-from app.prompts import PROMPT_BASE, PROMPT_WEB, SMART_CROP_PROMPT, CLARIFY_PROMPT, build_design_system_block
+from app.prompts import PROMPT_BASE, PROMPT_WEB, SMART_CROP_PROMPT, CLARIFY_PROMPT, build_design_system_block, build_data_context_block
 from app.services.image import process_crops
 
 
@@ -52,6 +53,7 @@ async def generate_ui(
     smart_crop: bool = Form(False),
     platform: str = Form("mobile"),
     language: str = Form("tr"),
+    data_context: str = Form(None),
 ):
     try:
         if not prompt and not image:
@@ -78,6 +80,16 @@ async def generate_ui(
                 )
                 base_prompt = base_prompt + "\n\n" + brand_block
                 print("🏷️  Marka kuralları enjekte edildi")
+
+            if data_context and not current_json:
+                try:
+                    ctx = json.loads(data_context)
+                    ctx_block = build_data_context_block(ctx)
+                    if ctx_block:
+                        base_prompt = base_prompt + "\n\n" + ctx_block
+                        print("👤 Kişiselleştirme bağlamı enjekte edildi")
+                except Exception as e:
+                    print(f"⚠️ data_context parse hatası: {e}")
 
             active_ds = [d for d in state.design_systems if d.get("active")]
             if active_ds:
