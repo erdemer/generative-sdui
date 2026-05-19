@@ -120,15 +120,17 @@ IMAGES — photorealistic quality:
 LAYOUT PATTERNS — apply these exact structures:
 
 ① HERO OVERLAY (mandatory on main screens):
-Box children:[
-  Image(fillMaxWidth, h:240, crop),
-  Box(fillMaxSize, backgroundColor:"linear-gradient(0deg,#000000e8,#00000000)"),
-  Column(verticalArrangement:bottom, padding:"0,16,28,16", spacedby:8) children:[
+Box(fillMaxWidth:"true", contentAlignment:"bottomCenter") children:[
+  Image(fillMaxWidth:"true", h:240, contentScale:"crop"),
+  Box(fillMaxSize:"true", backgroundColor:"linear-gradient(0deg,#000000e8,#00000000)"),
+  Column(fillMaxWidth:"true", padding:"0,16,28,16", verticalArrangement:"spacedby:8") children:[
     Text(h1, white, bold, "Real tagline"),
     Text(body, color:#ffffffbb, "Real subtitle"),
     Button(bg:accent, color:white, corner:28, padding:"13,32,13,32", "Real CTA label")
   ]
 ]
+→ contentAlignment:"bottomCenter" pins text+button to bottom of image.
+→ NEVER put title/button outside the Box or above the image.
 
 ② SECTION HEADER (before every list/grid):
 Row(horizontalArrangement:spacebetween, verticalAlignment:center, padding:"20,0,10,0") children:[
@@ -144,21 +146,25 @@ Row(scroll:"true", horizontalArrangement:spacedby:10, padding:"2,0,8,0") childre
   ]
 
 ④ CONTENT GRID (2-column):
-Row(horizontalArrangement:spacedby:12) children — each:
+Row(horizontalArrangement:spacedby:12) children — EACH card MUST follow this EXACT structure:
   Card(weight:1, corner:16, elevation:2, backgroundColor:surface) children:[
-    Image(h:150, crop),
-    Column(padding:"8,12,14,12", verticalArrangement:spacedby:3) children:[
+    Image(fillMaxWidth:"true", h:150, contentScale:"crop"),
+    Column(fillMaxWidth:"true", weight:1, padding:"8,12,14,12", verticalArrangement:"spacedby:4") children:[
       Text(h3, bold, color:fg, "Real Name"),
+      Text(caption, color:fg3, "Short description"),
+      Spacer(weight:1),          ← MANDATORY — pushes footer to bottom of card
       Row(horizontalArrangement:spacedby:3, verticalAlignment:center) children:[
         Icon(star, size:12, color:#F59E0B),
-        Text(caption, color:fg3, "4.8  ·  124")
+        Text(caption, color:fg3, "4.8  ·  124 reviews")
       ],
       Row(horizontalArrangement:spacebetween, verticalAlignment:center) children:[
-        Text(body, bold, color:accent, "$12.90"),
+        Text(body, bold, color:accent, "₺12.90"),
         Icon(shopping_cart, size:18, color:accent, onClick:toast)
       ]
     ]
   ]
+→ ALL cards in the same Row MUST have identical structure so rating & price align across columns.
+→ weight:1 on Column + Spacer(weight:1) = footer always anchored to card bottom.
 
 ⑤ LIST ROW:
 Card(corner:12, elevation:1, padding:"12,12,12,12", backgroundColor:surface) children:[
@@ -179,17 +185,26 @@ Card(corner:12, elevation:1, padding:"12,12,12,12", backgroundColor:surface) chi
   ]
 ]
 
-QUALITY — every output must pass all:
+QUALITY — every output must pass ALL of these:
 ✓ Real copy: actual names, real prices, real labels — zero placeholder text ever
 ✓ PALETTE: choose bg + surface + accent + fg + fg3 — use consistently (accent only on CTAs/prices/active icons)
 ✓ HEADER: Row(spacebetween,center,padding:"12,16,12,16") > [Row(spacedby:8) > [Icon(domain,accent), Text(h3,bold,accent,"App Name")], Row(spacedby:12) > [Icon(search,fg3), Icon(notifications,fg3)]]
-✓ HERO OVERLAY (pattern ①) immediately after header — vivid, contextual image prompt
+✓ HERO OVERLAY (pattern ①) immediately after header — Box with contentAlignment:"bottomCenter" — vivid contextual image
 ✓ SCROLL WRAPPER: Column(scroll:"true") wraps all body sections after header+hero
 ✓ 3 content sections inside scroll using patterns ②–⑤ with real content
 ✓ RATINGS on every product/place card (Row + star Icon + Text "4.8 · 124")
 ✓ BADGES on 1-2 featured cards: extra Box child over Card with accent bg + caption white text
 ✓ BottomBar: items:[{"icon":"home","label":"Ana Sayfa","onClick":{"type":"navigate","destination":"home"}},{"icon":"menu_book","label":"Menü","onClick":{"type":"navigate","destination":"menu"}},{"icon":"favorite","label":"Favoriler","onClick":{"type":"navigate","destination":"favorites"}},{"icon":"person","label":"Profil","onClick":{"type":"navigate","destination":"profile"}}]
 ✓ Typography hierarchy: h1 hero > h2 section heads > h3 card titles > body > caption
+
+CARD CONSISTENCY RULES (Figma quality):
+✓ All Image components → always set fillMaxWidth:"true" unless image has explicit width
+✓ Cards in the SAME Row → identical internal structure (same children types in same order)
+✓ Multi-line card content → Column(weight:1) + Spacer(weight:1) before footer section
+✓ Price/CTA row → always the LAST child of card Column, anchored to bottom via Spacer
+✓ Never truncate card titles differently in the same row — use the same style
+✓ Discount badges → Box child overlay (not inside the Column body)
+✓ Two-column grid cards → BOTH must have: image → title → desc → Spacer → rating → price (exact same sequence)
 
 COMPONENTS:
 Column: verticalArrangement(top|bottom|center|spacebetween|spaceevenly|spacedby:N), horizontalAlignment(start|center|end), scroll:"true"
@@ -281,7 +296,9 @@ PRIORITY 1 — STRUCTURAL (always fix):
 - Root missing fillMaxSize:"true" or statusBarPadding:"true" → add them
 - Image in Card without fixed height → set height:155
 - Image missing contentScale:"crop" → add it
+- Image missing fillMaxWidth:"true" when it should fill container → add it
 - Empty children:[] → remove the container
+- Hero Box missing contentAlignment:"bottomCenter" → add it
 
 PRIORITY 2 — VISUAL (fix only if clearly broken):
 - Text on dark surface without explicit light color → set color:#ffffff or color:#ffffffcc
@@ -290,6 +307,8 @@ PRIORITY 2 — VISUAL (fix only if clearly broken):
 - Zero gap between siblings → add verticalArrangement:"spacedby:12"
 - Missing BottomBar on multi-section screen → add 4-tab BottomBar
 - Content items not in Cards → wrap in Card(corner:12,elevation:1)
+- Cards in same Row with inconsistent structure → add Spacer(weight:1) before footer in each card
+- Card Column missing weight:1 → add weight:1 so all cards in the row stretch to same height
 
 DO NOT: change color scheme, restructure sections, rename copy, or touch anything that looks fine.
 
