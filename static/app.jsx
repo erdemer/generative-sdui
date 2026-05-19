@@ -156,6 +156,9 @@ function App() {
   const [showApprovals, setShowApprovals] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
 
+  // ── View ─────────────────────────────────────────────────────────────────
+  const [view, setView] = useState('studio'); // 'studio' | 'flows'
+
   // ── Core state ───────────────────────────────────────────────────────────
   const [appState, setAppState] = useState('empty'); // 'empty' | 'streaming' | 'editing'
   const [currentJson, setCurrentJson] = useState(null);
@@ -361,6 +364,55 @@ function App() {
       alert((lang === 'tr' ? 'Hata: ' : 'Error: ') + err.message);
     }
   };
+
+  // ── Flow-driven generation ───────────────────────────────────────────────
+  const handleFlowGenerate = useCallback(async (dataContext, userPrompt) => {
+    const effectivePrompt = userPrompt || (lang === 'tr' ? 'Kişiselleştirilmiş ana ekran oluştur' : 'Create personalized home screen');
+    setView('studio');
+    setAppState('streaming');
+    setSelectedIds([]);
+    setGenerateProgress({ current: 1, total: 12, phase: lang === 'tr' ? 'Kişiselleştirme verisi hazırlanıyor…' : 'Preparing personalization data…' });
+
+    const fd = new FormData();
+    fd.append('prompt', effectivePrompt);
+    fd.append('platform', platform);
+    fd.append('language', lang);
+    fd.append('data_context', JSON.stringify(dataContext));
+
+    let progressTimer = null;
+    try {
+      setGenerateProgress({ current: 3, total: 12, phase: lang === 'tr' ? 'AI kişiselleştiriyor…' : 'AI personalizing…', waiting: false });
+      progressTimer = setInterval(() => {
+        setGenerateProgress(prev => {
+          const cur = prev?.current || 1;
+          if (cur >= 7) return { ...prev, waiting: true };
+          return { current: cur + 1, total: 12, phase: lang === 'tr' ? 'AI üretiyor…' : 'AI generating…', waiting: false };
+        });
+      }, 900);
+
+      const res = await fetch('/generate', { method: 'POST', body: fd });
+      if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+      setGenerateProgress({ current: 10, total: 12, phase: lang === 'tr' ? 'Yanıt alındı…' : 'Response received…' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (!data?.layout) throw new Error(data?.detail || 'Geçersiz yanıt');
+
+      setGenerateProgress({ current: 11, total: 12, phase: lang === 'tr' ? 'İşleniyor…' : 'Processing…' });
+      _uid = 0; tagIds(data.layout);
+      setCurrentJson(data);
+      setVersion(v => v + 1);
+      setGenerateProgress({ current: 12, total: 12, phase: lang === 'tr' ? 'Önizleme hazırlanıyor…' : 'Preparing preview…' });
+      await new Promise(r => setTimeout(r, 180));
+      setAppState('editing');
+      setGenerateProgress(null);
+      setSavedAt(Date.now());
+    } catch (err) {
+      if (progressTimer) clearInterval(progressTimer);
+      setGenerateProgress(null);
+      setAppState(currentJson ? 'editing' : 'empty');
+      alert((lang === 'tr' ? 'Hata: ' : 'Error: ') + err.message);
+    }
+  }, [platform, lang, currentJson]);
 
   // ── Manual verify / improve quality ─────────────────────────────────────
   const handleVerify = useCallback(async () => {
@@ -622,9 +674,19 @@ function App() {
           pendingCount={pendingCount}
           onOpenApprovals={() => setShowApprovals(true)}
           onLogout={handleLogout}
+          onOpenFlows={(toFlows) => setView(toFlows ? 'flows' : 'studio')}
+          flowsActive={view === 'flows'}
         />
 
-        <div className="workspace">
+        {view === 'flows' ? (
+          <window.DataFlowPage
+            lang={lang}
+            onBack={() => setView('studio')}
+            onFlowGenerate={handleFlowGenerate}
+          />
+        ) : null}
+
+        <div className="workspace" style={{ display: view === 'flows' ? 'none' : undefined }}>
           <window.LeftRail lang={lang} tab={leftTab} onTab={setLeftTab} promptText={promptText} onPromptChange={setPromptText} imagePreview={imagePreview} onImageChange={handleImageChange} onImageRemove={handleImageRemove} smartCrop={smartCrop} onSmartCropChange={setSmartCrop} generateState={generateState} onGenerate={handleGenerate} files={files} selectedFilePath={currentFilePath} onSelectFile={handleSelectFile} onNewFolder={handleNewFolder} onNewFile={handleNewFile} platform={platform} onPlatform={handlePlatformChange} selectedLabel={selectedLabel} abActive={abActive} currentVersion={`v${version}`} onPublish={handlePublish} onSaveAsA={handleSaveAsA} onSaveAsB={handleSaveAsB} onStartAB={handleStartAB} designSystems={designSystems} onDesignSystemsChange={setDesignSystems} brandRules={brandRules} onBrandRulesChange={setBrandRules}/>
 
           {treeView === 'json' ? (

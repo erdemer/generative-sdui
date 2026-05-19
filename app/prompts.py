@@ -1,3 +1,81 @@
+def build_data_context_block(ctx: dict) -> str:
+    """Build a personalization context block from connected flow node data."""
+    if not ctx:
+        return ""
+
+    lines = [
+        "╔══════════════════════════════════════════════════════════════╗",
+        "║  KİŞİSELLEŞTİRME BAĞLAMI — BU VERİYİ KULLAN               ║",
+        "╚══════════════════════════════════════════════════════════════╝",
+        "Bu UI aşağıdaki GERÇEK kullanıcı için üretiliyor. Verileri birebir yansıt:",
+        "",
+    ]
+
+    if user := ctx.get("user_profile"):
+        lines.append(
+            f"KULLANICI: {user.get('name')} | Segment: {user.get('segment')} "
+            f"| Şehir: {user.get('city')} | Yaş: {user.get('age')}"
+        )
+        if interests := user.get("interests"):
+            lines.append(f"İlgi Alanları: {', '.join(interests)}")
+        lines.append(
+            f"Sadakat: {user.get('loyaltyTier')} üye, {user.get('loyaltyPoints')} puan"
+        )
+        lines.append(
+            f"Son Alışveriş: {user.get('lastPurchase')} | Aylık Harcama: {user.get('monthlySpend')}"
+        )
+        lines.append("")
+
+    if catalog := ctx.get("product_catalog"):
+        recs = catalog.get("recommended", [])
+        if recs:
+            lines.append("ÖNERİLEN ÜRÜNLER (bu ürünleri UI'da göster — gerçek isim ve fiyatlarıyla):")
+            for p in recs[:4]:
+                badge = f" [{p.get('badge')}]" if p.get("badge") else ""
+                lines.append(f"  • {p['name']}: {p['price']} | ★{p.get('rating', '')}{badge}")
+            lines.append("")
+
+    if camps := ctx.get("campaigns"):
+        active = camps.get("active", [])
+        if active:
+            lines.append("AKTİF KAMPANYALAR (UI'da banner/kart olarak öne çıkar):")
+            for c in active[:3]:
+                exp = f" (son: {c['expires']})" if c.get("expires") else ""
+                lines.append(f"  • {c['title']}: {c['desc']}{exp}")
+            lines.append("")
+
+    if txn := ctx.get("transactions"):
+        recent = txn.get("recent", [])
+        if recent:
+            lines.append("SON İŞLEMLER (alışveriş geçmişini yansıt):")
+            for t in recent[:3]:
+                lines.append(f"  • {t['date']}: {t['product']} — {t['amount']} ({t.get('points', '')})")
+            lines.append("")
+
+    if loyalty := ctx.get("loyalty"):
+        lines.append(
+            f"SADAKAT: {loyalty.get('tier')} üye | {loyalty.get('points')} puan "
+            f"| {loyalty.get('toNextTier')} puan → {loyalty.get('nextTier')}"
+        )
+        if benefits := loyalty.get("benefits"):
+            lines.append(f"Avantajlar: {', '.join(benefits[:3])}")
+        if exp := loyalty.get("expiring"):
+            lines.append(f"DİKKAT: {exp}")
+        lines.append("")
+
+    lines += [
+        "KURALLAR:",
+        "  • Tüm ürün adları, fiyatlar ve içerikler yukarıdaki GERÇEK verilerden olsun",
+        "  • Kullanıcının sadakat tierını hero alanında öne çıkar",
+        "  • Aktif kampanyaları promosyon kartı/banner olarak göster",
+        f"  • Kullanıcıya ismiyle hitap et (örn. 'Merhaba, {(ctx.get('user_profile') or {}).get('name', 'Kullanıcı').split()[0]}!')",
+        "  • Kullanıcının ilgi alanlarına göre içerik öner",
+        "",
+    ]
+
+    return "\n".join(lines)
+
+
 def build_design_system_block(ds: dict) -> str:
     """Build a strict design-system constraint block to prepend to any generation prompt."""
     if not ds:
