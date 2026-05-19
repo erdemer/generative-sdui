@@ -68,6 +68,17 @@ async def generate_ui(
             parsed_json = json_repair.loads(prompt)
         else:
             base_prompt = PROMPT_WEB if platform == "web" else PROMPT_BASE
+            # Inject brand rules (always, if set)
+            if state.brand_rules and state.brand_rules.strip():
+                brand_block = (
+                    "\n╔══════════════════════════════════════════════════════════════╗"
+                    "\n║  BRAND RULES — FOLLOW EXACTLY                                ║"
+                    "\n╚══════════════════════════════════════════════════════════════╝\n"
+                    + state.brand_rules.strip()
+                )
+                base_prompt = base_prompt + "\n\n" + brand_block
+                print("🏷️  Marka kuralları enjekte edildi")
+
             active_ds = [d for d in state.design_systems if d.get("active")]
             if active_ds:
                 merged = _merge_design_systems(active_ds)

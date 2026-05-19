@@ -76,16 +76,19 @@ function LeftRail({
   onPublish, onSaveAsA, onSaveAsB, onStartAB,
   // Design system
   designSystems, onDesignSystemsChange,
+  // Brand rules
+  brandRules, onBrandRulesChange,
 }) {
   const t = window.SDUI.t;
   const hasDS = (designSystems || []).some(d => d.active);
+  const hasBrand = !!brandRules && brandRules.trim().length > 0;
   return (
     <div className="pane" style={{ width: 280, flexShrink: 0 }}>
       <div style={{ display: 'flex', borderBottom: '1px solid var(--line)', padding: '6px 6px 0' }}>
         {[
           { id: 'files',    icon: 'folder',  label: t(lang, 'files') },
           { id: 'generate', icon: 'sparkle', label: lang === 'tr' ? 'Üret' : 'Generate' },
-          { id: 'design',   icon: 'figma',   label: lang === 'tr' ? 'Tasarım' : 'Design', dot: hasDS },
+          { id: 'design',   icon: 'figma',   label: lang === 'tr' ? 'Tasarım' : 'Design', dot: hasDS || hasBrand },
           { id: 'publish',  icon: 'rocket',  label: t(lang, 'publish') },
         ].map(x => (
           <button key={x.id} onClick={() => onTab && onTab(x.id)} style={{
@@ -108,7 +111,7 @@ function LeftRail({
       <div className="pane-body" style={{ padding: 0 }}>
         {tab === 'files'    && <FilesContent lang={lang} files={files} selectedFilePath={selectedFilePath} onSelectFile={onSelectFile} onNewFolder={onNewFolder} onNewFile={onNewFile} platform={platform} onPlatform={onPlatform}/>}
         {tab === 'generate' && <GenerateContent lang={lang} state={generateState} promptText={promptText} onPromptChange={onPromptChange} imagePreview={imagePreview} onImageChange={onImageChange} onImageRemove={onImageRemove} smartCrop={smartCrop} onSmartCropChange={onSmartCropChange} onGenerate={onGenerate} selectedLabel={selectedLabel} platform={platform} designSystems={designSystems}/>}
-        {tab === 'design'   && <DesignSystemContent lang={lang} designSystems={designSystems} onDesignSystemsChange={onDesignSystemsChange}/>}
+        {tab === 'design'   && <DesignContent lang={lang} designSystems={designSystems} onDesignSystemsChange={onDesignSystemsChange} brandRules={brandRules} onBrandRulesChange={onBrandRulesChange}/>}
         {tab === 'publish'  && <PublishContent lang={lang} abActive={abActive} currentVersion={currentVersion} onPublish={onPublish} onSaveAsA={onSaveAsA} onSaveAsB={onSaveAsB} onStartAB={onStartAB}/>}
       </div>
     </div>
@@ -589,6 +592,129 @@ function DSCard({ ds, lang, onToggle, onDelete, onRename }) {
               )}
             </div>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Wrapper combining Brand Rules + Design System ── */
+function DesignContent({ lang, designSystems, onDesignSystemsChange, brandRules, onBrandRulesChange }) {
+  return (
+    <div>
+      <BrandRulesSection lang={lang} brandRules={brandRules} onBrandRulesChange={onBrandRulesChange}/>
+      <DesignSystemContent lang={lang} designSystems={designSystems} onDesignSystemsChange={onDesignSystemsChange}/>
+    </div>
+  );
+}
+
+/* ── Brand Rules Section ── */
+function BrandRulesSection({ lang, brandRules, onBrandRulesChange }) {
+  const [open, setOpen] = React.useState(true);
+  const [localText, setLocalText] = React.useState(brandRules || '');
+  const [saving, setSaving] = React.useState(false);
+  const [saved, setSaved] = React.useState(false);
+  const saveTimer = React.useRef(null);
+  const tr = lang === 'tr';
+  const isVF = localText.trim().startsWith('Vodafone');
+
+  // Sync when parent updates (e.g. initial load)
+  React.useEffect(() => { setLocalText(brandRules || ''); }, [brandRules]);
+
+  const handleChange = (v) => {
+    setLocalText(v);
+    setSaved(false);
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => saveRules(v), 1200);
+  };
+
+  const saveRules = async (text) => {
+    setSaving(true);
+    try {
+      await fetch('/api/brand/rules', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rules: text }),
+      });
+      onBrandRulesChange && onBrandRulesChange(text);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {}
+    setSaving(false);
+  };
+
+  const handleReset = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/brand/rules/reset', { method: 'POST' });
+      const data = await res.json();
+      setLocalText(data.rules);
+      onBrandRulesChange && onBrandRulesChange(data.rules);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {}
+    setSaving(false);
+  };
+
+  return (
+    <div style={{ borderBottom: '1px solid var(--line)' }}>
+      <div className="section-head" style={{
+        height: 34, padding: '0 12px', display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between', cursor: 'pointer', userSelect: 'none',
+      }} onClick={() => setOpen(o => !o)}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--fg-2)' }}>
+          <Icon name="bookmark" size={12}/>
+          {tr ? 'Marka Kuralları' : 'Brand Rules'}
+          {localText.trim() && (
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: isVF ? '#E60000' : 'var(--ok)', flexShrink: 0 }}/>
+          )}
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {saved && <span style={{ fontSize: 10, color: 'var(--ok)', fontWeight: 600 }}>✓</span>}
+          {saving && <span className="spinner" style={{ width: 10, height: 10 }}/>}
+          <Icon name="chev-r" size={11} stroke={2} style={{ transition: 'transform .2s', transform: open ? 'rotate(90deg)' : 'none', color: 'var(--fg-3)' }}/>
+        </div>
+      </div>
+
+      {open && (
+        <div style={{ padding: '0 12px 12px' }}>
+          {/* Vodafone quick-fill chip */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+            <button
+              onClick={() => handleChange('')}
+              style={{
+                height: 22, padding: '0 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 600,
+                background: !localText.trim() ? 'var(--brand-soft)' : 'var(--panel-2)',
+                color: !localText.trim() ? 'var(--brand)' : 'var(--fg-3)',
+                border: '1px solid var(--line)', cursor: 'pointer',
+              }}
+            >
+              {tr ? 'Yok' : 'None'}
+            </button>
+            <button
+              onClick={handleReset}
+              style={{
+                height: 22, padding: '0 9px', borderRadius: 999, fontSize: 10.5, fontWeight: 600,
+                background: isVF ? '#E600001a' : 'var(--panel-2)',
+                color: isVF ? '#E60000' : 'var(--fg-3)',
+                border: `1px solid ${isVF ? '#E6000040' : 'var(--line)'}`, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 5,
+              }}
+            >
+              <span style={{ fontSize: 13, lineHeight: 1 }}>🔴</span> Vodafone
+            </button>
+          </div>
+
+          <textarea
+            className="textarea"
+            style={{ width: '100%', minHeight: 160, fontSize: 11, fontFamily: 'var(--font-mono)', lineHeight: 1.5, resize: 'vertical' }}
+            placeholder={tr ? 'Marka renklerini, tipografiyi ve tasarım kurallarını buraya yaz…' : 'Write your brand colors, typography and design rules here…'}
+            value={localText}
+            onChange={e => handleChange(e.target.value)}
+          />
+          <div style={{ fontSize: 10, color: 'var(--fg-mute)', marginTop: 4 }}>
+            {tr ? 'Her üretimde AI\'ya enjekte edilir. Boş bırakırsan devre dışı.' : 'Injected into every AI generation. Leave empty to disable.'}
+          </div>
         </div>
       )}
     </div>
