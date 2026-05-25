@@ -65,6 +65,10 @@ function computeSDUIStyle(node, p) {
     else s.backgroundColor = p.backgroundColor;
   }
   if (p.color) s.color = p.color;
+  if (p.backdropFilter) {
+    s.backdropFilter = p.backdropFilter;
+    s.WebkitBackdropFilter = p.backdropFilter;
+  }
 
   // Padding — integer or "t, r, b, l" string
   const toPx = (v) => {
@@ -284,14 +288,17 @@ function SDUINode({ node, selectedIds, onSelectId }) {
       const align = (p.contentAlignment || '').toLowerCase();
       const overlayStyleFor = (child) => {
         const cp = child.props || {};
-        const fills = cp.fillMaxSize === 'true' || cp.fillMaxSize === true;
+        const fills = cp.fillMaxSize === 'true' || cp.fillMaxSize === true || cp.fillMaxWidth === 'true' || cp.fillMaxWidth === true || cp.fillMaxHeight === 'true' || cp.fillMaxHeight === true;
         const base = { position: 'absolute', display: 'flex', flexDirection: 'column' };
-        // A child that explicitly fills the box (e.g. gradient overlay) gets
-        // full inset regardless of contentAlignment.
-        if (fills || !align) {
+        
+        // In Android Box/FrameLayout, children default to TopStart. 
+        // They only stretch if they explicitly fill the parent.
+        if (fills) {
           return { ...base, top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' };
         }
-        switch (align) {
+        
+        const effectiveAlign = align || 'topstart';
+        switch (effectiveAlign) {
           case 'topstart':     return { ...base, top: 0, left: 0 };
           case 'topcenter':    return { ...base, top: 0, left: 0, right: 0, alignItems: 'center' };
           case 'topend':       return { ...base, top: 0, right: 0 };
@@ -301,7 +308,7 @@ function SDUINode({ node, selectedIds, onSelectId }) {
           case 'bottomstart':  return { ...base, bottom: 0, left: 0 };
           case 'bottomcenter': return { ...base, bottom: 0, left: 0, right: 0, alignItems: 'center' };
           case 'bottomend':    return { ...base, bottom: 0, right: 0 };
-          default:             return { ...base, top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' };
+          default:             return { ...base, top: 0, left: 0 };
         }
       };
       const boxChildren = (node.children || []).map((c, i) =>

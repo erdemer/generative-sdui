@@ -431,7 +431,7 @@ EKRAN YAPISI:
 7. BottomBar: Ana Sayfa, 5G Cihazlar (aktif), Kampanyalar, Hesabım
 
 RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666
-Her cihaz kartında: ürün görseli + 5G badge overlay + cihaz adı + özellik + eski fiyat (üstü çizili) + kampanya fiyatı + taksit bilgisi + "Sepete Ekle" butonu`
+Her cihaz kartında: Box overlay içinde badge + ürün görseli + cihaz adı + özellik + yan yana Fiyat Satırı (Row içinde kampanya fiyatı ve üstü çizili eski fiyat) + taksit bilgisi + kırmızı gradyanlı "Sepete Ekle" butonu`
                 : `Design a Vodafone 5G device campaign screen.
 
 SCREEN STRUCTURE:
@@ -447,7 +447,8 @@ SCREEN STRUCTURE:
    - Samsung Galaxy A56 5G 128GB — $349 ($14.5/mo × 24) — "5G" badge
 7. BottomBar: Home, 5G Devices (active), Deals, Account
 
-COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
+COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666
+For each device card: Box overlay with badge + product image + device name + specs + side-by-side Price Row (campaign price and old price with line-through) + installment info + red gradient "Add to Cart" button`
               )}
               style={{
                 padding: '8px 10px', borderRadius: 8, cursor: 'pointer',

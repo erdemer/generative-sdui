@@ -190,22 +190,32 @@ TECHNICAL RULES:
 - onClick: {"type":"navigate","destination":"screen"} | {"type":"toast","message":"..."}
 
 IMAGES — photorealistic quality:
-- Hero:      h:240, url: https://image.pollinations.ai/prompt/{vivid_scene},professional_photography,cinematic_lighting,high_detail?nologo=true&width=800&height=480&model=flux
-- Card img:  h:155, url: https://image.pollinations.ai/prompt/{desc},product_shot,studio_lighting?nologo=true&width=400&height=320&model=flux
-- Product:   h:180, url: https://image.pollinations.ai/prompt/{device_name}_smartphone,product_shot,studio_lighting,white_background,clean?nologo=true&width=400&height=400&model=flux
-- Thumbnail: h:72,  url: https://image.pollinations.ai/prompt/{desc},clean_background?nologo=true&width=200&height=200&model=flux
+- Hero:      h:240, url: https://image.pollinations.ai/prompt/{vivid_scene_in_english},professional_photography,cinematic_lighting,high_detail?nologo=true&width=800&height=480&model=flux
+- Card img:  h:155, url: https://image.pollinations.ai/prompt/{visual_desc_in_english},product_shot,studio_lighting?nologo=true&width=400&height=320&model=flux
+- Product:   h:180, url: https://image.pollinations.ai/prompt/{product_visual_desc_in_english},product_photography,studio_lighting,clean_white_background,centered_object?nologo=true&width=400&height=400&model=flux
+- Thumbnail: h:72,  url: https://image.pollinations.ai/prompt/{desc_in_english},clean_background?nologo=true&width=200&height=200&model=flux
 - Always contentScale:"crop" for hero, contentScale:"fit" for product shots | use underscores in desc, be vivid
+
+IMAGE URL DESCRIPTION RULES (critical for Pollinations AI image quality):
+- NEVER use just a product name like "samsung_galaxy_s25" — Pollinations does NOT know brand names.
+- ALWAYS describe the VISUAL APPEARANCE: shape, color, material, context.
+- Smartphone example:   modern_premium_smartphone_titanium_dark_color_floating_on_gradient_background_studio_lighting
+- Smartphone example 2: sleek_black_smartphone_triple_camera_large_screen_product_photography_white_background
+- 5G Hero example:      5g_network_speed_concept_glowing_blue_red_neon_light_trails_futuristic_city_night
+- Tech Hero example:    futuristic_technology_abstract_red_blue_light_streaks_dark_background_digital_speed_concept
+- Never use brand names (Samsung, Apple, iPhone, Xiaomi) in image URLs — describe the device visually instead.
+- CRITICAL: Always write prompt keywords inside the URL in English. Even if the UI text is Turkish, translate visual descriptions (like "sleek_premium_smartphone") to English in the URL.
 
 LAYOUT PATTERNS — apply these exact structures:
 
 ① HERO OVERLAY (mandatory on main screens):
 Box(fillMaxWidth:"true", contentAlignment:"bottomCenter") children:[
-  Image(fillMaxWidth:"true", h:240, contentScale:"crop"),
+  Image(fillMaxWidth:"true", h:240, contentScale:"crop", url:"https://image.pollinations.ai/prompt/futuristic_5g_network_speed_concept_glowing_red_neon_light_trails_futuristic_city_night?nologo=true&width=800&height=480&model=flux"),
   Box(fillMaxSize:"true", backgroundColor:"linear-gradient(0deg,#000000e8,#00000000)"),
   Column(fillMaxWidth:"true", padding:"0,16,28,16", verticalArrangement:"spacedby:8") children:[
     Text(h1, white, bold, "Real tagline"),
     Text(body, color:#ffffffbb, "Real subtitle"),
-    Button(bg:accent, color:white, corner:28, padding:"13,32,13,32", "Real CTA label")
+    Button(backgroundColor:"linear-gradient(135deg,#E60000,#BE0000)", color:#FFFFFF, corner:28, padding:"13,32,13,32", "Real CTA label")
   ]
 ]
 → contentAlignment:"bottomCenter" pins text+button to bottom of image.
@@ -220,7 +230,7 @@ Row(horizontalArrangement:spacebetween, verticalAlignment:center, padding:"20,0,
 ③ CATEGORY STRIP (horizontal scroll):
 Row(scroll:"true", horizontalArrangement:spacedby:10, padding:"2,0,8,0") children — each item:
   Column(horizontalAlignment:center, verticalArrangement:spacedby:6) children:[
-    Image(h:72, corner:36, crop),
+    Image(h:72, corner:36, contentScale:"crop", url:"https://image.pollinations.ai/prompt/abstract_red_premium_brand_icon_on_grey_background?nologo=true&width=200&height=200&model=flux"),
     Text(caption, center, color:fg3, "Category Name")
   ]
 
@@ -236,7 +246,7 @@ Row(scroll:"true", horizontalArrangement:spacedby:8, padding:"4,0,10,0") childre
 ④ CONTENT GRID (2-column):
 Row(horizontalArrangement:spacedby:12) children — EACH card MUST follow this EXACT structure:
   Card(weight:1, corner:16, elevation:2, backgroundColor:surface) children:[
-    Image(fillMaxWidth:"true", h:150, contentScale:"crop"),
+    Image(fillMaxWidth:"true", h:150, contentScale:"crop", url:"https://image.pollinations.ai/prompt/sleek_modern_smartphone_isolated_on_grey_background?nologo=true&width=400&height=320&model=flux"),
     Column(fillMaxWidth:"true", weight:1, padding:"8,12,14,12", verticalArrangement:"spacedby:4") children:[
       Text(h3, bold, color:fg, "Real Name"),
       Text(caption, color:fg3, "Short description"),
@@ -257,7 +267,7 @@ Row(horizontalArrangement:spacedby:12) children — EACH card MUST follow this E
 ⑤ LIST ROW:
 Card(corner:12, elevation:1, padding:"12,12,12,12", backgroundColor:surface) children:[
   Row(horizontalArrangement:spacedby:12, verticalAlignment:center) children:[
-    Image(h:68, corner:10, crop),
+    Image(h:68, corner:10, contentScale:"crop", url:"https://image.pollinations.ai/prompt/gourmet_coffee_latte_art?nologo=true&width=200&height=200&model=flux"),
     Column(weight:1, verticalArrangement:spacedby:2) children:[
       Text(h3, bold, color:fg, "Real Name"),
       Text(body, color:fg3, "Real description"),
@@ -276,24 +286,29 @@ Card(corner:12, elevation:1, padding:"12,12,12,12", backgroundColor:surface) chi
 ⑥ DEVICE / PRODUCT CAMPAIGN CARD (2-col — for phone/device campaigns):
 Row(horizontalArrangement:spacedby:12) children — EACH card:
   Card(weight:1, corner:12, elevation:2, backgroundColor:#FFFFFF) children:[
-    Box(fillMaxWidth:"true") children:[
-      Image(fillMaxWidth:"true", h:180, contentScale:"fit"),
-      Box(padding:"6,8,6,8", backgroundColor:accent, corner:12) > Text(caption, bold, color:#FFFFFF, "5G")
+    Box(fillMaxWidth:"true", contentAlignment:"topStart") children:[
+      Image(fillMaxWidth:"true", h:180, contentScale:"fit",
+        url: "https://image.pollinations.ai/prompt/sleek_premium_smartphone_dark_titanium_floating_on_white_background,product_photography,studio_lighting,clean_white_background?nologo=true&width=400&height=400&model=flux"),
+      Box(padding:"4,10,4,10", backgroundColor:accent, corner:12) > Text(caption, bold, color:#FFFFFF, "5G")
     ],
     Column(fillMaxWidth:"true", weight:1, padding:"10,12,14,12", verticalArrangement:"spacedby:4") children:[
       Text(h3, bold, color:fg, "Samsung Galaxy S25 Ultra"),
       Text(caption, color:fg3, "256GB · Titanium Siyah"),
       Spacer(weight:1),
-      Text(caption, color:fg3, textDecoration:"line-through", "64.999 TL"),
-      Text(body, bold, color:accent, "₺54.999"),
-      Text(caption, color:accent, "₺2.291/ay × 24 taksit"),
-      Button(backgroundColor:accent, color:#FFFFFF, corner:8, fillMaxWidth:"true", padding:"10,0,10,0", "Sepete Ekle")
+      Row(horizontalArrangement:spacedby:6, verticalAlignment:center) children:[
+        Text(body, bold, color:accent, "₺54.999"),
+        Text(caption, color:fg3, textDecoration:"line-through", "64.999 TL")
+      ],
+      Text(caption, color:fg3, "₺2.291/ay x 24 taksit"),
+      Button(backgroundColor:"linear-gradient(135deg,#E60000,#BE0000)", color:#FFFFFF, corner:8, fillMaxWidth:"true", padding:"10,0,10,0", "Sepete Ekle")
     ]
   ]
-→ Badge overlay via Box z-stack (top-left "5G" or "%25 İndirim")
-→ Old price with line-through + new price in accent bold
-→ Installment info below price in caption accent
-→ Full-width CTA button at bottom of every card
+→ CRITICAL: contentAlignment:"topStart" on the image Box makes badge a small pill at top-left — WITHOUT it the badge stretches full-width!
+→ CRITICAL: Image URL must describe the VISUAL ("sleek_premium_smartphone_dark_titanium...") — NEVER use brand names in URL
+→ Badge Box: small pill with padding:"4,10,4,10" and corner:12 — it must NOT have fillMaxWidth
+→ Old price with line-through + new price in accent bold in a side-by-side Row
+→ Installment info below price in caption fg3
+→ Full-width CTA button at bottom of every card with red gradient
 
 ⑦ PROMO BANNER (campaign highlight — between sections):
 Card(corner:12, backgroundColor:"linear-gradient(135deg,#E60000,#BE0000)", padding:"16,16,16,16") children:[

@@ -11,7 +11,7 @@ Vodafone Türkiye — 5G Cihaz Kampanyası Ekranı
 ═══════════════════════════════════════════════════
 MARKA KİMLİĞİ
 ═══════════════════════════════════════════════════
-• Sektör: Telekominikasyon ve dijital servisler
+• Sektör: Telekomünikasyon ve dijital servisler
 • Kampanya odağı: 5G uyumlu akıllı telefon satışı ve taksitli cihaz kampanyası
 • Ton: Premium, teknolojik, güvenilir, yenilikçi, fırsat odaklı
 • Hedef kitle: Mevcut Vodafone aboneleri ve yeni hat alacak kullanıcılar
@@ -24,8 +24,8 @@ RENK PALETİ (STRICT — sadece bunları kullan)
 • accent:  #E60000 — CTA butonları, fiyat vurgusu, aktif ikonlar, badge
 • fg:      #1A1A1A — başlık ve birincil metin rengi
 • fg3:     #666666 — açıklama, eski fiyat, ikincil metin
-• Koyu kırmızı: #BE0000 — hover/pressed state, gradient bitiş
-• 5G Badge: #E60000 arka plan, #FFFFFF metin, corner:20
+• Koyu kırmızı: #BE0000 — gradient bitiş, hover/pressed state
+• 5G Badge: #E60000 arka plan, #FFFFFF metin, corner:12
 • Başarı yeşili: #00B012 — stok durumu, onay, "5G Aktif" rozeti
 • Uyarı sarısı: #FFBA00 — son gün bildirimi, sınırlı stok uyarısı
 
@@ -45,21 +45,23 @@ TİPOGRAFİ
 KAMPANYA TASARIM KURALLARI
 ═══════════════════════════════════════════════════
 • Header: Vodafone logosu (sol) + "5G Cihazlar" başlığı, sağda bildirim ve sepet ikonları
-• Hero Banner: Gradient overlay (#E60000cc → #00000066), cihaz görseli, kampanya sloganı
+• Hero Banner: Gradient overlay (#000000a0 → #00000020), cihaz görseli, kampanya sloganı
   - Slogan örneği: "5G Hızıyla Tanışın", "Yeni Nesil Hız, Uygun Taksitlerle"
-  - CTA: "Hemen Keşfet" veya "Fırsatları Gör" — beyaz metin, kırmızı buton
+  - CTA: "Fırsatları Keşfet" veya "Hemen Keşfet" — beyaz metin, kırmızı gradyan buton
 • Filtre Strip (yatay scroll): "Tümü", "Samsung", "iPhone", "Xiaomi", "Oppo" chip'leri
   - Aktif chip: bg:#E60000, color:#FFF | Pasif chip: bg:#F4F4F4, color:#666
 
 • CİHAZ KARTI YAPISI (her kart):
-  1. Badge (sol üst overlay): "5G" veya "%25 İndirim" veya "Yeni" — bg:#E60000, color:#FFF, corner:12
+  1. Badge (sol üst overlay): "5G" veya "%25 İndirim" veya "Yeni" — bg:#E60000, color:#FFF, corner:12 (parent Box'ın contentAlignment:"topStart" olması gerekir)
   2. Cihaz görseli: ürün fotoğrafı, temiz arka plan, h:180, contentScale:"fit"
   3. Cihaz adı: h3, bold, #1A1A1A (örn. "Samsung Galaxy S25 Ultra")
   4. Kısa özellik: caption, #666 (örn. "256GB · Titanium Siyah")
-  5. Eski fiyat (varsa): üstü çizili, #999 (örn. "64.999 TL")
-  6. Kampanya fiyatı: h3, bold, #E60000 (örn. "₺54.999")
-  7. Taksit bilgisi: caption, #E60000 (örn. "₺2.291/ay × 24 taksit")
-  8. CTA butonu: "Sepete Ekle" veya "İncele" — bg:#E60000, color:#FFF, corner:8
+  5. Spacer(weight:1) — Kart içeriğini en alta sabitlemek için
+  6. Fiyat Satırı: Row(horizontalArrangement: spacedby:6, verticalAlignment: center) ->
+     - Kampanya fiyatı: Text(body, bold, color:accent, "₺54.999")
+     - Eski fiyat: Text(caption, color:fg3, textDecoration:"line-through", "64.999 TL")
+  7. Taksit bilgisi: caption, #666666 (örn. "₺2.291/ay x 24 taksit")
+  8. CTA butonu: "Sepete Ekle" — bg:"linear-gradient(135deg,#E60000,#BE0000)", color:#FFF, corner:8, fillMaxWidth:"true"
 
 • AVANTAJ BANNER'I (kartların arasında):
   - "Eski cihazını getir, yenisini al!" veya "Vodafone'a geç, ekstra 5.000 TL indirim kazan"
@@ -69,24 +71,24 @@ KAMPANYA TASARIM KURALLARI
   - Aktif ikon: #E60000, diğerleri: #666666
 
 ═══════════════════════════════════════════════════
-GÖRSEL KALİTESİ
+GÖRSEL KALİTESİ (CRITICAL FOR GENERATOR)
 ═══════════════════════════════════════════════════
 • Cihaz görselleri: ürün odaklı, temiz/beyaz arka plan, stüdyo ışığı
-  - Image URL keyword: {device_name}_smartphone,product_shot,studio_lighting,white_background
+  - Image URL keyword: prompt içerisindeki görsel tanımları mutlaka İNGİLİZCE olmalıdır.
+  - Örnek: url: "https://image.pollinations.ai/prompt/sleek_premium_smartphone_dark_titanium_floating_on_white_background,product_photography,studio_lighting,clean_white_background?nologo=true&width=400&height=400&model=flux"
 • Hero görseli: 5G teknoloji temalı, parlak, dinamik
-  - Image URL keyword: 5g_technology,smartphone_premium,futuristic_glow,red_accent
+  - Örnek: url: "https://image.pollinations.ai/prompt/futuristic_5g_network_speed_concept_glowing_red_neon_light_trails_futuristic_city_night?nologo=true&width=800&height=480&model=flux"
 • contentScale: ürün kartlarında "fit", hero'da "crop"
 • Tüm Image'larda fillMaxWidth:"true"
 
 ═══════════════════════════════════════════════════
 TEKNİK KURALLAR
 ═══════════════════════════════════════════════════
-• Birincil buton: backgroundColor:#E60000, color:#FFFFFF, corner:8, padding:"13,32,13,32"
+• Birincil buton: backgroundColor:"linear-gradient(135deg,#E60000,#BE0000)", color:#FFFFFF, corner:8, padding:"13,32,13,32"
 • İkincil buton: backgroundColor:#F4F4F4, color:#1A1A1A, corner:8
 • Kart: backgroundColor:#FFFFFF, elevation:2, corner:12
-• Badge overlay: position via Box z-stack, corner:12, padding:"4,10,4,10"
+• Badge overlay: parent Box contentAlignment:"topStart" olmalıdır. Badge'in kendisi padding:"4,10,4,10" ve corner:12 olmalı, fillMaxWidth içermemelidir.
 • Tüm fiyatlar ₺ (TL) formatında, gerçekçi Türkiye fiyatlarıyla
-• Minimum dokunma alanı: 48dp
 • Boşluklar tutarlı: section gap 20dp, card gap 12dp, iç padding 12-16dp
 """
 
