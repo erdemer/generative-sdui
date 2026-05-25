@@ -205,6 +205,8 @@ IMAGE URL DESCRIPTION RULES (critical for Pollinations AI image quality):
 - Tech Hero example:    futuristic_technology_abstract_red_blue_light_streaks_dark_background_digital_speed_concept
 - Never use brand names (Samsung, Apple, iPhone, Xiaomi) in image URLs — describe the device visually instead.
 - CRITICAL: Always write prompt keywords inside the URL in English. Even if the UI text is Turkish, translate visual descriptions (like "sleek_premium_smartphone") to English in the URL.
+- CRITICAL: Every device/phone card MUST contain an Image component showing a premium smartphone product shot on a clean white background. Never omit the Image from a phone card, and never let it show landscape/unrelated pictures. Samsung and Xiaomi devices must have smartphone product shots, just like the iPhone.
+
 
 LAYOUT PATTERNS — apply these exact structures:
 

@@ -51,11 +51,13 @@ function computeSDUIStyle(node, p) {
   // Compose uses fillMaxWidth/fillMaxHeight; tolerate both spellings.
   const fillW = p.fillWidth === 'true' || p.fillWidth === true || p.fillMaxWidth === 'true' || p.fillMaxWidth === true;
   const fillH = p.fillHeight === 'true' || p.fillHeight === true || p.fillMaxHeight === 'true' || p.fillMaxHeight === true;
+  const widthVal = p.width ?? p.w;
+  const heightVal = p.height ?? p.h;
   if (fillW) s.width = '100%';
-  else if (p.width != null) s.width = typeof p.width === 'number' ? p.width + 'px' : p.width;
+  else if (widthVal != null) s.width = typeof widthVal === 'number' ? widthVal + 'px' : widthVal;
   if (p.weight != null) { s.flex = String(p.weight); s.minWidth = 0; s.minHeight = 0; }
   if (fillH) s.flex = '1';
-  else if (p.height != null) s.height = typeof p.height === 'number' ? p.height + 'px' : p.height;
+  else if (heightVal != null) s.height = typeof heightVal === 'number' ? heightVal + 'px' : heightVal;
   if (p.minHeight != null) s.minHeight = p.minHeight + 'px';
   if (p.maxHeight != null) s.maxHeight = p.maxHeight + 'px';
 
@@ -165,10 +167,11 @@ function computeSDUIStyle(node, p) {
     // Only force 100% width if NO dimension is specified (hero/full-bleed pattern).
     // Sized thumbnails (e.g. height:68 in a row card) must keep natural aspect ratio
     // — otherwise width:100% pushes siblings out of the row and overlaps text.
-    if (!p.width && !p.height && !fillsWidth) s.width = '100%';
+    const hasDim = p.width != null || p.w != null || p.height != null || p.h != null;
+    if (!hasDim && !fillsWidth) s.width = '100%';
     s.display = 'block';
     // Sized images shouldn't shrink in flex containers (avatar circles, thumbs).
-    if (p.width != null || p.height != null) s.flexShrink = 0;
+    if (hasDim) s.flexShrink = 0;
   }
 
   // Spacer
@@ -254,7 +257,19 @@ function SDUINode({ node, selectedIds, onSelectId }) {
 
     case 'Image': {
       const seed = node._id || 42;
-      const onErr = (e) => { if (!e.target.dataset.fb) { e.target.dataset.fb = '1'; e.target.src = `https://picsum.photos/seed/${seed}/400/300`; } };
+      const onErr = (e) => {
+        if (!e.target.dataset.fb) {
+          e.target.dataset.fb = '1';
+          const h = p.height || p.h || 0;
+          if (h >= 240) {
+            e.target.src = 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop';
+          } else if (h >= 150) {
+            e.target.src = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=400&auto=format&fit=crop';
+          } else {
+            e.target.src = 'https://placehold.co/400x400/f4f4f4/e60000?text=Vodafone';
+          }
+        }
+      };
       return <img {...nodeAttrs} onClick={combinedClick} style={style} src={p.url || ''} alt={p.contentDescription || ''} onError={onErr}/>;
     }
 
