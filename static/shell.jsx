@@ -474,7 +474,7 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
         ) : device === 'web' ? (
           /* Web: browser-like frame */
           <div className="preview-frame-wrap" style={{ transform: `scale(${(zoom / 100) * fitScale})`, transformOrigin: 'center center', transition: 'transform 0.2s ease' }}>
-            <div style={{
+            <div className="device-browser-shell" style={{
               width: 580, background: 'var(--device-bezel)', borderRadius: 12, padding: 0,
               boxShadow: 'var(--shadow-lg)', overflow: 'hidden'
             }}>
@@ -485,7 +485,7 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#28c840' }}/>
                 <div style={{ flex: 1, height: 18, background: 'rgba(255,255,255,0.1)', borderRadius: 4, marginLeft: 8 }}/>
               </div>
-              <div style={{ width: '100%', height: 480, background: 'var(--device-screen)', overflow: 'hidden', position: 'relative' }}>
+              <div className="device-screen" style={{ width: '100%', height: 480, background: 'var(--device-screen)', overflow: 'hidden', position: 'relative' }}>
                 {children}
                 {!interactive && (
                   <div style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'default' }}
@@ -494,9 +494,9 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
                        onWheel={passWheelToPreview}
                   />
                 )}
+                <PreviewScrollbar metrics={scrollMetrics} onTrack={handleScrollbarTrack} onThumbStart={handleScrollbarThumbStart}/>
               </div>
             </div>
-            <PreviewScrollbar metrics={scrollMetrics} onTrack={handleScrollbarTrack} onThumbStart={handleScrollbarThumbStart}/>
           </div>
         ) : (
           /* iPhone / Android phone frame */
@@ -512,9 +512,9 @@ function CanvasPane({ lang, children, device = "iphone", onDevice, zoom = 100, o
                        onWheel={passWheelToPreview}
                   />
                 )}
+                <PreviewScrollbar metrics={scrollMetrics} onTrack={handleScrollbarTrack} onThumbStart={handleScrollbarThumbStart}/>
               </div>
             </div>
-            <PreviewScrollbar metrics={scrollMetrics} onTrack={handleScrollbarTrack} onThumbStart={handleScrollbarThumbStart}/>
           </div>
         )}
       </div>

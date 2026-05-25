@@ -164,6 +164,7 @@ function App() {
   const [currentJson, setCurrentJson] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
   const [generateProgress, setGenerateProgress] = useState(null);
+  const [errorModal, setErrorModal] = useState(null);
 
   // ── UI preferences ───────────────────────────────────────────────────────
   const [lang, setLangRaw] = useState(pickLang);
@@ -300,7 +301,14 @@ function App() {
       const res = await fetch('/generate', { method:'POST', body:fd });
       if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
       setGenerateProgress({ current: 10, total: 12, phase: progressText.response });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (!res.ok) {
+        let errMsg = 'HTTP ' + res.status;
+        try {
+          const errData = await res.json();
+          if (errData?.detail) errMsg = errData.detail;
+        } catch (_) {}
+        throw new Error(errMsg);
+      }
       const data = await res.json();
       console.log('[generate] response:', data);
       if (!data?.layout) throw new Error(data?.detail || 'Geçersiz yanıt — layout yok');
@@ -361,7 +369,7 @@ function App() {
       if (progressTimer) clearInterval(progressTimer);
       setGenerateProgress(null);
       setAppState(currentJson ? 'editing' : 'empty');
-      alert((lang === 'tr' ? 'Hata: ' : 'Error: ') + err.message);
+      setErrorModal((lang === 'tr' ? 'Hata: ' : 'Error: ') + err.message);
     }
   };
 
@@ -393,7 +401,14 @@ function App() {
       const res = await fetch('/generate', { method: 'POST', body: fd });
       if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
       setGenerateProgress({ current: 10, total: 12, phase: lang === 'tr' ? 'Yanıt alındı…' : 'Response received…' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (!res.ok) {
+        let errMsg = 'HTTP ' + res.status;
+        try {
+          const errData = await res.json();
+          if (errData?.detail) errMsg = errData.detail;
+        } catch (_) {}
+        throw new Error(errMsg);
+      }
       const data = await res.json();
       if (!data?.layout) throw new Error(data?.detail || 'Geçersiz yanıt');
 
@@ -410,7 +425,7 @@ function App() {
       if (progressTimer) clearInterval(progressTimer);
       setGenerateProgress(null);
       setAppState(currentJson ? 'editing' : 'empty');
-      alert((lang === 'tr' ? 'Hata: ' : 'Error: ') + err.message);
+      setErrorModal((lang === 'tr' ? 'Hata: ' : 'Error: ') + err.message);
     }
   }, [platform, lang, currentJson]);
 
@@ -429,7 +444,14 @@ function App() {
         vfd.append('screenshot', blob, 'preview.png');
         try {
           const vRes = await fetch('/verify', { method: 'POST', body: vfd });
-          if (!vRes.ok) throw new Error('HTTP ' + vRes.status);
+          if (!vRes.ok) {
+            let errMsg = 'HTTP ' + vRes.status;
+            try {
+              const errData = await vRes.json();
+              if (errData?.detail) errMsg = errData.detail;
+            } catch (_) {}
+            throw new Error(errMsg);
+          }
           const verified = await vRes.json();
           if (verified?.layout) {
             setCurrentJson(prev => {
@@ -438,8 +460,13 @@ function App() {
             });
             setSavedAt(Date.now());
             if (currentFilePath) _saveFile(currentFilePath, verified);
+          } else {
+            throw new Error(lang === 'tr' ? 'Doğrulama başarısız oldu — layout yok' : 'Verification failed — no layout');
           }
-        } catch (e) { console.warn('Verify failed:', e); }
+        } catch (e) {
+          console.warn('Verify failed:', e);
+          setErrorModal((lang === 'tr' ? 'Hata (AI Denetim): ' : 'Error (AI Audit): ') + e.message);
+        }
         setVerifyState('idle');
       }, 'image/png');
     } catch (e) {
@@ -745,6 +772,80 @@ function App() {
           <window.TweakRadio label={lang==='tr'?'Dil':'Language'} value={lang} onChange={setLang} options={[{ value:'tr', label:'Türkçe' },{ value:'en', label:'English' }]}/>
         </window.TweakSection>
       </window.TweaksPanel>
+
+      {errorModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(8px)',
+          display: 'grid',
+          placeItems: 'center',
+          zIndex: 99999,
+        }}>
+          <div style={{
+            background: 'var(--bg-elev)',
+            border: '1px solid var(--line-strong)',
+            borderRadius: 16,
+            padding: 24,
+            width: '90%',
+            maxWidth: 420,
+            boxShadow: 'var(--shadow-lg)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+            position: 'relative',
+          }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: 'var(--brand)', borderRadius: '16px 16px 0 0' }}/>
+            
+            <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+              <div style={{
+                width: 40,
+                height: 40,
+                borderRadius: '50%',
+                background: 'var(--brand-soft)',
+                color: 'var(--brand)',
+                display: 'grid',
+                placeItems: 'center',
+                flexShrink: 0,
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--fg)' }}>
+                  {lang === 'tr' ? 'Yapay Zeka Tasarım Hatası' : 'AI Generation Error'}
+                </h4>
+                <p style={{ margin: '8px 0 0', fontSize: 12, color: 'var(--fg-2)', lineHeight: 1.5, wordBreak: 'break-word' }}>
+                  {errorModal}
+                </p>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+              <button
+                className="btn primary"
+                onClick={() => setErrorModal(null)}
+                style={{
+                  background: 'var(--brand)',
+                  color: '#fff',
+                  border: 0,
+                  borderRadius: 6,
+                  padding: '6px 14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontSize: 12,
+                }}
+              >
+                {lang === 'tr' ? 'Kapat' : 'Close'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

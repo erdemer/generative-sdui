@@ -148,4 +148,5 @@ You are modifying an existing SDUI JSON layout based on a user request.
 
     except Exception as e:
         print(f"🔥 Generate hatası: {e}")
-        return {"detail": str(e), "layout": None}
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=str(e))

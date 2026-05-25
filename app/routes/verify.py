@@ -38,8 +38,6 @@ async def verify_ui(
         return verified
 
     except Exception as e:
-        print(f"⚠️ Verify hatası (orijinal döndürülüyor): {e}")
-        try:
-            return json_repair.loads(json_data)
-        except Exception:
-            return {"detail": str(e), "layout": None}
+        print(f"⚠️ Verify hatası: {e}")
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=str(e))

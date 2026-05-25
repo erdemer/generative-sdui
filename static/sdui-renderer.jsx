@@ -303,28 +303,43 @@ function SDUINode({ node, selectedIds, onSelectId }) {
       const align = (p.contentAlignment || '').toLowerCase();
       const overlayStyleFor = (child) => {
         const cp = child.props || {};
-        const fills = cp.fillMaxSize === 'true' || cp.fillMaxSize === true || cp.fillMaxWidth === 'true' || cp.fillMaxWidth === true || cp.fillMaxHeight === 'true' || cp.fillMaxHeight === true;
+        const fillW = cp.fillMaxSize === 'true' || cp.fillMaxSize === true || cp.fillMaxWidth === 'true' || cp.fillMaxWidth === true;
+        const fillH = cp.fillMaxSize === 'true' || cp.fillMaxSize === true || cp.fillMaxHeight === 'true' || cp.fillMaxHeight === true;
         const base = { position: 'absolute', display: 'flex', flexDirection: 'column' };
         
-        // In Android Box/FrameLayout, children default to TopStart. 
-        // They only stretch if they explicitly fill the parent.
-        if (fills) {
-          return { ...base, top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' };
+        const effectiveAlign = align || 'topstart';
+        
+        // Horizontal positioning
+        if (fillW) {
+          base.left = 0;
+          base.right = 0;
+        } else {
+          if (effectiveAlign.includes('start')) {
+            base.left = 0;
+          } else if (effectiveAlign.includes('end')) {
+            base.right = 0;
+          } else {
+            base.left = '50%';
+            base.transform = (base.transform || '') + ' translateX(-50%)';
+          }
         }
         
-        const effectiveAlign = align || 'topstart';
-        switch (effectiveAlign) {
-          case 'topstart':     return { ...base, top: 0, left: 0 };
-          case 'topcenter':    return { ...base, top: 0, left: 0, right: 0, alignItems: 'center' };
-          case 'topend':       return { ...base, top: 0, right: 0 };
-          case 'centerstart':  return { ...base, top: '50%', left: 0, transform: 'translateY(-50%)' };
-          case 'center':       return { ...base, top: '50%', left: '50%', transform: 'translate(-50%,-50%)' };
-          case 'centerend':    return { ...base, top: '50%', right: 0, transform: 'translateY(-50%)' };
-          case 'bottomstart':  return { ...base, bottom: 0, left: 0 };
-          case 'bottomcenter': return { ...base, bottom: 0, left: 0, right: 0, alignItems: 'center' };
-          case 'bottomend':    return { ...base, bottom: 0, right: 0 };
-          default:             return { ...base, top: 0, left: 0 };
+        // Vertical positioning
+        if (fillH) {
+          base.top = 0;
+          base.bottom = 0;
+        } else {
+          if (effectiveAlign.includes('top')) {
+            base.top = 0;
+          } else if (effectiveAlign.includes('bottom')) {
+            base.bottom = 0;
+          } else {
+            base.top = '50%';
+            base.transform = (base.transform || '') + ' translateY(-50%)';
+          }
         }
+        
+        return base;
       };
       const boxChildren = (node.children || []).map((c, i) =>
         i === 0
