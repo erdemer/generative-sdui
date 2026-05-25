@@ -44,7 +44,7 @@ TİPOGRAFİ
 ═══════════════════════════════════════════════════
 KAMPANYA TASARIM KURALLARI
 ═══════════════════════════════════════════════════
-• Header: Vodafone logosu (sol) + "5G Cihazlar" başlığı, sağda bildirim ve sepet ikonları
+• Header: Vodafone logosu (sol) (Image, w:28, h:28, url:"/static/logo.png") + "5G Cihazlar" başlığı, sağda bildirim ve sepet ikonları
 • Hero Banner: Gradient overlay (#000000a0 → #00000020), cihaz görseli, kampanya sloganı
   - Slogan örneği: "5G Hızıyla Tanışın", "Yeni Nesil Hız, Uygun Taksitlerle"
   - CTA: "Fırsatları Keşfet" veya "Hemen Keşfet" — beyaz metin, kırmızı gradyan buton

@@ -418,7 +418,7 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
                 ? `Vodafone 5G cihaz kampanyası ekranı tasarla.
 
 EKRAN YAPISI:
-1. Header: Vodafone logosu + "5G Cihazlar" başlığı, sağda sepet ve bildirim ikonu
+1. Header: Vodafone logosu (Image, w:28, h:28, url: "/static/logo.png") + "5G Cihazlar" başlığı, sağda sepet ve bildirim ikonu
 2. Hero Banner: 5G teknoloji temalı etkileyici görsel (görsel url promptu: "futuristic_5g_network_speed_concept_glowing_red_neon_light_trails_futuristic_city_night"), gradient overlay, "5G Hızıyla Tanışın — Yeni Nesil Hız, Uygun Taksitlerle" sloganı, "Fırsatları Keşfet" CTA butonu
 3. Marka Filtresi: yatay scroll chip strip — Tümü (aktif), Samsung, iPhone, Xiaomi, Oppo
 4. Öne Çıkan Cihazlar (2-sütun grid):
@@ -435,7 +435,7 @@ Her cihaz kartında: Box overlay içinde badge + ürün görseli + cihaz adı + 
                 : `Design a Vodafone 5G device campaign screen.
 
 SCREEN STRUCTURE:
-1. Header: Vodafone logo + "5G Devices" title, cart and notification icons on right
+1. Header: Vodafone logo (Image, w:28, h:28, url: "/static/logo.png") + "5G Devices" title, cart and notification icons on right
 2. Hero Banner: 5G technology themed striking visual (image url prompt: "futuristic_5g_network_speed_concept_glowing_red_neon_light_trails_futuristic_city_night"), gradient overlay, "Experience 5G Speed — Next Gen Speed, Affordable Installments" slogan, "Explore Deals" CTA button
 3. Brand Filter: horizontal scroll chip strip — All (active), Samsung, iPhone, Xiaomi, Oppo
 4. Featured Devices (2-column grid):
