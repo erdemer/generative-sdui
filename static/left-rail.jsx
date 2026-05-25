@@ -419,15 +419,15 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
 
 EKRAN YAPISI:
 1. Header: Vodafone logosu + "5G Cihazlar" başlığı, sağda sepet ve bildirim ikonu
-2. Hero Banner: 5G teknoloji temalı etkileyici görsel, gradient overlay, "5G Hızıyla Tanışın — Yeni Nesil Hız, Uygun Taksitlerle" sloganı, "Fırsatları Keşfet" CTA butonu
+2. Hero Banner: 5G teknoloji temalı etkileyici görsel (görsel url promptu: "futuristic_5g_network_speed_concept_glowing_red_neon_light_trails_futuristic_city_night"), gradient overlay, "5G Hızıyla Tanışın — Yeni Nesil Hız, Uygun Taksitlerle" sloganı, "Fırsatları Keşfet" CTA butonu
 3. Marka Filtresi: yatay scroll chip strip — Tümü (aktif), Samsung, iPhone, Xiaomi, Oppo
 4. Öne Çıkan Cihazlar (2-sütun grid):
-   - Samsung Galaxy S25 Ultra 256GB — eski fiyat: 74.999 TL → kampanya: ₺54.999 (₺2.291/ay × 24 taksit) — "5G" badge
-   - iPhone 16 Pro 256GB — eski fiyat: 84.999 TL → kampanya: ₺69.999 (₺2.916/ay × 24 taksit) — "Yeni" badge
-5. Takas Kampanyası Banner: gradient kırmızı arka plan, "Eski Cihazını Getir, Yenisini Al!" + "Ekstra 5.000 TL indirim" mesajı, "Başvur" butonu
+   - Samsung Galaxy S25 Ultra 256GB (görsel url promptu: "sleek_premium_smartphone_dark_titanium_floating_on_white_background_studio_lighting") — eski fiyat: 74.999 TL → kampanya: ₺54.999 (₺2.291/ay × 24 taksit) — "5G" badge
+   - iPhone 16 Pro 256GB (görsel url promptu: "sleek_premium_smartphone_desert_titanium_floating_on_white_background_studio_lighting") — eski fiyat: 84.999 TL → kampanya: ₺69.999 (₺2.916/ay × 24 taksit) — "Yeni" badge
+5. Takas Kampanyası Banner: gradient kırmızı arka plan, "Eski Cihazını Getir, Yenisini Al!" + "Ekstra 5.000 TL indirim" mesajı, "Başvur" butonu (görsel url promptu: "futuristic_technology_abstract_red_blue_light_streaks_digital_speed")
 6. Fırsat Cihazları (2-sütun grid):
-   - Xiaomi 15 Ultra 512GB — ₺39.999 (₺1.666/ay × 24 taksit) — "%25 İndirim" badge
-   - Samsung Galaxy A56 5G 128GB — ₺17.999 (₺749/ay × 24 taksit) — "5G" badge
+   - Xiaomi 15 Ultra 512GB (görsel url promptu: "sleek_smartphone_large_circular_camera_module_on_white_background_studio_lighting") — ₺39.999 (₺1.666/ay × 24 taksit) — "%25 İndirim" badge
+   - Samsung Galaxy A56 5G 128GB (görsel url promptu: "sleek_premium_smartphone_blue_color_floating_on_white_background_studio_lighting") — ₺17.999 (₺749/ay × 24 taksit) — "5G" badge
 7. BottomBar: Ana Sayfa, 5G Cihazlar (aktif), Kampanyalar, Hesabım
 
 RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666
@@ -436,15 +436,15 @@ Her cihaz kartında: Box overlay içinde badge + ürün görseli + cihaz adı + 
 
 SCREEN STRUCTURE:
 1. Header: Vodafone logo + "5G Devices" title, cart and notification icons on right
-2. Hero Banner: 5G technology themed striking visual, gradient overlay, "Experience 5G Speed — Next Gen Speed, Affordable Installments" slogan, "Explore Deals" CTA button
+2. Hero Banner: 5G technology themed striking visual (image url prompt: "futuristic_5g_network_speed_concept_glowing_red_neon_light_trails_futuristic_city_night"), gradient overlay, "Experience 5G Speed — Next Gen Speed, Affordable Installments" slogan, "Explore Deals" CTA button
 3. Brand Filter: horizontal scroll chip strip — All (active), Samsung, iPhone, Xiaomi, Oppo
 4. Featured Devices (2-column grid):
-   - Samsung Galaxy S25 Ultra 256GB — old: $1,299 → campaign: $999 ($41.6/mo × 24) — "5G" badge
-   - iPhone 16 Pro 256GB — old: $1,499 → campaign: $1,199 ($49.9/mo × 24) — "New" badge
-5. Trade-in Banner: red gradient, "Trade in your old phone, get a new one!" + "$200 extra discount", "Apply" button
+   - Samsung Galaxy S25 Ultra 256GB (image url prompt: "sleek_premium_smartphone_dark_titanium_floating_on_white_background_studio_lighting") — old: $1,299 → campaign: $999 ($41.6/mo × 24) — "5G" badge
+   - iPhone 16 Pro 256GB (image url prompt: "sleek_premium_smartphone_desert_titanium_floating_on_white_background_studio_lighting") — old: $1,499 → campaign: $1,199 ($49.9/mo × 24) — "New" badge
+5. Trade-in Banner: red gradient, "Trade in your old phone, get a new one!" + "$200 extra discount", "Apply" button (image url prompt: "futuristic_technology_abstract_red_blue_light_streaks_digital_speed")
 6. Deal Devices (2-column grid):
-   - Xiaomi 15 Ultra 512GB — $699 ($29.1/mo × 24) — "25% Off" badge
-   - Samsung Galaxy A56 5G 128GB — $349 ($14.5/mo × 24) — "5G" badge
+   - Xiaomi 15 Ultra 512GB (image url prompt: "sleek_smartphone_large_circular_camera_module_on_white_background_studio_lighting") — $699 ($29.1/mo × 24) — "25% Off" badge
+   - Samsung Galaxy A56 5G 128GB (image url prompt: "sleek_premium_smartphone_blue_color_floating_on_white_background_studio_lighting") — $349 ($14.5/mo × 24) — "5G" badge
 7. BottomBar: Home, 5G Devices (active), Deals, Account
 
 COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666
