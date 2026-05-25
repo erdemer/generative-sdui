@@ -246,7 +246,7 @@ function SDUINode({ node, selectedIds, onSelectId }) {
 
   switch (node.type) {
     case 'Text':
-      return <div {...nodeAttrs} onClick={combinedClick} style={{ ...style, cursor: p.onClick ? 'pointer' : undefined }}>{p.text || ''}</div>;
+      return <div {...nodeAttrs} onClick={combinedClick} style={{ ...style, textDecoration: p.textDecoration || undefined, cursor: p.onClick ? 'pointer' : undefined }}>{p.text || ''}</div>;
 
     case 'Image': {
       const seed = node._id || 42;

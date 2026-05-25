@@ -406,22 +406,111 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-          {selectedLabel && (
-            <span
-              className="chip"
-              style={{ cursor: 'pointer', fontSize: 10.5, background: 'var(--brand-soft)', color: 'var(--brand)', borderColor: 'transparent', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}
-              onClick={() => onPromptChange && onPromptChange((promptText ? promptText + ' ' : '') + selectedLabel + ' ')}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+          {/* Pre-ready prompt templates */}
+          <div style={{ fontSize: 9.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--fg-3)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Icon name="sparkle" size={9}/> {lang === 'tr' ? 'Hazır Şablonlar' : 'Ready Templates'}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {/* Vodafone 5G Campaign — primary template */}
+            <div
+              onClick={() => onPromptChange && onPromptChange(lang === 'tr'
+                ? `Vodafone 5G cihaz kampanyası ekranı tasarla.
+
+EKRAN YAPISI:
+1. Header: Vodafone logosu + "5G Cihazlar" başlığı, sağda sepet ve bildirim ikonu
+2. Hero Banner: 5G teknoloji temalı etkileyici görsel, gradient overlay, "5G Hızıyla Tanışın — Yeni Nesil Hız, Uygun Taksitlerle" sloganı, "Fırsatları Keşfet" CTA butonu
+3. Marka Filtresi: yatay scroll chip strip — Tümü (aktif), Samsung, iPhone, Xiaomi, Oppo
+4. Öne Çıkan Cihazlar (2-sütun grid):
+   - Samsung Galaxy S25 Ultra 256GB — eski fiyat: 74.999 TL → kampanya: ₺54.999 (₺2.291/ay × 24 taksit) — "5G" badge
+   - iPhone 16 Pro 256GB — eski fiyat: 84.999 TL → kampanya: ₺69.999 (₺2.916/ay × 24 taksit) — "Yeni" badge
+5. Takas Kampanyası Banner: gradient kırmızı arka plan, "Eski Cihazını Getir, Yenisini Al!" + "Ekstra 5.000 TL indirim" mesajı, "Başvur" butonu
+6. Fırsat Cihazları (2-sütun grid):
+   - Xiaomi 15 Ultra 512GB — ₺39.999 (₺1.666/ay × 24 taksit) — "%25 İndirim" badge
+   - Samsung Galaxy A56 5G 128GB — ₺17.999 (₺749/ay × 24 taksit) — "5G" badge
+7. BottomBar: Ana Sayfa, 5G Cihazlar (aktif), Kampanyalar, Hesabım
+
+RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666
+Her cihaz kartında: ürün görseli + 5G badge overlay + cihaz adı + özellik + eski fiyat (üstü çizili) + kampanya fiyatı + taksit bilgisi + "Sepete Ekle" butonu`
+                : `Design a Vodafone 5G device campaign screen.
+
+SCREEN STRUCTURE:
+1. Header: Vodafone logo + "5G Devices" title, cart and notification icons on right
+2. Hero Banner: 5G technology themed striking visual, gradient overlay, "Experience 5G Speed — Next Gen Speed, Affordable Installments" slogan, "Explore Deals" CTA button
+3. Brand Filter: horizontal scroll chip strip — All (active), Samsung, iPhone, Xiaomi, Oppo
+4. Featured Devices (2-column grid):
+   - Samsung Galaxy S25 Ultra 256GB — old: $1,299 → campaign: $999 ($41.6/mo × 24) — "5G" badge
+   - iPhone 16 Pro 256GB — old: $1,499 → campaign: $1,199 ($49.9/mo × 24) — "New" badge
+5. Trade-in Banner: red gradient, "Trade in your old phone, get a new one!" + "$200 extra discount", "Apply" button
+6. Deal Devices (2-column grid):
+   - Xiaomi 15 Ultra 512GB — $699 ($29.1/mo × 24) — "25% Off" badge
+   - Samsung Galaxy A56 5G 128GB — $349 ($14.5/mo × 24) — "5G" badge
+7. BottomBar: Home, 5G Devices (active), Deals, Account
+
+COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
+              )}
+              style={{
+                padding: '8px 10px', borderRadius: 8, cursor: 'pointer',
+                background: 'linear-gradient(135deg, #E6000012, #E6000006)',
+                border: '1px solid #E6000030',
+                display: 'flex', alignItems: 'center', gap: 8,
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#E60000'; e.currentTarget.style.background = 'linear-gradient(135deg, #E6000020, #E6000010)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#E6000030'; e.currentTarget.style.background = 'linear-gradient(135deg, #E6000012, #E6000006)'; }}
             >
-              <Icon name="wand" size={10}/> {selectedLabel}
-            </span>
-          )}
-          {(lang === 'tr' ? ['+ Tipografi', '+ Koyu tema', '+ Animasyon'] : ['+ Typography', '+ Dark theme', '+ Animations']).map((c, i) => (
-            <span key={i} className="chip" style={{ cursor: 'pointer', fontSize: 10.5 }}
-              onClick={() => onPromptChange && onPromptChange((promptText ? promptText + ', ' : '') + c.replace('+ ', ''))}>
-              {c}
-            </span>
-          ))}
+              <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>📱</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#E60000' }}>
+                  {lang === 'tr' ? 'Vodafone 5G Cihaz Kampanyası' : 'Vodafone 5G Device Campaign'}
+                </div>
+                <div style={{ fontSize: 9.5, color: 'var(--fg-3)', marginTop: 1 }}>
+                  {lang === 'tr' ? 'Production-ready kampanya ekranı — tıkla ve üret' : 'Production-ready campaign screen — click and generate'}
+                </div>
+              </div>
+              <Icon name="chev-r" size={10} style={{ color: '#E6000080', flexShrink: 0 }}/>
+            </div>
+
+            {/* Secondary template: general e-commerce */}
+            <div
+              onClick={() => onPromptChange && onPromptChange(lang === 'tr'
+                ? `E-ticaret ana ekranı: Hero banner + kategori strip + öne çıkan ürünler grid (2 sütun) + kampanya kartları + bottom bar. Premium ve modern tasarım.`
+                : `E-commerce home screen: Hero banner + category strip + featured products grid (2 col) + campaign cards + bottom bar. Premium and modern design.`
+              )}
+              style={{
+                padding: '6px 10px', borderRadius: 8, cursor: 'pointer',
+                background: 'var(--bg-elev)', border: '1px solid var(--line)',
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}
+            >
+              <span style={{ fontSize: 13, lineHeight: 1 }}>🛍️</span>
+              <span style={{ fontSize: 10.5, color: 'var(--fg-2)', fontWeight: 500 }}>
+                {lang === 'tr' ? 'E-Ticaret Ana Ekranı' : 'E-Commerce Home'}
+              </span>
+            </div>
+          </div>
+
+          {/* Quick-add chips */}
+          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 2 }}>
+            {selectedLabel && (
+              <span
+                className="chip"
+                style={{ cursor: 'pointer', fontSize: 10.5, background: 'var(--brand-soft)', color: 'var(--brand)', borderColor: 'transparent', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}
+                onClick={() => onPromptChange && onPromptChange((promptText ? promptText + ' ' : '') + selectedLabel + ' ')}
+              >
+                <Icon name="wand" size={10}/> {selectedLabel}
+              </span>
+            )}
+            {(lang === 'tr'
+              ? ['+ Koyu tema', '+ Taksit detayı', '+ Stok durumu', '+ Karşılaştır']
+              : ['+ Dark theme', '+ Installment detail', '+ Stock status', '+ Compare']
+            ).map((c, i) => (
+              <span key={i} className="chip" style={{ cursor: 'pointer', fontSize: 10.5 }}
+                onClick={() => onPromptChange && onPromptChange((promptText ? promptText + ', ' : '') + c.replace('+ ', ''))}>
+                {c}
+              </span>
+            ))}
+          </div>
         </div>
 
         {clarifyState === 'ready' && (

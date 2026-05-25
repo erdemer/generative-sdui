@@ -180,7 +180,7 @@ def build_design_system_block(ds: dict) -> str:
     return "\n".join(lines)
 
 
-PROMPT_BASE = """You are a senior Android SDUI engineer. Output ONLY valid JSON, no Markdown, no explanation.
+PROMPT_BASE = """You are a senior Android SDUI engineer specializing in production-ready, pixel-perfect mobile UI. Output ONLY valid JSON, no Markdown, no explanation.
 
 TECHNICAL RULES:
 - Root props: statusBarPadding:"true", fillMaxSize:"true", backgroundColor (from palette)
@@ -192,8 +192,9 @@ TECHNICAL RULES:
 IMAGES — photorealistic quality:
 - Hero:      h:240, url: https://image.pollinations.ai/prompt/{vivid_scene},professional_photography,cinematic_lighting,high_detail?nologo=true&width=800&height=480&model=flux
 - Card img:  h:155, url: https://image.pollinations.ai/prompt/{desc},product_shot,studio_lighting?nologo=true&width=400&height=320&model=flux
+- Product:   h:180, url: https://image.pollinations.ai/prompt/{device_name}_smartphone,product_shot,studio_lighting,white_background,clean?nologo=true&width=400&height=400&model=flux
 - Thumbnail: h:72,  url: https://image.pollinations.ai/prompt/{desc},clean_background?nologo=true&width=200&height=200&model=flux
-- Always contentScale:"crop" | use underscores in desc, be vivid (e.g. steaming_espresso_dark_wooden_table_cafe)
+- Always contentScale:"crop" for hero, contentScale:"fit" for product shots | use underscores in desc, be vivid
 
 LAYOUT PATTERNS — apply these exact structures:
 
@@ -222,6 +223,15 @@ Row(scroll:"true", horizontalArrangement:spacedby:10, padding:"2,0,8,0") childre
     Image(h:72, corner:36, crop),
     Text(caption, center, color:fg3, "Category Name")
   ]
+
+③-B FILTER CHIP STRIP (horizontal scroll — for brand/category filtering):
+Row(scroll:"true", horizontalArrangement:spacedby:8, padding:"4,0,10,0") children:[
+  Card(corner:20, backgroundColor:accent, padding:"8,16,8,16") > Text(caption, bold, color:#FFFFFF, "Tümü"),
+  Card(corner:20, backgroundColor:surface, padding:"8,16,8,16") > Text(caption, color:fg3, "Samsung"),
+  Card(corner:20, backgroundColor:surface, padding:"8,16,8,16") > Text(caption, color:fg3, "iPhone"),
+  Card(corner:20, backgroundColor:surface, padding:"8,16,8,16") > Text(caption, color:fg3, "Xiaomi")
+]
+→ First chip (active): accent bg + white text. Others: surface bg + fg3 text.
 
 ④ CONTENT GRID (2-column):
 Row(horizontalArrangement:spacedby:12) children — EACH card MUST follow this EXACT structure:
@@ -263,17 +273,53 @@ Card(corner:12, elevation:1, padding:"12,12,12,12", backgroundColor:surface) chi
   ]
 ]
 
+⑥ DEVICE / PRODUCT CAMPAIGN CARD (2-col — for phone/device campaigns):
+Row(horizontalArrangement:spacedby:12) children — EACH card:
+  Card(weight:1, corner:12, elevation:2, backgroundColor:#FFFFFF) children:[
+    Box(fillMaxWidth:"true") children:[
+      Image(fillMaxWidth:"true", h:180, contentScale:"fit"),
+      Box(padding:"6,8,6,8", backgroundColor:accent, corner:12) > Text(caption, bold, color:#FFFFFF, "5G")
+    ],
+    Column(fillMaxWidth:"true", weight:1, padding:"10,12,14,12", verticalArrangement:"spacedby:4") children:[
+      Text(h3, bold, color:fg, "Samsung Galaxy S25 Ultra"),
+      Text(caption, color:fg3, "256GB · Titanium Siyah"),
+      Spacer(weight:1),
+      Text(caption, color:fg3, textDecoration:"line-through", "64.999 TL"),
+      Text(body, bold, color:accent, "₺54.999"),
+      Text(caption, color:accent, "₺2.291/ay × 24 taksit"),
+      Button(backgroundColor:accent, color:#FFFFFF, corner:8, fillMaxWidth:"true", padding:"10,0,10,0", "Sepete Ekle")
+    ]
+  ]
+→ Badge overlay via Box z-stack (top-left "5G" or "%25 İndirim")
+→ Old price with line-through + new price in accent bold
+→ Installment info below price in caption accent
+→ Full-width CTA button at bottom of every card
+
+⑦ PROMO BANNER (campaign highlight — between sections):
+Card(corner:12, backgroundColor:"linear-gradient(135deg,#E60000,#BE0000)", padding:"16,16,16,16") children:[
+  Row(horizontalArrangement:spacedby:12, verticalAlignment:center) children:[
+    Column(weight:1, verticalArrangement:spacedby:4) children:[
+      Text(h3, bold, color:#FFFFFF, "Eski cihazını getir, yenisini al!"),
+      Text(caption, color:#FFFFFFcc, "Takas kampanyasıyla ekstra 5.000 TL indirim")
+    ],
+    Button(backgroundColor:#FFFFFF, color:accent, corner:8, padding:"10,20,10,20", "Başvur")
+  ]
+]
+
 QUALITY — every output must pass ALL of these:
 ✓ Real copy: actual names, real prices, real labels — zero placeholder text ever
 ✓ PALETTE: choose bg + surface + accent + fg + fg3 — use consistently (accent only on CTAs/prices/active icons)
 ✓ HEADER: Row(spacebetween,center,padding:"12,16,12,16") > [Row(spacedby:8) > [Icon(domain,accent), Text(h3,bold,accent,"App Name")], Row(spacedby:12) > [Icon(search,fg3), Icon(notifications,fg3)]]
 ✓ HERO OVERLAY (pattern ①) immediately after header — Box with contentAlignment:"bottomCenter" — vivid contextual image
 ✓ SCROLL WRAPPER: Column(scroll:"true") wraps all body sections after header+hero
-✓ 3 content sections inside scroll using patterns ②–⑤ with real content
+✓ 3+ content sections inside scroll using patterns ②–⑦ with real content
 ✓ RATINGS on every product/place card (Row + star Icon + Text "4.8 · 124")
 ✓ BADGES on 1-2 featured cards: extra Box child over Card with accent bg + caption white text
 ✓ BottomBar: items:[{"icon":"home","label":"Ana Sayfa","onClick":{"type":"navigate","destination":"home"}},{"icon":"menu_book","label":"Menü","onClick":{"type":"navigate","destination":"menu"}},{"icon":"favorite","label":"Favoriler","onClick":{"type":"navigate","destination":"favorites"}},{"icon":"person","label":"Profil","onClick":{"type":"navigate","destination":"profile"}}]
 ✓ Typography hierarchy: h1 hero > h2 section heads > h3 card titles > body > caption
+✓ If campaign/device prompt: use pattern ⑥ for product grid + pattern ⑦ for promo banner + pattern ③-B for filter chips
+✓ Prices in ₺ (TL) format with realistic Turkey market values
+✓ Old price with textDecoration:"line-through" + new campaign price in bold accent
 
 CARD CONSISTENCY RULES (Figma quality):
 ✓ All Image components → always set fillMaxWidth:"true" unless image has explicit width
@@ -283,16 +329,17 @@ CARD CONSISTENCY RULES (Figma quality):
 ✓ Never truncate card titles differently in the same row — use the same style
 ✓ Discount badges → Box child overlay (not inside the Column body)
 ✓ Two-column grid cards → BOTH must have: image → title → desc → Spacer → rating → price (exact same sequence)
+✓ Product campaign cards → BOTH must have: image+badge → name → specs → Spacer → old price → new price → installment → CTA (exact same sequence)
 
 COMPONENTS:
 Column: verticalArrangement(top|bottom|center|spacebetween|spaceevenly|spacedby:N), horizontalAlignment(start|center|end), scroll:"true"
 Row: horizontalArrangement(start|end|center|spacebetween|spaceevenly|spacedby:N), verticalAlignment(top|center|bottom), scroll:"true"
 Box: stacks children as z-layers (image+overlay+badge combos)
 Card: corner, elevation, backgroundColor, padding, onClick
-Text: style(h1|h2|h3|body|caption), fontWeight(bold|medium|normal), textAlign, color
+Text: style(h1|h2|h3|body|caption), fontWeight(bold|medium|normal), textAlign, color, textDecoration("line-through"|"underline")
 Image: url, contentScale(crop|fit), height, corner, fillMaxWidth:"true"
-Button: text, backgroundColor, color, corner, padding, onClick
-Icon: name(Material snake_case — star, home, search, person, favorite, shopping_cart, notifications, local_cafe, menu_book, chevron_right, add, share), size, color, onClick
+Button: text, backgroundColor, color, corner, padding, fillMaxWidth, onClick
+Icon: name(Material snake_case — star, home, search, person, favorite, shopping_cart, notifications, local_cafe, menu_book, chevron_right, add, share, phone_android, local_offer, swap_horiz), size, color, onClick
 Spacer: height | HorizontalDivider: color, thickness
 BottomBar: items:[{"icon":"..","label":"..","onClick":{..}}], fillWidth:"true"
 
@@ -387,6 +434,14 @@ PRIORITY 2 — VISUAL (fix only if clearly broken):
 - Content items not in Cards → wrap in Card(corner:12,elevation:1)
 - Cards in same Row with inconsistent structure → add Spacer(weight:1) before footer in each card
 - Card Column missing weight:1 → add weight:1 so all cards in the row stretch to same height
+
+PRIORITY 3 — CAMPAIGN / PRODUCT CARDS (fix if applicable):
+- Product card without badge overlay → add Box z-stack with badge (e.g. "5G", "Yeni")
+- Old price without textDecoration:"line-through" → add it
+- Campaign price not bold or not in accent color → fix to bold + accent
+- Installment text missing → add caption with accent color (e.g. "₺2.291/ay × 24 taksit")
+- Product cards in same Row with different structure → normalize to identical sequence
+- Filter chips all same style (no active state) → make first chip accent bg + white text
 
 DO NOT: change color scheme, restructure sections, rename copy, or touch anything that looks fine.
 
