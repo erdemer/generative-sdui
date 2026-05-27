@@ -2,10 +2,10 @@
 Real product image search service.
 
 Strategy (in order):
-  1. Wikipedia REST summary → fast, returns page's main image
-  2. Wikipedia image list  → scan all .jpg files on the page, pick best
-  3. DuckDuckGo images     → broader web search (rate-limited; used as fallback)
-  4. Pollinations AI       → always available, AI-generated product shot
+  1. GSMarena direct URL  → fastest; clean white-bg product shots for phones/tablets
+  2. Wikipedia image list → scan all .jpg files on the page, pick best scoring one
+  3. DuckDuckGo images    → broader web search (rate-limited; used as fallback)
+  4. Pollinations AI      → always available, AI-generated product shot
 
 Resolves  search://<product name>  URLs that the AI embeds in generated JSON.
 Results are cached in-memory (product images rarely change).
@@ -24,13 +24,26 @@ _HTTP_HEADERS = {
     "User-Agent": "SDUI-Studio/1.0 (product-image-search; contact: erdemer1999@gmail.com)"
 }
 
-# Words that indicate a non-product image (flag, map, chart, diagram, …)
+# Words that indicate a non-product / lifestyle image — reject these
 _BAD_KEYWORDS = [
+    # generic non-product
     "flag", "icon", "logo", "map", "chart", "symbol", "diagram",
     "screenshot", "screen", "ui", "interface", "wallpaper",
-    "frame", "00.", "fps", "kbit",  # video thumbnails
-    "camera_control", "close_up", "detail", "teardown", "comparison",
-    "vs_", "_vs_", "benchmark", "antutu", "disassembly",
+    "frame", "00.", "fps", "kbit",
+    # technical detail shots
+    "camera_control", "close_up", "detail", "teardown", "disassembly",
+    "comparison", "vs_", "_vs_", "benchmark", "antutu",
+    # hands / in-store / event photos
+    "hand", "hands", "_with_", "lifestyle", "promo",
+    "store", "retail", "display", "booth",
+    "event", "launch", "mwc", "ces", "unbox", "review",
+    "handson", "hands_on", "in_use",
+]
+
+# Filename keywords that signal a clean product shot — used in scoring
+_GOOD_KEYWORDS = [
+    "official", "press", "render", "product", "studio",
+    "white", "isolated", "front", "back", "side",
 ]
 
 # Domains that are unlikely to have clean product shots (DDG filter)
@@ -40,36 +53,71 @@ _BAD_DDG_DOMAINS = [
     "pinterest", "reddit", "twitter", "facebook", "instagram",
 ]
 
+# Domains preferred for DDG scoring
+_PREFERRED_DOMAINS = [
+    "upload.wikimedia.org",
+    "fdn2.gsmarena.com", "cdn.gsmarena.com",
+    "samsung.com", "mi.com", "xiaomi.com", "apple.com",
+    "sony.com", "motorola.com", "oneplus.com",
+    "gsmarena.com", "phonearena.com", "91mobiles.com",
+]
 
-# ── Wikipedia helpers ──────────────────────────────────────────
 
-async def _wikipedia_rest_summary(client: httpx.AsyncClient, query: str) -> Optional[str]:
-    """Try the fast Wikipedia REST summary endpoint (returns main page image)."""
-    slug = query.strip().replace(" ", "_")
-    try:
-        r = await client.get(
-            f"https://en.wikipedia.org/api/rest_v1/page/summary/{slug}",
-            headers=_HTTP_HEADERS,
-        )
-        if r.status_code != 200:
-            return None
-        data = r.json()
-        # Prefer original (full-size), fall back to thumbnail
-        src = (
-            data.get("originalimage", {}).get("source")
-            or data.get("thumbnail", {}).get("source")
-        )
-        if src and _is_good_image_url(src):
-            return src
-    except Exception:
-        pass
+# ── GSMarena direct resolver ───────────────────────────────────
+
+def _gsmarena_slug(query: str) -> str:
+    """
+    Convert a product name to a GSMarena URL slug.
+    Examples:
+      "Samsung Galaxy S25 Ultra"  -> "samsung-galaxy-s25-ultra"
+      "iPhone 16 Pro"             -> "apple-iphone-16-pro"
+      "Xiaomi 15 Ultra 512GB"     -> "xiaomi-15-ultra"
+      "Samsung Galaxy A56 5G"     -> "samsung-galaxy-a56-5g"
+    """
+    name = query.strip().lower()
+
+    # Strip storage capacity suffixes FIRST (e.g. "256gb", "512gb")
+    name = re.sub(r"\s+\d+\s*gb\b", "", name, flags=re.IGNORECASE)
+
+    # Remove special characters (keep spaces), collapse whitespace
+    name = re.sub(r"[^a-z0-9\s]", "", name).strip()
+
+    # Add "apple " prefix for iPhone / iPad (space, not hyphen — hyphens come after)
+    if re.match(r"^i(phone|pad)\b", name):
+        name = "apple " + name
+
+    # Collapse whitespace → hyphens
+    slug = re.sub(r"\s+", "-", name)
+    return slug
+
+
+async def _gsmarena_image(client: httpx.AsyncClient, query: str) -> Optional[str]:
+    """
+    Attempt a direct hit on GSMarena's predictable product-shot CDN.
+    GSMarena hosts clean white-background images for virtually every phone.
+    """
+    slug = _gsmarena_slug(query)
+    candidates = [
+        f"https://fdn2.gsmarena.com/vv/bigpic/{slug}.jpg",
+        f"https://fdn2.gsmarena.com/vv/bigpics/{slug}.jpg",
+    ]
+    for url in candidates:
+        try:
+            r = await client.head(url, headers=_HTTP_HEADERS, timeout=5)
+            if r.status_code == 200:
+                return url
+        except Exception:
+            continue
     return None
 
+
+# ── Wikipedia helpers ──────────────────────────────────────────
 
 async def _wikipedia_image_list(client: httpx.AsyncClient, query: str) -> Optional[str]:
     """
     Search Wikipedia for the page, then scan its image list for the best JPG.
-    Returns the highest-resolution thumbnail URL found.
+    Scores candidates by how many query words appear in the filename and by
+    whether the filename contains "product shot" keywords.
     """
     try:
         # 1. Find the canonical page title
@@ -99,7 +147,7 @@ async def _wikipedia_image_list(client: httpx.AsyncClient, query: str) -> Option
                 "prop": "images",
                 "format": "json",
                 "utf8": 1,
-                "imlimit": 30,
+                "imlimit": 50,
             },
             headers=_HTTP_HEADERS,
         )
@@ -117,15 +165,18 @@ async def _wikipedia_image_list(client: httpx.AsyncClient, query: str) -> Option
         if not good_images:
             return None
 
-        # 4. Prefer images whose filename contains words from the query
-        query_words = set(query.lower().split())
+        # 4. Score: query-word matches + good-keyword bonus
+        query_words = set(re.sub(r"\d+gb", "", query.lower()).split())
+
         def _img_score(title: str) -> int:
             lower_t = title.lower()
-            return sum(1 for w in query_words if w in lower_t)
+            score = sum(1 for w in query_words if w in lower_t)
+            score += sum(2 for gk in _GOOD_KEYWORDS if gk in lower_t)
+            return score
 
         good_images.sort(key=_img_score, reverse=True)
 
-        # 5. Resolve the best image to a direct URL (600 px wide)
+        # 5. Resolve best image to a direct URL (800 px wide)
         fname = good_images[0].replace("File:", "")
         r3 = await client.get(
             "https://en.wikipedia.org/w/api.php",
@@ -134,7 +185,7 @@ async def _wikipedia_image_list(client: httpx.AsyncClient, query: str) -> Option
                 "titles": f"File:{fname}",
                 "prop": "imageinfo",
                 "iiprop": "url",
-                "iiurlwidth": 600,
+                "iiurlwidth": 800,
                 "format": "json",
                 "utf8": 1,
             },
@@ -154,21 +205,51 @@ async def _wikipedia_image_list(client: httpx.AsyncClient, query: str) -> Option
 
 # ── DuckDuckGo fallback ────────────────────────────────────────
 
-async def _ddg_image_search(query: str) -> Optional[str]:
+async def _ddg_gsmarena_search(query: str) -> Optional[str]:
     """
-    DuckDuckGo image search via the ddgs package.
-    Rate-limited; used only when Wikipedia has no result.
+    Search DuckDuckGo specifically for fdn2.gsmarena.com bigpic URLs.
+    These are always clean, white-background product shots.
     """
     try:
-        from ddgs import DDGS  # ddgs package (renamed from duckduckgo-search)
+        from ddgs import DDGS
 
         def _sync() -> Optional[str]:
             ddgs = DDGS()
+            # First try: search for the exact GSMarena bigpic URL
+            results = ddgs.text(
+                keywords=f'site:fdn2.gsmarena.com/vv/bigpic {query}',
+                max_results=5,
+            )
+            for r in (results or []):
+                href = r.get("href", "")
+                if "fdn2.gsmarena.com" in href and href.endswith(".jpg"):
+                    return href
+            return None
+
+        return await asyncio.to_thread(_sync)
+    except ImportError:
+        pass
+    except Exception as e:
+        print(f"⚠️  DDG GSMarena search error for '{query}': {e}")
+    return None
+
+
+async def _ddg_image_search(query: str) -> Optional[str]:
+    """
+    DuckDuckGo image search targeting tech review sites with clean product shots.
+    Rate-limited; used only when GSMarena + Wikipedia have no result.
+    """
+    try:
+        from ddgs import DDGS
+
+        def _sync() -> Optional[str]:
+            ddgs = DDGS()
+            search_q = f"{query} official press render product photo white background"
             results = ddgs.images(
-                query=f"{query} official product photo",
+                query=search_q,
                 type_image="photo",
                 size="Medium",
-                max_results=8,
+                max_results=12,
             )
             scored = [
                 (r["image"], _score_url(r["image"]))
@@ -192,24 +273,14 @@ async def _ddg_image_search(query: str) -> Optional[str]:
 
 # ── URL quality helpers ────────────────────────────────────────
 
-_PREFERRED_DOMAINS = [
-    "upload.wikimedia.org",   # Wikipedia — very reliable
-    "samsung.com", "mi.com", "xiaomi.com", "apple.com",
-    "sony.com", "motorola.com", "oneplus.com",
-    "gsmarena.com", "phonearena.com", "91mobiles.com",
-]
-
-
 def _is_good_image_url(url: str) -> bool:
     if not url.startswith("https://"):
         return False
     lower = url.lower()
     if any(bad in lower for bad in _BAD_KEYWORDS):
         return False
-    # Reject anything that originates from an SVG (even if Wikimedia renders it as PNG)
     if ".svg" in lower:
         return False
-    # Only allow rasterized formats
     if not any(ext in lower for ext in (".jpg", ".jpeg", ".png")):
         return False
     return True
@@ -217,53 +288,95 @@ def _is_good_image_url(url: str) -> bool:
 
 def _score_url(url: str) -> int:
     score = 0
+    lower = url.lower()
     for domain in _PREFERRED_DOMAINS:
-        if domain in url:
+        if domain in lower:
             score += 10
             break
-    if "jpg" in url.lower() or "jpeg" in url.lower():
+    if "jpg" in lower or "jpeg" in lower:
         score += 2
-    if any(s in url for s in ["600", "800", "960", "1200", "large", "full"]):
+    if any(s in lower for s in ["600", "800", "960", "1200", "large", "full", "big"]):
         score += 1
+    # Bonus for "product shot" signals in URL
+    for gk in _GOOD_KEYWORDS:
+        if gk in lower:
+            score += 3
     return score
+
+
+# ── Device query detection ─────────────────────────────────────
+
+# Known smartphone/tablet brand keywords — if query matches, Wikipedia tends
+# to return editorial/in-store shots rather than clean product renders.
+# For these we skip Wikipedia and jump straight to Pollinations after GSMarena.
+_DEVICE_BRANDS = {
+    "samsung", "iphone", "ipad", "xiaomi", "redmi", "poco",
+    "oppo", "vivo", "oneplus", "realme", "huawei", "honor",
+    "google", "pixel", "motorola", "nokia", "sony", "xperia",
+    "lg", "asus", "rog", "tecno", "infinix", "nothing",
+}
+
+def _is_device_query(query: str) -> bool:
+    """Return True if the query looks like a smartphone/tablet model name."""
+    lower = query.lower()
+    return any(brand in lower for brand in _DEVICE_BRANDS)
 
 
 # ── Public API ────────────────────────────────────────────────
 
 async def search_product_image(query: str) -> Optional[str]:
     """
-    Find a real product image for the given query string.
+    Find a real, clean product image for the given query string.
     Returns a direct image URL, or None if all sources fail.
+
+    Strategy for device/phone queries:
+      GSMarena → Pollinations (skip Wikipedia — editorial shots look bad)
+
+    Strategy for other queries:
+      GSMarena → Wikipedia → DDG → Pollinations
     """
     cache_key = query.strip().lower()
     if cache_key in _cache:
         print(f"📦 Image cache hit: '{query}'")
         return _cache[cache_key]
 
+    is_device = _is_device_query(query)
+
     async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
-        # ① Wikipedia REST summary (fastest)
-        url = await _wikipedia_rest_summary(client, query)
+        # ① GSMarena direct slug (fastest — clean white-bg shots)
+        url = await _gsmarena_image(client, query)
         if url:
-            print(f"📷 Wikipedia (REST) → '{query}': {url[:70]}…")
+            print(f"📷 GSMarena → '{query}': {url}")
             _cache[cache_key] = url
             return url
 
-        # ② Wikipedia image list (more thorough)
-        url = await _wikipedia_image_list(client, query)
+        # ② For non-device queries, try Wikipedia image list
+        if not is_device:
+            url = await _wikipedia_image_list(client, query)
+            if url:
+                print(f"📷 Wikipedia → '{query}': {url[:70]}…")
+                _cache[cache_key] = url
+                return url
+
+    # ③ For device queries: search DDG specifically for GSMarena CDN URLs
+    if is_device:
+        url = await _ddg_gsmarena_search(query)
         if url:
-            print(f"📷 Wikipedia (list) → '{query}': {url[:70]}…")
+            print(f"📷 DDG→GSMarena → '{query}': {url}")
             _cache[cache_key] = url
             return url
 
-    # ③ DuckDuckGo (rate-limited but broader)
-    url = await _ddg_image_search(query)
-    if url:
-        print(f"📷 DuckDuckGo → '{query}': {url[:70]}…")
-        _cache[cache_key] = url
-        return url
+    # ④ For non-device queries, try broader DDG image search
+    if not is_device:
+        url = await _ddg_image_search(query)
+        if url:
+            print(f"📷 DuckDuckGo → '{query}': {url[:70]}…")
+            _cache[cache_key] = url
+            return url
 
-    print(f"⚠️  No real image found for '{query}' — will use Pollinations fallback")
-    return None
+    # ⑤ Pollinations AI fallback — clean studio render, always works
+    print(f"📷 Pollinations fallback for '{query}' (device={is_device})")
+    return None  # caller uses _pollinations_fallback()
 
 
 # ── JSON tree processor ───────────────────────────────────────
@@ -308,11 +421,9 @@ async def resolve_search_urls(data: dict) -> dict:
     queries = list(found.keys())
     print(f"🔍 Resolving {len(queries)} real product image(s): {queries}")
 
-    # Search all queries in parallel
     resolved = await asyncio.gather(*[search_product_image(q) for q in queries])
     results: dict[str, Optional[str]] = dict(zip(queries, resolved))
 
-    # Patch each collected node
     for query, nodes in found.items():
         url = results.get(query) or _pollinations_fallback(query)
         for node in nodes:
