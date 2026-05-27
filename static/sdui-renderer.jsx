@@ -94,8 +94,8 @@ function computeSDUIStyle(node, p) {
   if (p.paddingLeft != null) s.paddingLeft = toPx(p.paddingLeft);
   if (p.paddingRight != null) s.paddingRight = toPx(p.paddingRight);
 
-  // Margin
-  if (p.margin != null) s.margin = toPx(p.margin);
+  // Margin — supports both single value and "t,r,b,l" shorthand
+  if (p.margin != null) s.margin = parsePadding(p.margin);
   if (p.marginTop != null) s.marginTop = toPx(p.marginTop);
   if (p.marginBottom != null) s.marginBottom = toPx(p.marginBottom);
   if (p.marginStart != null) s.marginLeft = toPx(p.marginStart);
