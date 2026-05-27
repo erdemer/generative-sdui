@@ -78,7 +78,7 @@ _GSMARENA_SLUG_OVERRIDES: dict[str, str] = {
     "samsung galaxy s24":              "samsung-galaxy-s24-5g",
     "samsung galaxy s23 ultra":        "samsung-galaxy-s23-ultra-5g",
     # Samsung Galaxy A-series
-    "samsung galaxy a56 5g":           "samsung-galaxy-a56-5g",
+    "samsung galaxy a56 5g":           "samsung-galaxy-a56-",
     "samsung galaxy a55 5g":           "samsung-galaxy-a55-5g",
     "samsung galaxy a35 5g":           "samsung-galaxy-a35-5g",
     "samsung galaxy a25 5g":           "samsung-galaxy-a25-5g",
@@ -91,7 +91,7 @@ _GSMARENA_SLUG_OVERRIDES: dict[str, str] = {
     "iphone 15 pro":                   "apple-iphone-15-pro",
     "iphone 15":                       "apple-iphone-15",
     # Xiaomi
-    "xiaomi 15 ultra":                 "xiaomi-15-ultra",
+    "xiaomi 15 ultra":                 "xiaomi-15-ultra-",
     "xiaomi 15 pro":                   "xiaomi-15-pro",
     "xiaomi 15":                       "xiaomi-15",
     "xiaomi 14 ultra":                 "xiaomi-14-ultra",
