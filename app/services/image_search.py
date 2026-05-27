@@ -65,49 +65,97 @@ _PREFERRED_DOMAINS = [
 
 # ── GSMarena direct resolver ───────────────────────────────────
 
+# Curated slug overrides for phones where the auto-generated slug doesn't match
+# GSMarena's actual CDN filename. Verified with HEAD requests.
+_GSMARENA_SLUG_OVERRIDES: dict[str, str] = {
+    # Samsung Galaxy S-series
+    "samsung galaxy s25 ultra":        "samsung-galaxy-s25-ultra-sm-s938",
+    "samsung galaxy s25+":             "samsung-galaxy-s25-sm-s936",
+    "samsung galaxy s25 plus":         "samsung-galaxy-s25-sm-s936",
+    "samsung galaxy s25":              "samsung-galaxy-s25-sm-s931",
+    "samsung galaxy s24 ultra":        "samsung-galaxy-s24-ultra-5g",
+    "samsung galaxy s24+":             "samsung-galaxy-s24-5g",
+    "samsung galaxy s24":              "samsung-galaxy-s24-5g",
+    "samsung galaxy s23 ultra":        "samsung-galaxy-s23-ultra-5g",
+    # Samsung Galaxy A-series
+    "samsung galaxy a56 5g":           "samsung-galaxy-a56-5g",
+    "samsung galaxy a55 5g":           "samsung-galaxy-a55-5g",
+    "samsung galaxy a35 5g":           "samsung-galaxy-a35-5g",
+    "samsung galaxy a25 5g":           "samsung-galaxy-a25-5g",
+    # iPhone
+    "iphone 16 pro max":               "apple-iphone-16-pro-max",
+    "iphone 16 pro":                   "apple-iphone-16-pro",
+    "iphone 16 plus":                  "apple-iphone-16-plus",
+    "iphone 16":                       "apple-iphone-16",
+    "iphone 15 pro max":               "apple-iphone-15-pro-max",
+    "iphone 15 pro":                   "apple-iphone-15-pro",
+    "iphone 15":                       "apple-iphone-15",
+    # Xiaomi
+    "xiaomi 15 ultra":                 "xiaomi-15-ultra",
+    "xiaomi 15 pro":                   "xiaomi-15-pro",
+    "xiaomi 15":                       "xiaomi-15",
+    "xiaomi 14 ultra":                 "xiaomi-14-ultra",
+    "xiaomi 14":                       "xiaomi-14",
+    "redmi note 14 pro":               "xiaomi-redmi-note-14-pro",
+    "redmi note 13 pro":               "xiaomi-redmi-note-13-pro-5g",
+    # OnePlus
+    "oneplus 13":                      "oneplus-13",
+    "oneplus 13r":                     "oneplus-13r",
+    "oneplus 12":                      "oneplus-12",
+    # Google Pixel
+    "google pixel 9 pro":              "google-pixel-9-pro",
+    "google pixel 9":                  "google-pixel-9",
+    "pixel 9 pro":                     "google-pixel-9-pro",
+    "pixel 9":                         "google-pixel-9",
+    # Motorola
+    "motorola moto g85":               "motorola-moto-g85",
+    "motorola edge 50 pro":            "motorola-edge-50-pro",
+    # Sony
+    "sony xperia 1 vi":                "sony-xperia-1-vi",
+    "sony xperia 5 vi":                "sony-xperia-5-vi",
+    # Oppo / Realme
+    "oppo find x8 pro":                "oppo-find-x8-pro",
+    "realme 13 pro":                   "realme-13-pro-plus-5g",
+}
+
+
 def _gsmarena_slug(query: str) -> str:
     """
-    Convert a product name to a GSMarena URL slug.
-    Examples:
-      "Samsung Galaxy S25 Ultra"  -> "samsung-galaxy-s25-ultra"
-      "iPhone 16 Pro"             -> "apple-iphone-16-pro"
-      "Xiaomi 15 Ultra 512GB"     -> "xiaomi-15-ultra"
-      "Samsung Galaxy A56 5G"     -> "samsung-galaxy-a56-5g"
+    Return the GSMarena bigpic slug for a product name.
+    Checks the curated override table first; falls back to auto-generation.
     """
-    name = query.strip().lower()
+    # Normalize: strip storage suffix, lowercase
+    key = re.sub(r"\s+\d+\s*gb\b", "", query.strip(), flags=re.IGNORECASE).lower().strip()
 
-    # Strip storage capacity suffixes FIRST (e.g. "256gb", "512gb")
-    name = re.sub(r"\s+\d+\s*gb\b", "", name, flags=re.IGNORECASE)
+    # Curated lookup (exact match)
+    if key in _GSMARENA_SLUG_OVERRIDES:
+        return _GSMARENA_SLUG_OVERRIDES[key]
 
-    # Remove special characters (keep spaces), collapse whitespace
-    name = re.sub(r"[^a-z0-9\s]", "", name).strip()
+    # Partial match: check if any override key is contained in the query
+    for override_key, slug in _GSMARENA_SLUG_OVERRIDES.items():
+        if override_key in key:
+            return slug
 
-    # Add "apple " prefix for iPhone / iPad (space, not hyphen — hyphens come after)
+    # Auto-generate slug
+    name = re.sub(r"[^a-z0-9\s]", "", key).strip()
     if re.match(r"^i(phone|pad)\b", name):
         name = "apple " + name
-
-    # Collapse whitespace → hyphens
-    slug = re.sub(r"\s+", "-", name)
-    return slug
+    return re.sub(r"\s+", "-", name)
 
 
 async def _gsmarena_image(client: httpx.AsyncClient, query: str) -> Optional[str]:
     """
-    Attempt a direct hit on GSMarena's predictable product-shot CDN.
-    GSMarena hosts clean white-background images for virtually every phone.
+    Attempt a direct hit on GSMarena's product-shot CDN.
+    Uses curated slug overrides for maximum hit rate.
     """
     slug = _gsmarena_slug(query)
-    candidates = [
-        f"https://fdn2.gsmarena.com/vv/bigpic/{slug}.jpg",
-        f"https://fdn2.gsmarena.com/vv/bigpics/{slug}.jpg",
-    ]
-    for url in candidates:
-        try:
-            r = await client.head(url, headers=_HTTP_HEADERS, timeout=5)
-            if r.status_code == 200:
-                return url
-        except Exception:
-            continue
+    url = f"https://fdn2.gsmarena.com/vv/bigpic/{slug}.jpg"
+    try:
+        r = await client.head(url, headers=_HTTP_HEADERS, timeout=5)
+        if r.status_code == 200:
+            return url
+    except Exception:
+        pass
     return None
 
 
