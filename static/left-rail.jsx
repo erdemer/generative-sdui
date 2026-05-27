@@ -418,37 +418,39 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
                 ? `Vodafone 5G cihaz kampanyası ekranı tasarla.
 
 EKRAN YAPISI:
-1. Header: Vodafone logosu (Image, w:28, h:28, url: "/static/logo.png") + "5G Cihazlar" başlığı, sağda sepet ve bildirim ikonu
-2. Hero Banner: 5G teknoloji temalı etkileyici görsel (görsel url promptu: "futuristic_5g_network_speed_concept_glowing_red_neon_light_trails_futuristic_city_night"), gradient overlay, "5G Hızıyla Tanışın — Yeni Nesil Hız, Uygun Taksitlerle" sloganı, "Fırsatları Keşfet" CTA butonu
-3. Marka Filtresi: yatay scroll chip strip — Tümü (aktif), Samsung, iPhone, Xiaomi, Oppo
-4. Öne Çıkan Cihazlar (2-sütun grid):
-   - Samsung Galaxy S25 Ultra 256GB (görsel url promptu: "sleek_premium_smartphone_dark_titanium_floating_on_white_background_studio_lighting") — eski fiyat: 74.999 TL → kampanya: ₺54.999 (₺2.291/ay × 24 taksit) — "5G" badge
-   - iPhone 16 Pro 256GB (görsel url promptu: "sleek_premium_smartphone_desert_titanium_floating_on_white_background_studio_lighting") — eski fiyat: 84.999 TL → kampanya: ₺69.999 (₺2.916/ay × 24 taksit) — "Yeni" badge
-5. Takas Kampanyası Banner: gradient kırmızı arka plan, "Eski Cihazını Getir, Yenisini Al!" + "Ekstra 5.000 TL indirim" mesajı, "Başvur" butonu (görsel url promptu: "futuristic_technology_abstract_red_blue_light_streaks_digital_speed")
-6. Fırsat Cihazları (2-sütun grid):
-   - Xiaomi 15 Ultra 512GB (görsel url promptu: "sleek_smartphone_large_circular_camera_module_on_white_background_studio_lighting") — ₺39.999 (₺1.666/ay × 24 taksit) — "%25 İndirim" badge
-   - Samsung Galaxy A56 5G 128GB (görsel url promptu: "sleek_premium_smartphone_blue_color_floating_on_white_background_studio_lighting") — ₺17.999 (₺749/ay × 24 taksit) — "5G" badge
-7. BottomBar: Ana Sayfa, 5G Cihazlar (aktif), Kampanyalar, Hesabım
+1. Header: Vodafone logosu (Image, w:28, h:28, url:"/static/logo.png") + "5G Cihazlar" başlığı, sağda sepet ve bildirim ikonu
+2. Hero Banner: 5G teknoloji temalı görsel (Pollinations: "futuristic_5g_network_speed_concept,glowing_red_neon,city_night,cinematic"), gradient overlay, "5G Hızıyla Tanışın" h1 + "Yeni Nesil Hız, Uygun Taksitlerle" body, "Fırsatları Keşfet" CTA butonu
+3. Marka Filtresi: yatay scroll chip strip — Tümü (aktif/accent), Samsung, iPhone, Xiaomi, Oppo
+4. Öne Çıkan Cihazlar başlık satırı + "Tümü →" link
+5. 2-sütun cihaz grid (pattern ⑥):
+   - Samsung Galaxy S25 Ultra 256GB (url: search://Samsung Galaxy S25 Ultra) — eski: 74.999 TL, kampanya: ₺54.999, taksit: ₺2.291/ay × 24, badge: "5G"
+   - iPhone 16 Pro 256GB (url: search://iPhone 16 Pro) — eski: 84.999 TL, kampanya: ₺69.999, taksit: ₺2.916/ay × 24, badge: "Yeni"
+6. Takas Kampanyası Banner (pattern ⑦ — sadece gradient Card, image YOK): "Eski Cihazını Getir, Yenisini Al!" + "Ekstra 5.000 TL indirim kazan", "Başvur" beyaz buton
+7. Fırsat Cihazları başlık satırı
+8. 2-sütun cihaz grid (pattern ⑥):
+   - Xiaomi 15 Ultra 512GB (url: search://Xiaomi 15 Ultra) — ₺39.999, ₺1.666/ay × 24, badge: "%25 İndirim"
+   - Samsung Galaxy A56 5G 128GB (url: search://Samsung Galaxy A56 5G) — ₺17.999, ₺749/ay × 24, badge: "5G"
+9. BottomBar: Ana Sayfa, 5G Cihazlar (aktif, accent), Kampanyalar, Hesabım
 
-RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666
-Her cihaz kartında: Box overlay içinde badge + ürün görseli + cihaz adı + özellik + yan yana Fiyat Satırı (Row içinde kampanya fiyatı ve üstü çizili eski fiyat) + taksit bilgisi + kırmızı gradyanlı "Sepete Ekle" butonu`
+RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
                 : `Design a Vodafone 5G device campaign screen.
 
 SCREEN STRUCTURE:
-1. Header: Vodafone logo (Image, w:28, h:28, url: "/static/logo.png") + "5G Devices" title, cart and notification icons on right
-2. Hero Banner: 5G technology themed striking visual (image url prompt: "futuristic_5g_network_speed_concept_glowing_red_neon_light_trails_futuristic_city_night"), gradient overlay, "Experience 5G Speed — Next Gen Speed, Affordable Installments" slogan, "Explore Deals" CTA button
-3. Brand Filter: horizontal scroll chip strip — All (active), Samsung, iPhone, Xiaomi, Oppo
-4. Featured Devices (2-column grid):
-   - Samsung Galaxy S25 Ultra 256GB (image url prompt: "sleek_premium_smartphone_dark_titanium_floating_on_white_background_studio_lighting") — old: $1,299 → campaign: $999 ($41.6/mo × 24) — "5G" badge
-   - iPhone 16 Pro 256GB (image url prompt: "sleek_premium_smartphone_desert_titanium_floating_on_white_background_studio_lighting") — old: $1,499 → campaign: $1,199 ($49.9/mo × 24) — "New" badge
-5. Trade-in Banner: red gradient, "Trade in your old phone, get a new one!" + "$200 extra discount", "Apply" button (image url prompt: "futuristic_technology_abstract_red_blue_light_streaks_digital_speed")
-6. Deal Devices (2-column grid):
-   - Xiaomi 15 Ultra 512GB (image url prompt: "sleek_smartphone_large_circular_camera_module_on_white_background_studio_lighting") — $699 ($29.1/mo × 24) — "25% Off" badge
-   - Samsung Galaxy A56 5G 128GB (image url prompt: "sleek_premium_smartphone_blue_color_floating_on_white_background_studio_lighting") — $349 ($14.5/mo × 24) — "5G" badge
-7. BottomBar: Home, 5G Devices (active), Deals, Account
+1. Header: Vodafone logo (Image, w:28, h:28, url:"/static/logo.png") + "5G Devices" title, cart and notification icons on right
+2. Hero Banner: 5G tech visual (Pollinations: "futuristic_5g_network_speed_concept,glowing_red_neon,city_night,cinematic"), gradient overlay, "Experience 5G Speed" h1 + "Next Gen Speed, Affordable Installments" body, "Explore Deals" CTA
+3. Brand Filter: horizontal scroll chip strip — All (active/accent), Samsung, iPhone, Xiaomi, Oppo
+4. Featured Devices section header + "All →" link
+5. 2-column device grid (pattern ⑥):
+   - Samsung Galaxy S25 Ultra 256GB (url: search://Samsung Galaxy S25 Ultra) — old: $1,299, campaign: $999, installment: $41.6/mo × 24, badge: "5G"
+   - iPhone 16 Pro 256GB (url: search://iPhone 16 Pro) — old: $1,499, campaign: $1,199, installment: $49.9/mo × 24, badge: "New"
+6. Trade-in Banner (pattern ⑦ — gradient Card only, NO image): "Trade in your old phone, get a new one!" + "$200 extra discount", white "Apply" button
+7. Deal Devices section header
+8. 2-column device grid (pattern ⑥):
+   - Xiaomi 15 Ultra 512GB (url: search://Xiaomi 15 Ultra) — $699, $29.1/mo × 24, badge: "25% Off"
+   - Samsung Galaxy A56 5G 128GB (url: search://Samsung Galaxy A56 5G) — $349, $14.5/mo × 24, badge: "5G"
+9. BottomBar: Home, 5G Devices (active, accent), Deals, Account
 
-COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666
-For each device card: Box overlay with badge + product image + device name + specs + side-by-side Price Row (campaign price and old price with line-through) + installment info + red gradient "Add to Cart" button`
+COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
               )}
               style={{
                 padding: '8px 10px', borderRadius: 8, cursor: 'pointer',
@@ -466,7 +468,171 @@ For each device card: Box overlay with badge + product image + device name + spe
                   {lang === 'tr' ? 'Vodafone 5G Cihaz Kampanyası' : 'Vodafone 5G Device Campaign'}
                 </div>
                 <div style={{ fontSize: 9.5, color: 'var(--fg-3)', marginTop: 1 }}>
-                  {lang === 'tr' ? 'Production-ready kampanya ekranı — tıkla ve üret' : 'Production-ready campaign screen — click and generate'}
+                  {lang === 'tr' ? 'Hero + filtre + 4 cihaz + takas banner' : 'Hero + filter + 4 devices + trade-in banner'}
+                </div>
+              </div>
+              <Icon name="chev-r" size={10} style={{ color: '#E6000080', flexShrink: 0 }}/>
+            </div>
+
+            {/* Vodafone Tarife Karşılaştırma */}
+            <div
+              onClick={() => onPromptChange && onPromptChange(lang === 'tr'
+                ? `Vodafone tarife karşılaştırma ekranı tasarla.
+
+EKRAN YAPISI:
+1. Header: Vodafone logosu (Image, w:28, h:28, url:"/static/logo.png") + "Tarifeler" başlığı, sağda profil ikonu
+2. Hero: Kırmızı gradient arka plan, "Sana Özel Tarife Bul" h1, "İhtiyacına göre seç, her ay değiştir" body, sağda internet paketi animasyonu (Icon: wifi, size:64, color:#FFFFFF40)
+3. Dönem seçici: yatay chip strip — Aylık (aktif), 6 Aylık, Yıllık
+4. Tarife Kartları (dikey liste, 3 kart):
+   - Başlangıç (url: search://Vodafone Red tarife): 10GB, Sınırsız Arama, ₺199/ay — "En Çok Satan" badge
+   - Orta (url: search://Vodafone Red tarife): 30GB, Sınırsız Arama+SMS, ₺299/ay — "Önerilen" badge (accent bg)
+   - Tam (url: search://Vodafone Red tarife): Sınırsız GB, Sınırsız Arama+SMS+Uygulama, ₺449/ay
+   Her kart: paket adı + GB badge + özellik listesi (Icon:check + Text) + fiyat + "Seç" butonu
+5. Avantajlar satırı: 3 icon+text chip — Ücretsiz aktivasyon, Sözleşmesiz, 7/24 Destek
+6. BottomBar: Ana Sayfa, Tarifeler (aktif), Cihazlar, Hesabım
+
+RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
+                : `Design a Vodafone plan comparison screen.
+
+SCREEN STRUCTURE:
+1. Header: Vodafone logo (Image, w:28, h:28, url:"/static/logo.png") + "Plans" title, profile icon on right
+2. Hero: Red gradient background, "Find Your Perfect Plan" h1, "Pick by need, change monthly" body, wifi icon decoration (Icon: wifi, size:64, color:#FFFFFF40)
+3. Period selector: horizontal chip strip — Monthly (active), 6-Month, Annual
+4. Plan Cards (vertical list, 3 cards):
+   - Starter: 10GB, Unlimited Calls, $9.99/mo — "Best Seller" badge
+   - Mid: 30GB, Unlimited Calls+SMS, $19.99/mo — "Recommended" badge (accent bg)
+   - Full: Unlimited GB, Unlimited Calls+SMS+Apps, $29.99/mo
+   Each card: plan name + GB badge + feature list (Icon:check + Text) + price + "Select" button
+5. Benefits row: 3 icon+text chips — Free activation, No contract, 24/7 Support
+6. BottomBar: Home, Plans (active), Devices, Account
+
+COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
+              )}
+              style={{
+                padding: '6px 10px', borderRadius: 8, cursor: 'pointer',
+                background: 'linear-gradient(135deg, #E6000012, #E6000006)',
+                border: '1px solid #E6000030',
+                display: 'flex', alignItems: 'center', gap: 8,
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#E60000'; e.currentTarget.style.background = 'linear-gradient(135deg, #E6000020, #E6000010)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#E6000030'; e.currentTarget.style.background = 'linear-gradient(135deg, #E6000012, #E6000006)'; }}
+            >
+              <span style={{ fontSize: 13, lineHeight: 1, flexShrink: 0 }}>📶</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#E60000' }}>
+                  {lang === 'tr' ? 'Vodafone Tarife Karşılaştırma' : 'Vodafone Plan Comparison'}
+                </div>
+                <div style={{ fontSize: 9.5, color: 'var(--fg-3)', marginTop: 1 }}>
+                  {lang === 'tr' ? 'Hero + dönem seçici + 3 tarife kartı' : 'Hero + period selector + 3 plan cards'}
+                </div>
+              </div>
+              <Icon name="chev-r" size={10} style={{ color: '#E6000080', flexShrink: 0 }}/>
+            </div>
+
+            {/* Vodafone Fatura & Hesabım */}
+            <div
+              onClick={() => onPromptChange && onPromptChange(lang === 'tr'
+                ? `Vodafone Hesabım / Fatura ekranı tasarla.
+
+EKRAN YAPISI:
+1. Header: Vodafone logosu (Image, w:28, h:28, url:"/static/logo.png") + "Hesabım" başlığı, sağda ayarlar ikonu
+2. Kullanıcı Kartı: Kırmızı gradient Card, kullanıcı adı "Ahmet Yılmaz" (h2, bold, #FFFFFF) + numara "0532 XXX XX XX" (caption, #FFFFFFaa) + "Red Business" tarife etiketi (beyaz pill) — sağda büyük Icon(person, size:48, color:#FFFFFF20)
+3. Kullanım Özeti (yatay 3 kutu, Row):
+   - İnternet: kullanılan/toplam (dairesel progress bar efekti Icon:wifi + Text "18.4 / 30 GB")
+   - Dakika: Icon:phone + Text "Sınırsız"
+   - SMS: Icon:message + Text "Sınırsız"
+4. Bu Ay Fatura Kartı (Card, elevation:2): "Mayıs 2025 Faturası" başlık + ₺299,00 (h1, bold, accent) + son ödeme: 25 Mayıs (caption, fg3) + "Faturayı Öde" kırmızı gradient buton + "İndir" secondary buton (outlined)
+5. Hızlı İşlemler: 2×2 grid Card'lar — Fatura Geçmişi (Icon:receipt), Tarife Değiştir (Icon:swap), Ek Paket Al (Icon:add_circle), Destek (Icon:headset)
+6. BottomBar: Ana Sayfa, Tarifeler, Cihazlar, Hesabım (aktif, accent)
+
+RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
+                : `Design a Vodafone My Account / Bill screen.
+
+SCREEN STRUCTURE:
+1. Header: Vodafone logo (Image, w:28, h:28, url:"/static/logo.png") + "My Account" title, settings icon on right
+2. User Card: Red gradient Card, user name "John Smith" (h2, bold, #FFFFFF) + number "0532 XXX XX XX" (caption, #FFFFFFaa) + "Red Business" plan pill (white) — right side large Icon(person, size:48, color:#FFFFFF20)
+3. Usage Summary (horizontal 3-box Row):
+   - Data: Icon:wifi + Text "18.4 / 30 GB"
+   - Minutes: Icon:phone + Text "Unlimited"
+   - SMS: Icon:message + Text "Unlimited"
+4. Current Bill Card (elevation:2): "May 2025 Invoice" title + $29.99 (h1, bold, accent) + due: May 25 (caption, fg3) + "Pay Bill" red gradient button + "Download" outlined button
+5. Quick Actions: 2×2 Card grid — Bill History (Icon:receipt), Change Plan (Icon:swap), Add Package (Icon:add_circle), Support (Icon:headset)
+6. BottomBar: Home, Plans, Devices, My Account (active, accent)
+
+COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
+              )}
+              style={{
+                padding: '6px 10px', borderRadius: 8, cursor: 'pointer',
+                background: 'linear-gradient(135deg, #E6000012, #E6000006)',
+                border: '1px solid #E6000030',
+                display: 'flex', alignItems: 'center', gap: 8,
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#E60000'; e.currentTarget.style.background = 'linear-gradient(135deg, #E6000020, #E6000010)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#E6000030'; e.currentTarget.style.background = 'linear-gradient(135deg, #E6000012, #E6000006)'; }}
+            >
+              <span style={{ fontSize: 13, lineHeight: 1, flexShrink: 0 }}>🧾</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#E60000' }}>
+                  {lang === 'tr' ? 'Vodafone Hesabım & Fatura' : 'Vodafone Account & Bill'}
+                </div>
+                <div style={{ fontSize: 9.5, color: 'var(--fg-3)', marginTop: 1 }}>
+                  {lang === 'tr' ? 'Kullanıcı kartı + kullanım + fatura + hızlı işlemler' : 'User card + usage + invoice + quick actions'}
+                </div>
+              </div>
+              <Icon name="chev-r" size={10} style={{ color: '#E6000080', flexShrink: 0 }}/>
+            </div>
+
+            {/* Vodafone Mağaza Bulucu */}
+            <div
+              onClick={() => onPromptChange && onPromptChange(lang === 'tr'
+                ? `Vodafone Mağaza Bulucu ekranı tasarla.
+
+EKRAN YAPISI:
+1. Header: Vodafone logosu (Image, w:28, h:28, url:"/static/logo.png") + "Mağaza Bul" başlığı, sağda arama ikonu
+2. Arama Kutusu: Card(elevation:1), Icon(search) + placeholder "Şehir, ilçe veya adres ara..." + sağda Icon(my_location, accent)
+3. Filtre Chip Strip (scroll): Tümü (aktif), Açık Mağazalar, Geniş Hizmet, Premium Mağaza
+4. Harita Alanı (Box, h:200, bg:#E8F0FE, corner:12): Icon(map, size:48, color:#4285F4) ortada, üstte "İstanbul Bölgesi — 24 Mağaza" Text, Pollinations harita görseli (url: "istanbul_city_map_top_view_minimal_clean_blue_white")
+5. Yakın Mağazalar listesi (3 kart, pattern ⑤ LIST ROW):
+   - Vodafone Cevahir AVM (url: search://Vodafone store interior): Şişli, 0.8 km — "Açık · 10:00–22:00" yeşil badge — "Yol Tarifi" buton
+   - Vodafone Bağcılar (url: search://Vodafone store interior): Bağcılar, 2.1 km — "Açık · 09:00–21:00" yeşil badge — "Yol Tarifi" buton
+   - Vodafone Kadıköy (url: search://Vodafone store interior): Kadıköy, 3.4 km — "Kapalı · 10:00–20:00" gri badge — "Detay" buton
+6. BottomBar: Ana Sayfa, Tarifeler, Mağazalar (aktif, accent), Hesabım
+
+RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
+                : `Design a Vodafone Store Finder screen.
+
+SCREEN STRUCTURE:
+1. Header: Vodafone logo (Image, w:28, h:28, url:"/static/logo.png") + "Find a Store" title, search icon on right
+2. Search Box: Card(elevation:1), Icon(search) + placeholder "Search city, district or address..." + Icon(my_location, accent) on right
+3. Filter Chip Strip (scroll): All (active), Open Now, Full Service, Premium Store
+4. Map Area (Box, h:200, bg:#E8F0FE, corner:12): Icon(map, size:48, color:#4285F4) centered, "Istanbul Region — 24 Stores" text above, Pollinations map (url: "istanbul_city_map_top_view_minimal_clean_blue_white")
+5. Nearby Stores list (3 cards, pattern ⑤ LIST ROW):
+   - Vodafone Cevahir Mall (url: search://Vodafone store interior): Sisli, 0.8 km — "Open · 10:00–22:00" green badge — "Directions" button
+   - Vodafone Bagcilar (url: search://Vodafone store interior): Bagcilar, 2.1 km — "Open · 09:00–21:00" green badge — "Directions" button
+   - Vodafone Kadikoy (url: search://Vodafone store interior): Kadikoy, 3.4 km — "Closed · 10:00–20:00" grey badge — "Details" button
+6. BottomBar: Home, Plans, Stores (active, accent), Account
+
+COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
+              )}
+              style={{
+                padding: '6px 10px', borderRadius: 8, cursor: 'pointer',
+                background: 'linear-gradient(135deg, #E6000012, #E6000006)',
+                border: '1px solid #E6000030',
+                display: 'flex', alignItems: 'center', gap: 8,
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#E60000'; e.currentTarget.style.background = 'linear-gradient(135deg, #E6000020, #E6000010)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#E6000030'; e.currentTarget.style.background = 'linear-gradient(135deg, #E6000012, #E6000006)'; }}
+            >
+              <span style={{ fontSize: 13, lineHeight: 1, flexShrink: 0 }}>📍</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#E60000' }}>
+                  {lang === 'tr' ? 'Vodafone Mağaza Bulucu' : 'Vodafone Store Finder'}
+                </div>
+                <div style={{ fontSize: 9.5, color: 'var(--fg-3)', marginTop: 1 }}>
+                  {lang === 'tr' ? 'Arama + harita + yakın mağaza listesi' : 'Search + map + nearby store list'}
                 </div>
               </div>
               <Icon name="chev-r" size={10} style={{ color: '#E6000080', flexShrink: 0 }}/>
