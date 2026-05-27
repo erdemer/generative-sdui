@@ -638,6 +638,74 @@ COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666
               <Icon name="chev-r" size={10} style={{ color: '#E6000080', flexShrink: 0 }}/>
             </div>
 
+            {/* Vodafone Happy Loyalty */}
+            <div
+              onClick={() => onPromptChange && onPromptChange(lang === 'tr'
+                ? `Vodafone Happy sadakat platformu ana ekranı tasarla.
+
+PLATFORM HAKKINDA: Vodafone Happy, Vodafone Yanımda uygulaması içindeki dijital sadakat platformudur. 48 marka indirimi, Hediye Çarkı, Yanımda Puanları ve yıl dönümü sürprizleri sunar. Tüm faturalı müşterilere açık, Red müşterilere ekstra ayrıcalıklar verir.
+
+EKRAN YAPISI:
+1. Header: Vodafone logosu (Image, w:28, h:28, url:"/static/logo.png") + "Happy 🎉" başlığı, sağda bildirim ikonu
+2. Kullanıcı Karşılama Kartı: Kırmızı gradient Card — "Merhaba, Ahmet! 👋" h2 + "Red ⭐ Müşteri · 3. Yılın" caption (#FFFFFFaa) + sağda büyük "Happy" yazısı (h1, #FFFFFF20) — altta "Bu ay ₺1.840 kazandın" body bold #FFFFFF
+3. Hediye Çarkı Kartı (Card, elevation:3, corner:16): Row içinde — sol taraf: "Hediye Çarkı" h3 bold + "Her hafta döndür, kazan!" caption fg3 + "Çarkı Döndür" accent buton; sağ taraf: dönen çark görseli (Pollinations: "colorful_spin_wheel_prize_wheel_red_white_segments_isolated_on_white?nologo=true&width=200&height=200&model=flux", w:80, h:80, contentScale:"fit")
+4. Yanımda Puanlarım: Row(spacebetween) — "Yanımda Puanlarım" h3 + "Tümü →" caption accent; altında Row(spacedby:12) — 3 stat Box(surface, corner:12, padding:"12,12,12,12", center): [Icon(star,accent,24)+"1.240 Puan"], [Icon(emoji_events,#F59E0B,24)+"Seviye 4"], [Icon(calendar_today,accent,24)+"3 Yıl"]
+5. Kategori Filtresi (yatay scroll chip strip): Tümü (aktif/accent), Yeme-İçme, Giyim, Eğlence, Seyahat, Teknoloji
+6. Öne Çıkan Fırsatlar başlık + "48 Marka →" link
+7. Marka İndirim Kartları (2-sütun grid, 4 kart — pattern ⑤ benzeri yatay liste kartı):
+   - Kahve Dünyası (url: search://Kahve Dunyasi coffee logo): "%20 İndirim" — "Yeme-İçme" chip — "Kuponu Al" buton
+   - Little Caesars (url: search://Little Caesars pizza logo): "2 Al 1 Öde" — "Yeme-İçme" chip — "Kuponu Al" buton
+   - Loft (url: search://Loft fashion brand logo): "%30 İndirim" — "Giyim" chip — "Kuponu Al" buton
+   - Hepsiburada (url: search://Hepsiburada logo): "Premium Üyelik" — "Teknoloji" chip — "Aktive Et" buton
+   Her kart: marka logosu (h:56, w:56, contentScale:"fit", corner:12) + marka adı h3 bold + indirim badge (accent) + kategori chip (surface) + CTA buton (outlined, accent renk, corner:8)
+8. Yıl Dönümü Sürprizi Banner (pattern ⑦): "3. Yılını Kutluyoruz! 🎂" h3 + "Sürpriz hediyeni talep et — bugün son gün!" caption #FFFFFFcc + "Hediyemi Al" beyaz buton
+9. BottomBar: Ana Sayfa, Happy (aktif, accent, heart ikonu), Faturalar, Hesabım
+
+RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
+                : `Design a Vodafone Happy loyalty platform home screen.
+
+PLATFORM CONTEXT: Vodafone Happy is the digital loyalty platform inside the Vodafone Yanımda app. It offers 48 brand discounts, Gift Wheel, Yanımda Points, and anniversary surprises. Open to all postpaid customers; Red customers get extra privileges.
+
+SCREEN STRUCTURE:
+1. Header: Vodafone logo (Image, w:28, h:28, url:"/static/logo.png") + "Happy 🎉" title, notification icon on right
+2. User Welcome Card: Red gradient Card — "Hello, John! 👋" h2 + "Red ⭐ Customer · Year 3" caption (#FFFFFFaa) + large "Happy" text right side (h1, #FFFFFF20) — bottom: "You saved $184 this month" body bold #FFFFFF
+3. Gift Wheel Card (Card, elevation:3, corner:16): Row — left: "Gift Wheel" h3 bold + "Spin weekly, win rewards!" caption fg3 + "Spin Now" accent button; right: wheel image (Pollinations: "colorful_spin_wheel_prize_wheel_red_white_segments_isolated_on_white?nologo=true&width=200&height=200&model=flux", w:80, h:80, contentScale:"fit")
+4. My Points: Row(spacebetween) — "My Points" h3 + "All →" caption accent; below Row(spacedby:12) — 3 stat Boxes(surface, corner:12, padding:"12,12,12,12", center): [Icon(star,accent,24)+"1,240 Pts"], [Icon(emoji_events,#F59E0B,24)+"Level 4"], [Icon(calendar_today,accent,24)+"3 Years"]
+5. Category Filter (horizontal scroll chips): All (active/accent), Food, Fashion, Entertainment, Travel, Tech
+6. Top Deals header + "48 Brands →" link
+7. Brand Discount Cards (2-col grid, 4 cards):
+   - Starbucks (url: search://Starbucks logo): "20% Off" — "Food" chip — "Get Coupon" button
+   - H&M (url: search://HM fashion brand logo): "30% Off" — "Fashion" chip — "Get Coupon" button
+   - Hepsiburada (url: search://Hepsiburada logo): "Premium Membership" — "Tech" chip — "Activate" button
+   - CGV Cinema (url: search://CGV cinema logo): "Buy 2 Get 1" — "Entertainment" chip — "Get Coupon" button
+   Each card: brand logo (h:56, w:56, contentScale:"fit", corner:12) + brand name h3 bold + discount badge (accent) + category chip (surface) + outlined CTA button (accent, corner:8)
+8. Anniversary Banner (pattern ⑦): "Celebrating Your 3rd Year! 🎂" h3 + "Claim your surprise gift — today's the last day!" caption #FFFFFFcc + "Claim Gift" white button
+9. BottomBar: Home, Happy (active, accent, heart icon), Bills, Account
+
+COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
+              )}
+              style={{
+                padding: '6px 10px', borderRadius: 8, cursor: 'pointer',
+                background: 'linear-gradient(135deg, #E6000012, #E6000006)',
+                border: '1px solid #E6000030',
+                display: 'flex', alignItems: 'center', gap: 8,
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#E60000'; e.currentTarget.style.background = 'linear-gradient(135deg, #E6000020, #E6000010)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#E6000030'; e.currentTarget.style.background = 'linear-gradient(135deg, #E6000012, #E6000006)'; }}
+            >
+              <span style={{ fontSize: 13, lineHeight: 1, flexShrink: 0 }}>🎉</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#E60000' }}>
+                  {lang === 'tr' ? 'Vodafone Happy Sadakat' : 'Vodafone Happy Loyalty'}
+                </div>
+                <div style={{ fontSize: 9.5, color: 'var(--fg-3)', marginTop: 1 }}>
+                  {lang === 'tr' ? 'Çark + puan + 48 marka indirimi + yıl dönümü' : 'Wheel + points + 48 brand discounts + anniversary'}
+                </div>
+              </div>
+              <Icon name="chev-r" size={10} style={{ color: '#E6000080', flexShrink: 0 }}/>
+            </div>
+
             {/* Secondary template: general e-commerce */}
             <div
               onClick={() => onPromptChange && onPromptChange(lang === 'tr'
