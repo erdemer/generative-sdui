@@ -296,8 +296,8 @@ Card(corner:12, elevation:1, padding:"12,12,12,12", backgroundColor:surface) chi
 ⑥ DEVICE / PRODUCT CAMPAIGN CARD (2-col — for phone/device campaigns):
 Row(horizontalArrangement:spacedby:12) children — EACH card:
   Card(weight:1, corner:12, elevation:2, backgroundColor:#FFFFFF) children:[
-    Box(fillMaxWidth:"true", contentAlignment:"topStart") children:[
-      Image(fillMaxWidth:"true", h:180, contentScale:"fit",
+    Box(fillMaxWidth:"true", height:155, backgroundColor:"#F5F5F5", contentAlignment:"topStart") children:[
+      Image(fillMaxWidth:"true", h:155, contentScale:"fit",
         url: "search://Samsung Galaxy S25 Ultra"),   ← use search:// for named products!
       Box(padding:"4,10,4,10", backgroundColor:accent, corner:12) > Text(caption, bold, color:#FFFFFF, "5G")
     ],
@@ -321,7 +321,7 @@ Row(horizontalArrangement:spacedby:12) children — EACH card:
 → Full-width CTA button at bottom of every card with red gradient
 
 ⑦ PROMO BANNER (campaign highlight — between sections):
-Card(corner:12, backgroundColor:"linear-gradient(135deg,#E60000,#BE0000)", padding:"16,16,16,16") children:[
+Card(corner:12, backgroundColor:"linear-gradient(135deg,#E60000,#BE0000)", padding:"20,16,20,16", margin:"24,24,24,24") children:[
   Row(horizontalArrangement:spacedby:12, verticalAlignment:center) children:[
     Column(weight:1, verticalArrangement:spacedby:4) children:[
       Text(h3, bold, color:#FFFFFF, "Eski cihazını getir, yenisini al!"),
