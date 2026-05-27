@@ -196,16 +196,24 @@ IMAGES — photorealistic quality:
 - Thumbnail: h:72,  url: https://image.pollinations.ai/prompt/{desc_in_english},clean_background?nologo=true&width=200&height=200&model=flux
 - Always contentScale:"crop" for hero, contentScale:"fit" for product shots | use underscores in desc, be vivid
 
-IMAGE URL DESCRIPTION RULES (critical for Pollinations AI image quality):
+PRODUCT IMAGE SEARCH — HIGHEST PRIORITY (for named devices & products):
+- When the UI contains a SPECIFIC named product (e.g. "Samsung Galaxy S25 Ultra", "Xiaomi 15 Ultra", "iPhone 16 Pro Max", "Sony Xperia 1 VI"), use the search:// URL format:
+  url: "search://Samsung Galaxy S25 Ultra"
+  url: "search://Xiaomi 15 Ultra"
+  url: "search://iPhone 16 Pro Max"
+- The backend will automatically find the REAL official product photo and replace the URL.
+- Use search:// ONLY for specific named products/devices you are certain exist.
+- For generic/hero/abstract images: use Pollinations as normal (see below).
+
+POLLINATIONS IMAGE URL RULES (for hero banners, abstract, generic images):
 - NEVER use just a product name like "samsung_galaxy_s25" — Pollinations does NOT know brand names.
 - ALWAYS describe the VISUAL APPEARANCE: shape, color, material, context.
 - Smartphone example:   modern_premium_smartphone_titanium_dark_color_floating_on_gradient_background_studio_lighting
 - Smartphone example 2: sleek_black_smartphone_triple_camera_large_screen_product_photography_white_background
 - 5G Hero example:      5g_network_speed_concept_glowing_blue_red_neon_light_trails_futuristic_city_night
 - Tech Hero example:    futuristic_technology_abstract_red_blue_light_streaks_dark_background_digital_speed_concept
-- Never use brand names (Samsung, Apple, iPhone, Xiaomi) in image URLs — describe the device visually instead.
-- CRITICAL: Always write prompt keywords inside the URL in English. Even if the UI text is Turkish, translate visual descriptions (like "sleek_premium_smartphone") to English in the URL.
-- CRITICAL: Every device/phone card MUST contain an Image component showing a premium smartphone product shot on a clean white background. Never omit the Image from a phone card, and never let it show landscape/unrelated pictures. Samsung and Xiaomi devices must have smartphone product shots, just like the iPhone.
+- CRITICAL: Always write prompt keywords inside the URL in English. Even if the UI text is Turkish, translate visual descriptions to English in the URL.
+- CRITICAL: Every device/phone card MUST contain an Image component. Named products → use search://, unnamed/generic → use Pollinations product_photography.
 
 
 LAYOUT PATTERNS — apply these exact structures:
@@ -290,7 +298,7 @@ Row(horizontalArrangement:spacedby:12) children — EACH card:
   Card(weight:1, corner:12, elevation:2, backgroundColor:#FFFFFF) children:[
     Box(fillMaxWidth:"true", contentAlignment:"topStart") children:[
       Image(fillMaxWidth:"true", h:180, contentScale:"fit",
-        url: "https://image.pollinations.ai/prompt/sleek_premium_smartphone_dark_titanium_floating_on_white_background,product_photography,studio_lighting,clean_white_background?nologo=true&width=400&height=400&model=flux"),
+        url: "search://Samsung Galaxy S25 Ultra"),   ← use search:// for named products!
       Box(padding:"4,10,4,10", backgroundColor:accent, corner:12) > Text(caption, bold, color:#FFFFFF, "5G")
     ],
     Column(fillMaxWidth:"true", weight:1, padding:"10,12,14,12", verticalArrangement:"spacedby:4") children:[

@@ -8,3 +8,4 @@ pillow
 requests
 httpx
 psycopg2-binary
+ddgs

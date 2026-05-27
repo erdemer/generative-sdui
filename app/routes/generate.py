@@ -8,6 +8,7 @@ import app.state as state
 from app.ai_client import generate_with_retry
 from app.prompts import PROMPT_BASE, PROMPT_WEB, SMART_CROP_PROMPT, CLARIFY_PROMPT, build_design_system_block, build_data_context_block
 from app.services.image import process_crops
+from app.services.image_search import resolve_search_urls
 
 
 def _merge_design_systems(ds_list: list[dict]) -> dict:
@@ -143,6 +144,10 @@ You are modifying an existing SDUI JSON layout based on a user request.
             if smart_crop or (prompt and prompt.strip().startswith("{")):
                 print("✂️ Smart crop başlatılıyor")
                 parsed_json = process_crops(parsed_json, pil_image)
+
+        # Resolve search:// product image URLs → real photos via DuckDuckGo
+        if parsed_json and isinstance(parsed_json, dict):
+            parsed_json = await resolve_search_urls(parsed_json)
 
         return parsed_json
 
