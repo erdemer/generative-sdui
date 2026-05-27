@@ -706,6 +706,90 @@ COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666
               <Icon name="chev-r" size={10} style={{ color: '#E6000080', flexShrink: 0 }}/>
             </div>
 
+            {/* Vodafone Red Konsol — MAAC Marketplace */}
+            <div
+              onClick={() => onPromptChange && onPromptChange(lang === 'tr'
+                ? `Vodafone Red Konsol — MAAC (Marketplace as a Channel) kurumsal yazılım pazaryeri ekranı tasarla.
+
+PLATFORM HAKKINDA: Vodafone Red Konsol, kurumsal müşterilerin Microsoft 365, Google Workspace, Cisco, Sophos ve benzeri SaaS lisanslarını doğrudan Vodafone üzerinden satın aldığı B2B dijital pazaryeri platformudur. Tek fatura, merkezi lisans yönetimi ve 7/24 Red Business desteği sunar. Tasarım koyu kurumsal konsol temasında olmalı.
+
+EKRAN YAPISI:
+1. Header: Vodafone logosu (Image, w:28, h:28, url:"/static/logo.png") + "Red Konsol" başlığı (color:accent, bold), sağda Row(spacedby:8,verticalAlignment:center): [Box(w:30,h:30,corner:15,backgroundColor:accent,contentAlignment:center)>Text(caption,bold,#FFFFFF,"MT"), Icon(notifications,fg3)]
+2. Şirket Özet Kartı (Card, backgroundColor:"linear-gradient(135deg,#1E0A0A,#2D1218)", corner:16, padding:"16,16,16,16", margin:"0,0,12,0"): Row(horizontalArrangement:spacebetween,verticalAlignment:center) children: [Column(verticalArrangement:spacedby:4)>[Text(h3,bold,#FFFFFF,"Mehmet Teknoloji A.Ş."),Text(caption,#FFFFFF80,"Red Business Premium · 47 Aktif Lisans"),Row(spacedby:6,verticalAlignment:center)>[Icon(circle,color:#22C55E,size:8),Text(caption,color:#22C55E,"Tüm hizmetler aktif")]], Column(horizontalAlignment:end,verticalArrangement:spacedby:2)>[Text(caption,#FFFFFF60,"Aylık toplam"),Text(h2,bold,#E60000,"₺12.340")]]
+3. Kategori Filtresi (yatay scroll chip strip): Tümü (aktif, backgroundColor:accent, color:#FFFFFF), Microsoft (backgroundColor:#1A2332,color:#94A3B8), Google (backgroundColor:#1A2332,color:#94A3B8), Güvenlik (backgroundColor:#1A2332,color:#94A3B8), Bulut (backgroundColor:#1A2332,color:#94A3B8), İletişim (backgroundColor:#1A2332,color:#94A3B8)
+4. "Öne Çıkan Çözümler" section header + "Tümü →" link (color:accent)
+5. 2-sütun kurumsal SaaS ürün grid — HER KART (weight:1, corner:16, elevation:3, backgroundColor:#131C28):
+   Box(fillMaxWidth:"true", height:100, backgroundColor:"#0D1117", contentAlignment:"center") >
+     Image(w:60, h:60, contentScale:"fit", url:"search://Microsoft 365")
+   Column(fillMaxWidth:"true", weight:1, padding:"10,12,14,12", verticalArrangement:"spacedby:4"):
+     Text(h3, bold, #FFFFFF, "Microsoft 365 Business Standard")
+     Text(caption, #94A3B8, "Word · Excel · Teams · 1TB OneDrive")
+     Row(spacedby:4): [Card(corner:4,backgroundColor:#E6000025,padding:"2,8,2,8")>Text(caption,bold,color:#E60000,"Microsoft")]
+     Spacer(weight:1)
+     Row(horizontalArrangement:spacebetween, verticalAlignment:center): [Text(body,bold,color:#E60000,"₺350"), Text(caption,color:#94A3B8,"/ kullanıcı / ay")]
+     Text(caption, #94A3B8, "Min. 1 · Max. sınırsız kullanıcı")
+     Button(backgroundColor:"linear-gradient(135deg,#E60000,#BE0000)", color:#FFFFFF, corner:8, fillMaxWidth:"true", padding:"10,0,10,0", "Lisans Ekle")
+   İKİNCİ KART: Google Workspace Business Plus (url: search://Google Workspace) — Gmail, Drive, Meet, 5TB — Google badge (#4285F425/#4285F4) — ₺280/kullanıcı/ay — "Lisans Ekle" buton
+6. "Aktif Abonelikler" section header + "Yönet →" link (color:accent)
+7. 3 aktif abonelik satırı (Card, backgroundColor:#131C28, corner:12, padding:"14,14,14,14", margin:"0,0,8,0") — her satır Row(horizontalArrangement:spacedby:12,verticalAlignment:center):
+   - Image(w:44,h:44,corner:10,contentScale:"fit", url:"search://Microsoft 365") + Column(weight:1): [Text(h3,bold,#FFFFFF,"Microsoft 365 Business"),Text(caption,#94A3B8,"25 kullanıcı · Otomatik yenileme")] + Column(horizontalAlignment:end): [Card(corner:6,backgroundColor:#22C55E20,padding:"3,8,3,8")>Text(caption,bold,color:#22C55E,"Aktif"), Text(body,bold,color:#E60000,"₺8.750/ay")]
+   - Image(w:44,h:44,corner:10,contentScale:"fit", url:"search://Google Workspace") + Column(weight:1): [Text(h3,bold,#FFFFFF,"Google Workspace"),Text(caption,#94A3B8,"12 kullanıcı · Yıllık plan")] + Column(horizontalAlignment:end): [Card(corner:6,backgroundColor:#22C55E20,padding:"3,8,3,8")>Text(caption,bold,color:#22C55E,"Aktif"), Text(body,bold,color:#E60000,"₺2.160/ay")]
+   - Image(w:44,h:44,corner:10,contentScale:"fit", url:"search://Sophos security") + Column(weight:1): [Text(h3,bold,#FFFFFF,"Sophos Intercept X"),Text(caption,#94A3B8,"47 cihaz · 14 gün kaldı")] + Column(horizontalAlignment:end): [Card(corner:6,backgroundColor:#F59E0B20,padding:"3,8,3,8")>Text(caption,bold,color:#F59E0B,"Yenile"), Text(body,bold,color:#E60000,"₺1.410/ay")]
+8. BottomBar: Konsol (Icon:dashboard), Ürünler (aktif, accent, Icon:store), Faturalar (Icon:receipt), Destek (Icon:headset_mic)
+
+RENK PALETİ (Kurumsal Koyu Konsol): bg:#0F1724, surface:#131C28, accent:#E60000, fg:#FFFFFF, fg3:#94A3B8
+TASARIM NOTU: Koyu arka plan zorunlu. Kartlar #131C28. Tüm metinler beyaz/gri tonlarında. Sadece fiyatlar ve aktif CTA'lar accent kırmızı.`
+                : `Design a Vodafone Red Console — MAAC (Marketplace as a Channel) enterprise software marketplace screen.
+
+PLATFORM CONTEXT: Vodafone Red Console is a B2B digital marketplace where enterprise customers purchase Microsoft 365, Google Workspace, Cisco, Sophos and other SaaS licenses directly through Vodafone. Single invoice, central license management, 24/7 Red Business support. Design should use dark enterprise console theme.
+
+SCREEN STRUCTURE:
+1. Header: Vodafone logo (Image, w:28, h:28, url:"/static/logo.png") + "Red Console" title (color:accent, bold), right side Row(spacedby:8,verticalAlignment:center): [Box(w:30,h:30,corner:15,backgroundColor:accent)>Text(caption,bold,#FFFFFF,"MT"), Icon(notifications,fg3)]
+2. Company Summary Card (Card, backgroundColor:"linear-gradient(135deg,#1E0A0A,#2D1218)", corner:16, padding:"16,16,16,16"): Row(spacebetween,center): [Column>[Text(h3,bold,#FFFFFF,"Mehmet Tech Ltd."),Text(caption,#FFFFFF80,"Red Business Premium · 47 Active Licenses"),Row>[Icon(circle,#22C55E,8),Text(caption,#22C55E,"All services active")]], Column(end)>[Text(caption,#FFFFFF60,"Monthly total"),Text(h2,bold,#E60000,"$1,240")]]
+3. Category Filter (horizontal scroll chips): All (active, bg:accent, color:#FFFFFF), Microsoft (#1A2332/#94A3B8), Google, Security, Cloud, Communication
+4. "Featured Solutions" section header + "All →" link (color:accent)
+5. 2-column enterprise SaaS product grid — EACH CARD (weight:1, corner:16, elevation:3, backgroundColor:#131C28):
+   Box(fillMaxWidth:"true", height:100, backgroundColor:"#0D1117", contentAlignment:"center") > Image(w:60, h:60, contentScale:"fit", url:"search://Microsoft 365")
+   Column(weight:1, padding:"10,12,14,12", verticalArrangement:"spacedby:4"):
+     Text(h3, bold, #FFFFFF, "Microsoft 365 Business Standard")
+     Text(caption, #94A3B8, "Word · Excel · Teams · 1TB OneDrive")
+     Row: [Card(corner:4, bg:#E6000025, padding:"2,8,2,8")>Text(caption,bold,#E60000,"Microsoft")]
+     Spacer(weight:1)
+     Row(spacebetween,center): [Text(body,bold,#E60000,"$35"), Text(caption,#94A3B8,"/ user / month")]
+     Text(caption, #94A3B8, "Min. 1 · Unlimited users")
+     Button(bg:"linear-gradient(135deg,#E60000,#BE0000)", color:#FFFFFF, corner:8, fillMaxWidth:"true", "Add License")
+   SECOND CARD: Google Workspace Business Plus (url: search://Google Workspace) — Gmail, Drive, Meet, 5TB — Google badge — $28/user/mo — "Add License"
+6. "Active Subscriptions" section header + "Manage →" link (color:accent)
+7. 3 active subscription rows (Card, bg:#131C28, corner:12, padding:"14,14,14,14"):
+   - Image(w:44,h:44,url:"search://Microsoft 365") + Col>[Text(h3,bold,#FFF,"Microsoft 365 Business"),Text(caption,#94A3B8,"25 users · Auto-renew")] + Col(end)>[Card(bg:#22C55E20)>Text(caption,bold,#22C55E,"Active"), Text(body,bold,#E60000,"$875/mo")]
+   - Image(w:44,h:44,url:"search://Google Workspace") + Col>[Text(h3,bold,#FFF,"Google Workspace"),Text(caption,#94A3B8,"12 users · Annual plan")] + Col(end)>[Card(bg:#22C55E20)>Text(caption,bold,#22C55E,"Active"), Text(body,bold,#E60000,"$336/mo")]
+   - Image(w:44,h:44,url:"search://Sophos security") + Col>[Text(h3,bold,#FFF,"Sophos Intercept X"),Text(caption,#94A3B8,"47 devices · 14 days left")] + Col(end)>[Card(bg:#F59E0B20)>Text(caption,bold,#F59E0B,"Renew"), Text(body,bold,#E60000,"$141/mo")]
+8. BottomBar: Console (Icon:dashboard), Products (active, accent, Icon:store), Invoices (Icon:receipt), Support (Icon:headset_mic)
+
+COLOR PALETTE (Dark Enterprise Console): bg:#0F1724, surface:#131C28, accent:#E60000, fg:#FFFFFF, fg3:#94A3B8`
+              )}
+              style={{
+                padding: '6px 10px', borderRadius: 8, cursor: 'pointer',
+                background: 'linear-gradient(135deg, #0F172420, #1E293B15)',
+                border: '1px solid #E6000030',
+                display: 'flex', alignItems: 'center', gap: 8,
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#E60000'; e.currentTarget.style.background = 'linear-gradient(135deg, #E6000020, #0F172430)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#E6000030'; e.currentTarget.style.background = 'linear-gradient(135deg, #0F172420, #1E293B15)'; }}
+            >
+              <span style={{ fontSize: 13, lineHeight: 1, flexShrink: 0 }}>🏢</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#E60000' }}>
+                  {lang === 'tr' ? 'Red Konsol · MAAC Marketplace' : 'Red Console · MAAC Marketplace'}
+                </div>
+                <div style={{ fontSize: 9.5, color: 'var(--fg-3)', marginTop: 1 }}>
+                  {lang === 'tr' ? 'Kurumsal SaaS · Microsoft · Google · Güvenlik' : 'Enterprise SaaS · Microsoft · Google · Security'}
+                </div>
+              </div>
+              <Icon name="chev-r" size={10} style={{ color: '#E6000080', flexShrink: 0 }}/>
+            </div>
+
             {/* Secondary template: general e-commerce */}
             <div
               onClick={() => onPromptChange && onPromptChange(lang === 'tr'

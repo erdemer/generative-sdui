@@ -63,6 +63,22 @@ _PREFERRED_DOMAINS = [
 ]
 
 
+# ── Direct image overrides (non-phone products) ────────────────
+# For enterprise SaaS, brand logos, and other non-device products where
+# we know a stable, clean image URL. Checked FIRST before any search.
+
+_DIRECT_IMAGE_OVERRIDES: dict[str, str] = {
+    # Microsoft
+    "microsoft 365":          "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Microsoft-Office-365-Emblem.png/330px-Microsoft-Office-365-Emblem.png",
+    "microsoft 365 business": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Microsoft-Office-365-Emblem.png/330px-Microsoft-Office-365-Emblem.png",
+    "microsoft teams":        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Microsoft-Office-365-Emblem.png/330px-Microsoft-Office-365-Emblem.png",
+    "microsoft azure":        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Microsoft-Office-365-Emblem.png/330px-Microsoft-Office-365-Emblem.png",
+    # Google
+    "google workspace":       "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Google-Apps.jpeg/330px-Google-Apps.jpeg",
+    "google workspace business": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Google-Apps.jpeg/330px-Google-Apps.jpeg",
+}
+
+
 # ── GSMarena direct resolver ───────────────────────────────────
 
 # Curated slug overrides for phones where the auto-generated slug doesn't match
@@ -387,6 +403,13 @@ async def search_product_image(query: str) -> Optional[str]:
     if cache_key in _cache:
         print(f"📦 Image cache hit: '{query}'")
         return _cache[cache_key]
+
+    # ⓪ Direct override table (enterprise SaaS, brand logos, etc.)
+    for key, direct_url in _DIRECT_IMAGE_OVERRIDES.items():
+        if key in cache_key:
+            print(f"📷 Direct override → '{query}': {direct_url[:70]}…")
+            _cache[cache_key] = direct_url
+            return direct_url
 
     is_device = _is_device_query(query)
 
