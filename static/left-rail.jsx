@@ -418,7 +418,7 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
                 ? `Vodafone 5G cihaz kampanyası ekranı tasarla.
 
 EKRAN YAPISI:
-1. Header: Vodafone logosu (Image, w:28, h:28, url:"https://image.pollinations.ai/prompt/vodafone_red_circle_logo_isolated_on_white?nologo=true&width=100&height=100&model=flux") + "5G Cihazlar" başlığı, sağda sepet ve bildirim ikonu
+1. Header: Vodafone logosu (Image, w:28, h:28, url:"/static/logo.png") + "5G Cihazlar" başlığı, sağda sepet ve bildirim ikonu
 2. Hero Banner: 5G teknoloji temalı görsel (Pollinations: "futuristic_5g_network_speed_concept,glowing_red_neon,city_night,cinematic"), gradient overlay, "5G Hızıyla Tanışın" h1 + "Yeni Nesil Hız, Uygun Taksitlerle" body, "Fırsatları Keşfet" CTA butonu
 3. Marka Filtresi: yatay scroll chip strip — Tümü (aktif/accent), Samsung, iPhone, Xiaomi, Oppo
 4. Öne Çıkan Cihazlar başlık satırı + "Tümü →" link
@@ -436,7 +436,7 @@ RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#6666
                 : `Design a Vodafone 5G device campaign screen.
 
 SCREEN STRUCTURE:
-1. Header: Vodafone logo (Image, w:28, h:28, url:"https://image.pollinations.ai/prompt/vodafone_red_circle_logo_isolated_on_white?nologo=true&width=100&height=100&model=flux") + "5G Devices" title, cart and notification icons on right
+1. Header: Vodafone logo (Image, w:28, h:28, url:"/static/logo.png") + "5G Devices" title, cart and notification icons on right
 2. Hero Banner: 5G tech visual (Pollinations: "futuristic_5g_network_speed_concept,glowing_red_neon,city_night,cinematic"), gradient overlay, "Experience 5G Speed" h1 + "Next Gen Speed, Affordable Installments" body, "Explore Deals" CTA
 3. Brand Filter: horizontal scroll chip strip — All (active/accent), Samsung, iPhone, Xiaomi, Oppo
 4. Featured Devices section header + "All →" link
@@ -480,7 +480,7 @@ COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666
                 ? `Vodafone tarife karşılaştırma ekranı tasarla.
 
 EKRAN YAPISI:
-1. Header: Vodafone logosu (Image, w:28, h:28, url:"https://image.pollinations.ai/prompt/vodafone_red_circle_logo_isolated_on_white?nologo=true&width=100&height=100&model=flux") + "Tarifeler" başlığı, sağda profil ikonu
+1. Header: Vodafone logosu (Image, w:28, h:28, url:"/static/logo.png") + "Tarifeler" başlığı, sağda profil ikonu
 2. Hero: Kırmızı gradient arka plan, "Sana Özel Tarife Bul" h1, "İhtiyacına göre seç, her ay değiştir" body, sağda internet paketi animasyonu (Icon: wifi, size:64, color:#FFFFFF40)
 3. Dönem seçici: yatay chip strip — Aylık (aktif), 6 Aylık, Yıllık
 4. Tarife Kartları (dikey liste, 3 kart):
@@ -495,7 +495,7 @@ RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#6666
                 : `Design a Vodafone plan comparison screen.
 
 SCREEN STRUCTURE:
-1. Header: Vodafone logo (Image, w:28, h:28, url:"https://image.pollinations.ai/prompt/vodafone_red_circle_logo_isolated_on_white?nologo=true&width=100&height=100&model=flux") + "Plans" title, profile icon on right
+1. Header: Vodafone logo (Image, w:28, h:28, url:"/static/logo.png") + "Plans" title, profile icon on right
 2. Hero: Red gradient background, "Find Your Perfect Plan" h1, "Pick by need, change monthly" body, wifi icon decoration (Icon: wifi, size:64, color:#FFFFFF40)
 3. Period selector: horizontal chip strip — Monthly (active), 6-Month, Annual
 4. Plan Cards (vertical list, 3 cards):
@@ -536,7 +536,7 @@ COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666
                 ? `Vodafone Hesabım / Fatura ekranı tasarla.
 
 EKRAN YAPISI:
-1. Header: Vodafone logosu (Image, w:28, h:28, url:"https://image.pollinations.ai/prompt/vodafone_red_circle_logo_isolated_on_white?nologo=true&width=100&height=100&model=flux") + "Hesabım" başlığı, sağda ayarlar ikonu
+1. Header: Vodafone logosu (Image, w:28, h:28, url:"/static/logo.png") + "Hesabım" başlığı, sağda ayarlar ikonu
 2. Kullanıcı Kartı: Kırmızı gradient Card, kullanıcı adı "Ahmet Yılmaz" (h2, bold, #FFFFFF) + numara "0532 XXX XX XX" (caption, #FFFFFFaa) + "Red Business" tarife etiketi (beyaz pill) — sağda büyük Icon(person, size:48, color:#FFFFFF20)
 3. Kullanım Özeti (yatay 3 kutu, Row):
    - İnternet: kullanılan/toplam (dairesel progress bar efekti Icon:wifi + Text "18.4 / 30 GB")
@@ -550,7 +550,7 @@ RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#6666
                 : `Design a Vodafone My Account / Bill screen.
 
 SCREEN STRUCTURE:
-1. Header: Vodafone logo (Image, w:28, h:28, url:"https://image.pollinations.ai/prompt/vodafone_red_circle_logo_isolated_on_white?nologo=true&width=100&height=100&model=flux") + "My Account" title, settings icon on right
+1. Header: Vodafone logo (Image, w:28, h:28, url:"/static/logo.png") + "My Account" title, settings icon on right
 2. User Card: Red gradient Card, user name "John Smith" (h2, bold, #FFFFFF) + number "0532 XXX XX XX" (caption, #FFFFFFaa) + "Red Business" plan pill (white) — right side large Icon(person, size:48, color:#FFFFFF20)
 3. Usage Summary (horizontal 3-box Row):
    - Data: Icon:wifi + Text "18.4 / 30 GB"
@@ -590,7 +590,7 @@ COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666
                 ? `Vodafone Mağaza Bulucu ekranı tasarla.
 
 EKRAN YAPISI:
-1. Header: Vodafone logosu (Image, w:28, h:28, url:"https://image.pollinations.ai/prompt/vodafone_red_circle_logo_isolated_on_white?nologo=true&width=100&height=100&model=flux") + "Mağaza Bul" başlığı, sağda arama ikonu
+1. Header: Vodafone logosu (Image, w:28, h:28, url:"/static/logo.png") + "Mağaza Bul" başlığı, sağda arama ikonu
 2. Arama Kutusu: Card(elevation:1), Icon(search) + placeholder "Şehir, ilçe veya adres ara..." + sağda Icon(my_location, accent)
 3. Filtre Chip Strip (scroll): Tümü (aktif), Açık Mağazalar, Geniş Hizmet, Premium Mağaza
 4. Harita Alanı (Box, h:200, bg:#E8F0FE, corner:12): Icon(map, size:48, color:#4285F4) ortada, üstte "İstanbul Bölgesi — 24 Mağaza" Text, Pollinations harita görseli (url: "istanbul_city_map_top_view_minimal_clean_blue_white")
@@ -604,7 +604,7 @@ RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#6666
                 : `Design a Vodafone Store Finder screen.
 
 SCREEN STRUCTURE:
-1. Header: Vodafone logo (Image, w:28, h:28, url:"https://image.pollinations.ai/prompt/vodafone_red_circle_logo_isolated_on_white?nologo=true&width=100&height=100&model=flux") + "Find a Store" title, search icon on right
+1. Header: Vodafone logo (Image, w:28, h:28, url:"/static/logo.png") + "Find a Store" title, search icon on right
 2. Search Box: Card(elevation:1), Icon(search) + placeholder "Search city, district or address..." + Icon(my_location, accent) on right
 3. Filter Chip Strip (scroll): All (active), Open Now, Full Service, Premium Store
 4. Map Area (Box, h:200, bg:#E8F0FE, corner:12): Icon(map, size:48, color:#4285F4) centered, "Istanbul Region — 24 Stores" text above, Pollinations map (url: "istanbul_city_map_top_view_minimal_clean_blue_white")
@@ -646,7 +646,7 @@ COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666
 PLATFORM HAKKINDA: Vodafone Happy, Vodafone Yanımda uygulaması içindeki dijital sadakat platformudur. 48 marka indirimi, Hediye Çarkı, Yanımda Puanları ve yıl dönümü sürprizleri sunar. Tüm faturalı müşterilere açık, Red müşterilere ekstra ayrıcalıklar verir.
 
 EKRAN YAPISI:
-1. Header: Vodafone logosu (Image, w:28, h:28, url:"https://image.pollinations.ai/prompt/vodafone_red_circle_logo_isolated_on_white?nologo=true&width=100&height=100&model=flux") + "Happy 🎉" başlığı, sağda bildirim ikonu
+1. Header: Vodafone logosu (Image, w:28, h:28, url:"/static/logo.png") + "Happy 🎉" başlığı, sağda bildirim ikonu
 2. Kullanıcı Karşılama Kartı: Kırmızı gradient Card — "Merhaba, Ahmet! 👋" h2 + "Red ⭐ Müşteri · 3. Yılın" caption (#FFFFFFaa) + sağda büyük "Happy" yazısı (h1, #FFFFFF20) — altta "Bu ay ₺1.840 kazandın" body bold #FFFFFF
 3. Hediye Çarkı Kartı (Card, elevation:3, corner:16): Row içinde — sol taraf: "Hediye Çarkı" h3 bold + "Her hafta döndür, kazan!" caption fg3 + "Çarkı Döndür" accent buton; sağ taraf: dönen çark görseli (Pollinations: "colorful_spin_wheel_prize_wheel_red_white_segments_isolated_on_white?nologo=true&width=200&height=200&model=flux", w:80, h:80, contentScale:"fit")
 4. Yanımda Puanlarım: Row(spacebetween) — "Yanımda Puanlarım" h3 + "Tümü →" caption accent; altında Row(spacedby:12) — 3 stat Box(surface, corner:12, padding:"12,12,12,12", center): [Icon(star,accent,24)+"1.240 Puan"], [Icon(emoji_events,#F59E0B,24)+"Seviye 4"], [Icon(calendar_today,accent,24)+"3 Yıl"]
@@ -667,7 +667,7 @@ RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#6666
 PLATFORM CONTEXT: Vodafone Happy is the digital loyalty platform inside the Vodafone Yanımda app. It offers 48 brand discounts, Gift Wheel, Yanımda Points, and anniversary surprises. Open to all postpaid customers; Red customers get extra privileges.
 
 SCREEN STRUCTURE:
-1. Header: Vodafone logo (Image, w:28, h:28, url:"https://image.pollinations.ai/prompt/vodafone_red_circle_logo_isolated_on_white?nologo=true&width=100&height=100&model=flux") + "Happy 🎉" title, notification icon on right
+1. Header: Vodafone logo (Image, w:28, h:28, url:"/static/logo.png") + "Happy 🎉" title, notification icon on right
 2. User Welcome Card: Red gradient Card — "Hello, John! 👋" h2 + "Red ⭐ Customer · Year 3" caption (#FFFFFFaa) + large "Happy" text right side (h1, #FFFFFF20) — bottom: "You saved $184 this month" body bold #FFFFFF
 3. Gift Wheel Card (Card, elevation:3, corner:16): Row — left: "Gift Wheel" h3 bold + "Spin weekly, win rewards!" caption fg3 + "Spin Now" accent button; right: wheel image (Pollinations: "colorful_spin_wheel_prize_wheel_red_white_segments_isolated_on_white?nologo=true&width=200&height=200&model=flux", w:80, h:80, contentScale:"fit")
 4. My Points: Row(spacebetween) — "My Points" h3 + "All →" caption accent; below Row(spacedby:12) — 3 stat Boxes(surface, corner:12, padding:"12,12,12,12", center): [Icon(star,accent,24)+"1,240 Pts"], [Icon(emoji_events,#F59E0B,24)+"Level 4"], [Icon(calendar_today,accent,24)+"3 Years"]

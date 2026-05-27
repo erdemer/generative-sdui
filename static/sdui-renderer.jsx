@@ -257,6 +257,12 @@ function SDUINode({ node, selectedIds, onSelectId }) {
 
     case 'Image': {
       const seed = node._id || 42;
+      // Resolve /static/ and /api/ relative URLs to absolute so they work
+      // regardless of iframe / proxy context (e.g. Claude Preview tool).
+      const rawUrl = p.url || '';
+      const imgSrc = (rawUrl.startsWith('/static/') || rawUrl.startsWith('/api/'))
+        ? window.location.origin + rawUrl
+        : rawUrl;
       const onErr = (e) => {
         if (!e.target.dataset.fb) {
           e.target.dataset.fb = '1';
@@ -266,11 +272,11 @@ function SDUINode({ node, selectedIds, onSelectId }) {
           } else if (h >= 150) {
             e.target.src = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=400&auto=format&fit=crop';
           } else {
-            e.target.src = 'https://placehold.co/400x400/f4f4f4/e60000?text=Vodafone';
+            e.target.src = 'https://placehold.co/400x400/f4f4f4/e60000?text=img';
           }
         }
       };
-      return <img {...nodeAttrs} onClick={combinedClick} style={style} src={p.url || ''} alt={p.contentDescription || ''} onError={onErr}/>;
+      return <img {...nodeAttrs} onClick={combinedClick} style={style} src={imgSrc} alt={p.contentDescription || ''} onError={onErr}/>;
     }
 
     case 'Button': {
