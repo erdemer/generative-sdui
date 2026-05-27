@@ -334,7 +334,8 @@ Card(corner:12, backgroundColor:"linear-gradient(135deg,#E60000,#BE0000)", paddi
 QUALITY — every output must pass ALL of these:
 ✓ Real copy: actual names, real prices, real labels — zero placeholder text ever
 ✓ PALETTE: choose bg + surface + accent + fg + fg3 — use consistently (accent only on CTAs/prices/active icons)
-✓ HEADER: Row(spacebetween,center,padding:"12,16,12,16") > [Row(spacedby:8) > [Image(w:28, h:28, url:"/static/logo.png") or Icon(domain,accent), Text(h3,bold,accent,"App Name")], Row(spacedby:12) > [Icon(search,fg3), Icon(notifications,fg3)]]
+✓ HEADER: Row(spacebetween,center,padding:"12,16,12,16") > [Row(spacedby:8,verticalAlignment:center) > [Image(w:28, h:28, url:"/static/logo.png"), Text(h3,bold,accent,"App Name")], Row(spacedby:12,verticalAlignment:center) > [Icon(search,fg3), Icon(notifications,fg3)]]
+  — CRITICAL: header logo MUST always be Image(w:28,h:28,url:"/static/logo.png") — NEVER use Icon for the logo
 ✓ HERO OVERLAY (pattern ①) immediately after header — Box with contentAlignment:"bottomCenter" — vivid contextual image
 ✓ SCROLL WRAPPER: Column(scroll:"true") wraps all body sections after header+hero
 ✓ 3+ content sections inside scroll using patterns ②–⑦ with real content
