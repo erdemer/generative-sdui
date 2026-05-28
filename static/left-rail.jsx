@@ -430,7 +430,6 @@ EKRAN YAPISI:
 8. 2-sütun cihaz grid (pattern ⑥):
    - Xiaomi 15 Ultra 512GB (url: search://Xiaomi 15 Ultra) — ₺39.999, ₺1.666/ay × 24, badge: "%25 İndirim"
    - Samsung Galaxy A56 5G 128GB (url: search://Samsung Galaxy A56 5G) — ₺17.999, ₺749/ay × 24, badge: "5G"
-9. BottomBar: Ana Sayfa, 5G Cihazlar (aktif, accent), Kampanyalar, Hesabım
 
 RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
                 : `Design a Vodafone 5G device campaign screen.
@@ -448,7 +447,6 @@ SCREEN STRUCTURE:
 8. 2-column device grid (pattern ⑥):
    - Xiaomi 15 Ultra 512GB (url: search://Xiaomi 15 Ultra) — $699, $29.1/mo × 24, badge: "25% Off"
    - Samsung Galaxy A56 5G 128GB (url: search://Samsung Galaxy A56 5G) — $349, $14.5/mo × 24, badge: "5G"
-9. BottomBar: Home, 5G Devices (active, accent), Deals, Account
 
 COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
               )}
