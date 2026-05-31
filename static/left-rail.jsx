@@ -741,7 +741,12 @@ EKRAN YAPISI:
 
 8. Spacer(height:80) — bottom bar boşluğu
 
-9. BottomBar(fillMaxWidth:"true", backgroundColor:#13131F): items=[{icon:"home",label:"Ana Sayfa",active:true},{icon:"grid_view",label:"Çözümler"},{icon:"receipt_long",label:"Fatura"},{icon:"person",label:"Hesabım"}]
+9. BottomBar — layout.children dizisinin EN SON elemanı olarak ekle (type:"BottomBar"). props: fillMaxWidth:"true", backgroundColor:#13131F, items=[{icon:"home",label:"Ana Sayfa",active:true},{icon:"grid_view",label:"Çözümler"},{icon:"receipt_long",label:"Fatura"},{icon:"person",label:"Hesabım"}]
+
+🛑 EN KRİTİK 3 KURAL (çıktının kalitesi buna bağlı):
+A) ÜRÜN KARTI GÖRSELİ: Her zaman kompakt logo kutusu kullan → Box(fillMaxWidth:"true", height:80, backgroundColor:#1C1C2E, contentAlignment:"center") İÇİNDE küçük Image(width:48, height:48, contentScale:"fit", url:"search://..."). ASLA height:120+ veya contentScale:"crop" veya fillMaxWidth Image kullanma — full-bleed/kırpılmış dev görsel YASAK.
+B) GÖRSEL URL: TÜM Image url'leri "search://marka adı logo" formatında olmalı (örn "search://Microsoft 365 logo", "search://Dropbox logo"). wikipedia.org, teampassword.com, og-image, upload.* gibi rastgele http URL'leri KESİNLİKLE YASAK — bunlar yanlış/insan fotoğrafı getirir.
+C) BOTTOMBAR YERİ: BottomBar mutlaka layout.children dizisinin son elemanı olmalı. Ayrı "bottomBar" key'i OLUŞTURMA — renderer onu görmez.
 
 ZORUNLU KURALLAR (renderer uyumu):
 - Boşluk için SADECE verticalArrangement:"spacedby:N" / horizontalArrangement:"spacedby:N" kullan. ASLA "gap" prop'u kullanma.
@@ -776,7 +781,12 @@ STRUCTURE:
 
 8. Spacer(height:80)
 
-9. BottomBar(fillMaxWidth:"true",backgroundColor:#13131F): items=[{icon:"home",label:"Home",active:true},{icon:"grid_view",label:"Solutions"},{icon:"receipt_long",label:"Billing"},{icon:"person",label:"Account"}]
+9. BottomBar — add as the LAST element of layout.children (type:"BottomBar"). props: fillMaxWidth:"true", backgroundColor:#13131F, items=[{icon:"home",label:"Home",active:true},{icon:"grid_view",label:"Solutions"},{icon:"receipt_long",label:"Billing"},{icon:"person",label:"Account"}]
+
+🛑 TOP 3 CRITICAL RULES (output quality depends on these):
+A) PRODUCT CARD IMAGE: Always a compact logo box → Box(fillMaxWidth:"true", height:80, backgroundColor:#1C1C2E, contentAlignment:"center") CONTAINING a small Image(width:48, height:48, contentScale:"fit", url:"search://..."). NEVER height:120+ or contentScale:"crop" or a fillMaxWidth Image — full-bleed/cropped giant images are FORBIDDEN.
+B) IMAGE URLS: EVERY Image url must be "search://brand name logo" (e.g. "search://Microsoft 365 logo", "search://Dropbox logo"). Random http URLs from wikipedia.org, teampassword.com, og-image, upload.* are STRICTLY FORBIDDEN — they fetch wrong images / photos of people.
+C) BOTTOMBAR PLACEMENT: BottomBar MUST be the last element of layout.children. Do NOT create a separate "bottomBar" key — the renderer ignores it.
 
 MANDATORY RULES (renderer compat):
 - Spacing ONLY via verticalArrangement:"spacedby:N" / horizontalArrangement:"spacedby:N". NEVER use "gap" prop.

@@ -374,9 +374,19 @@ function SDUIRenderer({ layout, selectedIds, onSelectId }) {
       <span>{window.I18N?.tr?.selectComponent || 'No layout'}</span>
     </div>
   );
+  // Defensive: some AI outputs place a BottomBar in a separate `bottomBar`
+  // key (or `bottom_bar`) instead of inside children — the renderer would
+  // otherwise ignore it. Fold it into children so it still shows up.
+  let root = layout;
+  const strayBar = layout.bottomBar || layout.bottom_bar;
+  if (strayBar && strayBar.type) {
+    const kids = layout.children || [];
+    const alreadyHasBar = kids.some(c => c && c.type === 'BottomBar');
+    if (!alreadyHasBar) root = { ...layout, children: [...kids, strayBar] };
+  }
   return (
     <div className="sdui-device-content">
-      <SDUINode node={layout} selectedIds={selectedIds} onSelectId={onSelectId}/>
+      <SDUINode node={root} selectedIds={selectedIds} onSelectId={onSelectId}/>
     </div>
   );
 }
