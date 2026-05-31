@@ -48,6 +48,7 @@ KAMPANYA TASARIM KURALLARI
 • Hero Banner: Gradient overlay (#000000a0 → #00000020), cihaz görseli, kampanya sloganı
   - Slogan örneği: "5G Hızıyla Tanışın", "Yeni Nesil Hız, Uygun Taksitlerle"
   - CTA: "Fırsatları Keşfet" veya "Hemen Keşfet" — beyaz metin, kırmızı gradyan buton
+    onClick: {"type":"navigate","destination":"https://www.vodafone.com.tr/faturaya-ek/telefonlar"}
 • Filtre Strip (yatay scroll): "Tümü", "Samsung", "iPhone", "Xiaomi", "Oppo" chip'leri
   - Aktif chip: bg:#E60000, color:#FFF | Pasif chip: bg:#F4F4F4, color:#666
 
