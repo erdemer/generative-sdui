@@ -8,11 +8,12 @@ var Icon = window.Icon;
 const t = (lang, key) => (window.I18N[lang] && window.I18N[lang][key]) || key;
 
 /* =================== TOPBAR =================== */
-function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt = "1m", showAB = false, onPublish, platform = 'mobile', onPlatform,
+function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt = "1m", showAB = false, onPublish, publishState = 'idle', publishMsg = '', platform = 'mobile', onPlatform,
                  auth, pendingCount = 0, onOpenApprovals, onLogout,
                  onOpenFlows, flowsActive = false }) {
   const isAdmin = auth?.role === 'admin';
   const userInitials = (auth?.username || '?').slice(0, 2).toUpperCase();
+  const loading = publishState === 'loading';
   const publishLabel = isAdmin ? t(lang, 'publish') : (lang === 'tr' ? 'Onaya Gönder' : 'Submit for Approval');
   return (
     <div className="topbar">
@@ -93,7 +94,39 @@ function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt 
             <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'oklch(0.62 0.13 240)', border: '2px solid var(--panel)', color: '#fff', fontSize: 10, fontWeight: 600, display: 'grid', placeItems: 'center', marginLeft: -8 }}>MK</div>
           </div>
         )}
-        <button className="btn primary" onClick={onPublish}><Icon name="rocket" size={13}/> {publishLabel}</button>
+        <div style={{ position: 'relative', display: 'flex' }}>
+          <button
+            className={'btn ' + (publishState === 'success' || publishState === 'error' ? '' : 'primary')}
+            style={publishState === 'error'
+              ? { background: '#ef4444', color: '#fff', borderColor: 'transparent', opacity: loading ? 0.8 : 1 }
+              : publishState === 'success'
+                ? { background: 'var(--ok)', color: '#fff', borderColor: 'transparent' }
+                : { opacity: loading ? 0.8 : 1, cursor: loading ? 'wait' : 'pointer' }}
+            onClick={onPublish}
+            disabled={loading}
+          >
+            {loading
+              ? <><span className="spinner" style={{ width: 13, height: 13 }}/> {lang === 'tr' ? 'Gönderiliyor…' : 'Submitting…'}</>
+              : publishState === 'success'
+                ? <><Icon name="check" size={13}/> {lang === 'tr' ? 'Gönderildi' : 'Sent'}</>
+                : publishState === 'error'
+                  ? <><Icon name="x" size={13}/> {lang === 'tr' ? 'Başarısız' : 'Failed'}</>
+                  : <><Icon name="rocket" size={13}/> {publishLabel}</>
+            }
+          </button>
+          {(publishState === 'success' || publishState === 'error') && publishMsg && (
+            <div style={{
+              position: 'absolute', top: '100%', right: 0, marginTop: 8, zIndex: 200,
+              maxWidth: 300, padding: '9px 12px', borderRadius: 8, fontSize: 12, lineHeight: 1.4,
+              boxShadow: 'var(--shadow-lg)', whiteSpace: 'normal',
+              background: publishState === 'success' ? 'var(--ok-soft)' : 'rgba(220,38,38,0.12)',
+              color: publishState === 'success' ? 'var(--ok)' : '#ef4444',
+              border: '1px solid ' + (publishState === 'success' ? 'var(--ok)' : 'rgba(220,38,38,0.4)'),
+            }}>
+              {publishMsg}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

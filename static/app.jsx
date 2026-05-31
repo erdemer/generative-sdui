@@ -202,6 +202,8 @@ function App() {
   const [version, setVersion] = useState(1);
   const [savedAt, setSavedAt] = useState(null);
   const [zoom, setZoom] = useState(100);
+  const [publishState, setPublishState] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
+  const [publishMsg, setPublishMsg] = useState('');
 
   // ── Verify / improve ────────────────────────────────────────────────────
   const [verifyState, setVerifyState] = useState('idle'); // 'idle' | 'running'
@@ -477,7 +479,15 @@ function App() {
 
   // ── Publish ──────────────────────────────────────────────────────────────
   const handlePublish = async () => {
-    if (!currentJson) { alert(lang === 'tr' ? 'Yayınlanacak tasarım yok.' : 'No design to publish.'); return; }
+    if (publishState === 'loading') return; // guard double-click
+    if (!currentJson) {
+      setPublishState('error');
+      setPublishMsg(lang === 'tr' ? 'Yayınlanacak tasarım yok.' : 'No design to publish.');
+      setTimeout(() => setPublishState('idle'), 3500);
+      return;
+    }
+    setPublishState('loading');
+    setPublishMsg('');
     try {
       const res = await fetch('/update_layout', {
         method: 'POST',
@@ -488,18 +498,24 @@ function App() {
           platform,
         }),
       });
-      if (res.status === 401) { handleLogout(); return; }
+      if (res.status === 401) { setPublishState('idle'); handleLogout(); return; }
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json().catch(() => ({}));
       setSavedAt(Date.now());
+      setPublishState('success');
       if (data?.status === 'pending_approval') {
-        alert(lang === 'tr'
-          ? '📝 Yayın isteği onaya gönderildi. Admin onayladığında yayına geçecek.'
-          : '📝 Publish request sent for approval. It will go live after an admin approves.');
+        setPublishMsg(lang === 'tr'
+          ? '📝 Onaya gönderildi — admin onayınca yayına geçecek.'
+          : '📝 Sent for approval — goes live once an admin approves.');
       } else {
-        alert(lang === 'tr' ? '✅ Tasarım yayınlandı!' : '✅ Design published!');
+        setPublishMsg(lang === 'tr' ? '✅ Tasarım yayınlandı!' : '✅ Design published!');
       }
-    } catch (err) { alert((lang === 'tr' ? 'Yayınlama başarısız: ' : 'Publish failed: ') + err.message); }
+      setTimeout(() => setPublishState('idle'), 4000);
+    } catch (err) {
+      setPublishState('error');
+      setPublishMsg((lang === 'tr' ? 'Başarısız: ' : 'Failed: ') + err.message);
+      setTimeout(() => setPublishState('idle'), 4000);
+    }
   };
 
   const handleLogout = () => {
@@ -696,7 +712,7 @@ function App() {
   return (
     <>
       <div className="studio" data-theme={theme}>
-        <window.SDUI.TopBar lang={lang} theme={theme} onToggleTheme={cycleTheme} onToggleLang={setLang} breadcrumb={breadcrumb} savedAt={formatRelTime(savedAt, lang)} showAB={abActive} onPublish={handlePublish} platform={platform} onPlatform={handlePlatformChange}
+        <window.SDUI.TopBar lang={lang} theme={theme} onToggleTheme={cycleTheme} onToggleLang={setLang} breadcrumb={breadcrumb} savedAt={formatRelTime(savedAt, lang)} showAB={abActive} onPublish={handlePublish} publishState={publishState} publishMsg={publishMsg} platform={platform} onPlatform={handlePlatformChange}
           auth={auth}
           pendingCount={pendingCount}
           onOpenApprovals={() => setShowApprovals(true)}
@@ -714,7 +730,7 @@ function App() {
         ) : null}
 
         <div className="workspace" style={{ display: view === 'flows' ? 'none' : undefined }}>
-          <window.LeftRail lang={lang} tab={leftTab} onTab={setLeftTab} promptText={promptText} onPromptChange={setPromptText} imagePreview={imagePreview} onImageChange={handleImageChange} onImageRemove={handleImageRemove} smartCrop={smartCrop} onSmartCropChange={setSmartCrop} generateState={generateState} onGenerate={handleGenerate} files={files} selectedFilePath={currentFilePath} onSelectFile={handleSelectFile} onNewFolder={handleNewFolder} onNewFile={handleNewFile} platform={platform} onPlatform={handlePlatformChange} selectedLabel={selectedLabel} abActive={abActive} currentVersion={`v${version}`} onPublish={handlePublish} onSaveAsA={handleSaveAsA} onSaveAsB={handleSaveAsB} onStartAB={handleStartAB} designSystems={designSystems} onDesignSystemsChange={setDesignSystems} brandRules={brandRules} onBrandRulesChange={setBrandRules}/>
+          <window.LeftRail lang={lang} tab={leftTab} onTab={setLeftTab} promptText={promptText} onPromptChange={setPromptText} imagePreview={imagePreview} onImageChange={handleImageChange} onImageRemove={handleImageRemove} smartCrop={smartCrop} onSmartCropChange={setSmartCrop} generateState={generateState} onGenerate={handleGenerate} files={files} selectedFilePath={currentFilePath} onSelectFile={handleSelectFile} onNewFolder={handleNewFolder} onNewFile={handleNewFile} platform={platform} onPlatform={handlePlatformChange} selectedLabel={selectedLabel} abActive={abActive} currentVersion={`v${version}`} onPublish={handlePublish} publishState={publishState} publishMsg={publishMsg} onSaveAsA={handleSaveAsA} onSaveAsB={handleSaveAsB} onStartAB={handleStartAB} designSystems={designSystems} onDesignSystemsChange={setDesignSystems} brandRules={brandRules} onBrandRulesChange={setBrandRules}/>
 
           {treeView === 'json' ? (
             <JsonPane lang={lang} json={currentJson} onView={setTreeView}/>

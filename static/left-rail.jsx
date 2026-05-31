@@ -73,7 +73,7 @@ function LeftRail({
   platform = 'mobile', onPlatform,
   // Publish tab
   abActive = false, currentVersion = 'v1',
-  onPublish, onSaveAsA, onSaveAsB, onStartAB,
+  onPublish, publishState = 'idle', publishMsg = '', onSaveAsA, onSaveAsB, onStartAB,
   // Design system
   designSystems, onDesignSystemsChange,
   // Brand rules
@@ -112,7 +112,7 @@ function LeftRail({
         {tab === 'files'    && <FilesContent lang={lang} files={files} selectedFilePath={selectedFilePath} onSelectFile={onSelectFile} onNewFolder={onNewFolder} onNewFile={onNewFile} platform={platform} onPlatform={onPlatform}/>}
         {tab === 'generate' && <GenerateContent lang={lang} state={generateState} promptText={promptText} onPromptChange={onPromptChange} imagePreview={imagePreview} onImageChange={onImageChange} onImageRemove={onImageRemove} smartCrop={smartCrop} onSmartCropChange={onSmartCropChange} onGenerate={onGenerate} selectedLabel={selectedLabel} platform={platform} designSystems={designSystems}/>}
         {tab === 'design'   && <DesignContent lang={lang} designSystems={designSystems} onDesignSystemsChange={onDesignSystemsChange} brandRules={brandRules} onBrandRulesChange={onBrandRulesChange}/>}
-        {tab === 'publish'  && <PublishContent lang={lang} abActive={abActive} currentVersion={currentVersion} onPublish={onPublish} onSaveAsA={onSaveAsA} onSaveAsB={onSaveAsB} onStartAB={onStartAB}/>}
+        {tab === 'publish'  && <PublishContent lang={lang} abActive={abActive} currentVersion={currentVersion} onPublish={onPublish} publishState={publishState} publishMsg={publishMsg} onSaveAsA={onSaveAsA} onSaveAsB={onSaveAsB} onStartAB={onStartAB}/>}
       </div>
     </div>
   );
@@ -1323,10 +1323,11 @@ function DesignSystemContent({ lang, designSystems, onDesignSystemsChange }) {
 }
 
 /* ── Publish tab ───────────────────────────────────────────────────────────── */
-function PublishContent({ lang, abActive, currentVersion, onPublish, onSaveAsA, onSaveAsB, onStartAB }) {
+function PublishContent({ lang, abActive, currentVersion, onPublish, publishState = 'idle', publishMsg = '', onSaveAsA, onSaveAsB, onStartAB }) {
   const T = window.I18N[lang];
   const vNum = parseInt((currentVersion || 'v1').replace('v', '')) || 1;
   const prevV = 'v' + Math.max(1, vNum - 1);
+  const loading = publishState === 'loading';
 
   return (
     <div>
@@ -1346,9 +1347,38 @@ function PublishContent({ lang, abActive, currentVersion, onPublish, onSaveAsA, 
           </div>
         </div>
 
-        <button className="btn lg primary" style={{ width: '100%', justifyContent: 'center', marginBottom: 6 }} onClick={onPublish}>
-          <Icon name="rocket" size={13}/> {T.publishOne}
+        <button
+          className="btn lg primary"
+          style={{ width: '100%', justifyContent: 'center', marginBottom: 6, opacity: loading ? 0.75 : 1, cursor: loading ? 'wait' : 'pointer' }}
+          onClick={onPublish}
+          disabled={loading}
+        >
+          {loading
+            ? <><span className="spinner" style={{ width: 13, height: 13 }}/> {lang === 'tr' ? 'Gönderiliyor…' : 'Submitting…'}</>
+            : <><Icon name="rocket" size={13}/> {T.publishOne}</>
+          }
         </button>
+
+        {publishState === 'success' && publishMsg && (
+          <div style={{
+            display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 6,
+            padding: '9px 11px', borderRadius: 8, fontSize: 11.5, lineHeight: 1.4,
+            background: 'var(--ok-soft)', color: 'var(--ok)', border: '1px solid var(--ok)',
+          }}>
+            <Icon name="check" size={13} style={{ flexShrink: 0, marginTop: 1 }}/>
+            <span>{publishMsg}</span>
+          </div>
+        )}
+        {publishState === 'error' && publishMsg && (
+          <div style={{
+            display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 6,
+            padding: '9px 11px', borderRadius: 8, fontSize: 11.5, lineHeight: 1.4,
+            background: 'rgba(220,38,38,0.12)', color: '#ef4444', border: '1px solid rgba(220,38,38,0.4)',
+          }}>
+            <Icon name="x" size={13} style={{ flexShrink: 0, marginTop: 1 }}/>
+            <span>{publishMsg}</span>
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 6 }}>
           <button className="btn" style={{ flex: 1, justifyContent: 'center' }} onClick={onSaveAsA}>
             <Icon name="git-branch" size={11}/> {T.saveAsA}
