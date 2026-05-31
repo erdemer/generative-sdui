@@ -222,8 +222,11 @@ function ApprovalsPanel({ lang, auth, theme, onClose, onApproved }) {
   const [busyId, setBusyId] = useState(null);
   const [previewId, setPreviewId] = useState(null);
   const [previewData, setPreviewData] = useState(null);
+  const [showJsonInModal, setShowJsonInModal] = useState(false);
 
   const tr = lang === 'tr';
+
+  const closePreview = () => { setPreviewId(null); setPreviewData(null); setShowJsonInModal(false); };
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -254,6 +257,7 @@ function ApprovalsPanel({ lang, auth, theme, onClose, onApproved }) {
   const openPreview = async (id) => {
     setPreviewId(id);
     setPreviewData(null);
+    setShowJsonInModal(false);
     try {
       const res = await fetch(`/api/approvals/${id}`, { headers: authHeaders(auth) });
       if (res.ok) setPreviewData(await res.json());
@@ -313,7 +317,11 @@ function ApprovalsPanel({ lang, auth, theme, onClose, onApproved }) {
     );
   };
 
+  // Find the item being previewed (for modal meta info)
+  const previewItem = previewId ? items.find(i => i.id === previewId) : null;
+
   return (
+    <>
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9000,
       background: isDark ? 'rgba(0,0,0,0.65)' : 'rgba(0,0,0,0.35)',
@@ -447,7 +455,7 @@ function ApprovalsPanel({ lang, auth, theme, onClose, onApproved }) {
                   {/* Actions */}
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                     <button className="btn ghost" style={{ height: 26, fontSize: 11, padding: '0 10px' }} onClick={() => openPreview(it.id)}>
-                      <Icon name="code" size={11}/> JSON
+                      <Icon name="eye" size={11}/> Önizle
                     </button>
                     {isAdmin && it.status === 'pending' && (
                       <>
@@ -464,26 +472,145 @@ function ApprovalsPanel({ lang, auth, theme, onClose, onApproved }) {
                     )}
                   </div>
                 </div>
-
-                {previewId === it.id && (
-                  <div style={{ borderTop: '1px solid var(--line)', background: 'var(--canvas)', maxHeight: 200, overflow: 'auto' }}>
-                    {previewData ? (
-                      <pre style={{ margin: 0, padding: '10px 14px', fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--fg)', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-                        {JSON.stringify(previewData.layout, null, 2)}
-                      </pre>
-                    ) : (
-                      <div style={{ padding: 12, fontSize: 11, color: 'var(--fg-3)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span className="spinner"/>Yükleniyor…
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             );
           })}
         </div>
       </div>
     </div>
+
+    {/* ── Rendered Preview Modal ─────────────────────────────── */}
+    {previewId && (
+      <div
+        onClick={closePreview}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 10000,
+          background: 'rgba(0,0,0,0.75)',
+          backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            display: 'flex', gap: 28, alignItems: 'flex-start',
+            maxHeight: '94vh',
+          }}
+        >
+          {/* Phone mockup */}
+          <div style={{ flexShrink: 0, width: 248, height: 488, overflow: 'hidden', borderRadius: 40 }}>
+            <div className="device-shell" style={{ transform: 'scale(0.70)', transformOrigin: 'top left' }}>
+              <div className="device-screen" style={{ display: 'flex', flexDirection: 'column' }}>
+                {previewData
+                  ? <SDUIRenderer layout={previewData.layout}/>
+                  : (
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 10, color: 'var(--fg-3)', fontSize: 12 }}>
+                      <span className="spinner"/>
+                      <span>Render ediliyor…</span>
+                    </div>
+                  )
+                }
+              </div>
+            </div>
+          </div>
+
+          {/* Info + actions panel */}
+          <div style={{
+            width: 320, display: 'flex', flexDirection: 'column', gap: 12,
+            maxHeight: '90vh',
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 10, background: 'var(--brand)',
+                display: 'grid', placeItems: 'center', flexShrink: 0,
+                boxShadow: '0 2px 8px rgba(220,38,38,0.4)',
+              }}>
+                <Icon name="eye" size={16} style={{ color: '#fff' }}/>
+              </div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', letterSpacing: '-0.01em' }}>
+                  {previewData?.screen_name || previewItem?.screen_name || 'Önizleme'}
+                </div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>
+                  SDUI Render Önizlemesi
+                </div>
+              </div>
+              <button
+                onClick={closePreview}
+                className="icon-btn"
+                style={{ marginLeft: 'auto', color: 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
+              >
+                <Icon name="x" size={14}/>
+              </button>
+            </div>
+
+            {/* Meta card */}
+            {previewItem && (
+              <div style={{
+                background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: 12, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 7,
+              }}>
+                {[
+                  ['Kullanıcı', previewItem.user],
+                  ['Platform', previewItem.platform],
+                  ['Durum', previewItem.status === 'pending' ? '⏳ Bekliyor' : previewItem.status === 'approved' ? '✅ Onaylandı' : '❌ Reddedildi'],
+                  ['Gönderim', new Date(previewItem.submitted_at).toLocaleString('tr-TR', { dateStyle: 'medium', timeStyle: 'short' })],
+                ].map(([label, val]) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                    <span style={{ color: 'rgba(255,255,255,0.4)', width: 72, flexShrink: 0 }}>{label}</span>
+                    <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{val}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* JSON toggle */}
+            <button
+              className="btn ghost"
+              style={{ height: 30, fontSize: 11, color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)' }}
+              onClick={() => setShowJsonInModal(v => !v)}
+            >
+              <Icon name="code" size={11}/> {showJsonInModal ? 'JSON Gizle' : 'JSON Göster'}
+            </button>
+
+            {showJsonInModal && (
+              <div style={{
+                background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.10)',
+                borderRadius: 10, overflow: 'auto', maxHeight: 220,
+              }}>
+                <pre style={{ margin: 0, padding: '10px 14px', fontSize: 10, fontFamily: 'var(--font-mono)', color: 'rgba(255,255,255,0.7)', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                  {previewData ? JSON.stringify(previewData.layout, null, 2) : '…'}
+                </pre>
+              </div>
+            )}
+
+            {/* Admin actions for pending items */}
+            {isAdmin && previewItem?.status === 'pending' && (
+              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                <button
+                  className="btn"
+                  style={{ flex: 1, height: 40, fontSize: 13, fontWeight: 600, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.75)', borderRadius: 10 }}
+                  disabled={busyId === previewItem.id}
+                  onClick={async () => { await handleReject(previewItem.id); closePreview(); }}
+                >
+                  <Icon name="x" size={13}/> Reddet
+                </button>
+                <button
+                  className="btn primary"
+                  style={{ flex: 1, height: 40, fontSize: 13, fontWeight: 600, borderRadius: 10 }}
+                  disabled={busyId === previewItem.id}
+                  onClick={async () => { await handleApprove(previewItem.id); closePreview(); }}
+                >
+                  <Icon name="check" size={13}/> Onayla
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 
