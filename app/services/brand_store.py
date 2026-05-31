@@ -68,8 +68,8 @@ KAMPANYA TASARIM KURALLARI
   - "Eski cihazını getir, yenisini al!" veya "Vodafone'a geç, ekstra 5.000 TL indirim kazan"
   - Gradient arka plan (#E60000 → #BE0000), beyaz metin, ikon + CTA
 
-• BottomBar: items: home, phone_android (5G Cihazlar, aktif), local_offer (Kampanyalar), person (Hesabım)
-  - Aktif ikon: #E60000, diğerleri: #666666
+• BottomBar EKLEME: Bu ekrana alt navigasyon çubuğu (BottomBar / TabBar) KOYMA.
+  Ekran tek başına kampanya akışı olarak tasarlanmalı; alt bar gerekmiyor.
 
 ═══════════════════════════════════════════════════
 GÖRSEL KALİTESİ (CRITICAL FOR GENERATOR)
