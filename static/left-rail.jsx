@@ -1359,24 +1359,29 @@ function PublishContent({ lang, abActive, currentVersion, onPublish, publishStat
           }
         </button>
 
-        {publishState === 'success' && publishMsg && (
+        {(publishState === 'success' || publishState === 'error') && publishMsg && (
           <div style={{
-            display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 6,
-            padding: '9px 11px', borderRadius: 8, fontSize: 11.5, lineHeight: 1.4,
-            background: 'var(--ok-soft)', color: 'var(--ok)', border: '1px solid var(--ok)',
+            display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8,
+            padding: '12px 13px', borderRadius: 10, lineHeight: 1.5,
+            background: 'var(--bg-elev)',
+            border: '1px solid ' + (publishState === 'success' ? 'var(--ok)' : 'rgba(220,38,38,0.45)'),
           }}>
-            <Icon name="check" size={13} style={{ flexShrink: 0, marginTop: 1 }}/>
-            <span>{publishMsg}</span>
-          </div>
-        )}
-        {publishState === 'error' && publishMsg && (
-          <div style={{
-            display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 6,
-            padding: '9px 11px', borderRadius: 8, fontSize: 11.5, lineHeight: 1.4,
-            background: 'rgba(220,38,38,0.12)', color: '#ef4444', border: '1px solid rgba(220,38,38,0.4)',
-          }}>
-            <Icon name="x" size={13} style={{ flexShrink: 0, marginTop: 1 }}/>
-            <span>{publishMsg}</span>
+            <div style={{
+              width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
+              display: 'grid', placeItems: 'center',
+              background: publishState === 'success' ? 'var(--ok-soft)' : 'rgba(220,38,38,0.14)',
+              color: publishState === 'success' ? 'var(--ok)' : '#ef4444',
+            }}>
+              <Icon name={publishState === 'success' ? 'check' : 'x'} size={14} stroke={2.2}/>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg)', marginBottom: 2 }}>
+                {publishState === 'success'
+                  ? (lang === 'tr' ? 'Gönderildi' : 'Sent')
+                  : (lang === 'tr' ? 'Başarısız' : 'Failed')}
+              </div>
+              <div style={{ fontSize: 11.5, color: 'var(--fg-3)' }}>{publishMsg}</div>
+            </div>
           </div>
         )}
         <div style={{ display: 'flex', gap: 6 }}>

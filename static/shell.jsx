@@ -116,14 +116,38 @@ function TopBar({ lang, theme, onToggleTheme, onToggleLang, breadcrumb, savedAt 
           </button>
           {(publishState === 'success' || publishState === 'error') && publishMsg && (
             <div style={{
-              position: 'absolute', top: '100%', right: 0, marginTop: 8, zIndex: 200,
-              maxWidth: 300, padding: '9px 12px', borderRadius: 8, fontSize: 12, lineHeight: 1.4,
-              boxShadow: 'var(--shadow-lg)', whiteSpace: 'normal',
-              background: publishState === 'success' ? 'var(--ok-soft)' : 'rgba(220,38,38,0.12)',
-              color: publishState === 'success' ? 'var(--ok)' : '#ef4444',
-              border: '1px solid ' + (publishState === 'success' ? 'var(--ok)' : 'rgba(220,38,38,0.4)'),
+              position: 'absolute', top: 'calc(100% + 10px)', right: 0, zIndex: 200,
+              width: 320, padding: '14px 16px', borderRadius: 12,
+              display: 'flex', alignItems: 'flex-start', gap: 12,
+              boxShadow: '0 12px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10)',
+              background: 'var(--panel)',
+              border: '1px solid ' + (publishState === 'success' ? 'var(--ok)' : 'rgba(220,38,38,0.45)'),
             }}>
-              {publishMsg}
+              {/* caret pointing up to the button */}
+              <span style={{
+                position: 'absolute', top: -6, right: 22, width: 11, height: 11,
+                background: 'var(--panel)', transform: 'rotate(45deg)',
+                borderLeft: '1px solid ' + (publishState === 'success' ? 'var(--ok)' : 'rgba(220,38,38,0.45)'),
+                borderTop: '1px solid ' + (publishState === 'success' ? 'var(--ok)' : 'rgba(220,38,38,0.45)'),
+              }}/>
+              <div style={{
+                width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                display: 'grid', placeItems: 'center',
+                background: publishState === 'success' ? 'var(--ok-soft)' : 'rgba(220,38,38,0.14)',
+                color: publishState === 'success' ? 'var(--ok)' : '#ef4444',
+              }}>
+                <Icon name={publishState === 'success' ? 'check' : 'x'} size={16} stroke={2.2}/>
+              </div>
+              <div style={{ flex: 1, minWidth: 0, paddingTop: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg)', marginBottom: 3 }}>
+                  {publishState === 'success'
+                    ? (lang === 'tr' ? 'Gönderildi' : 'Sent')
+                    : (lang === 'tr' ? 'Başarısız' : 'Failed')}
+                </div>
+                <div style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--fg-3)' }}>
+                  {publishMsg}
+                </div>
+              </div>
             </div>
           )}
         </div>

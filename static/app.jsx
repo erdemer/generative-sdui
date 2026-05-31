@@ -505,16 +505,16 @@ function App() {
       setPublishState('success');
       if (data?.status === 'pending_approval') {
         setPublishMsg(lang === 'tr'
-          ? '📝 Onaya gönderildi — admin onayınca yayına geçecek.'
-          : '📝 Sent for approval — goes live once an admin approves.');
+          ? 'Onaya gönderildi. Admin onayladığında otomatik olarak yayına geçecek.'
+          : 'Sent for approval. It will go live automatically once an admin approves.');
       } else {
-        setPublishMsg(lang === 'tr' ? '✅ Tasarım yayınlandı!' : '✅ Design published!');
+        setPublishMsg(lang === 'tr' ? 'Tasarım başarıyla yayınlandı.' : 'Design published successfully.');
       }
-      setTimeout(() => setPublishState('idle'), 4000);
+      setTimeout(() => setPublishState('idle'), 5500);
     } catch (err) {
       setPublishState('error');
-      setPublishMsg((lang === 'tr' ? 'Başarısız: ' : 'Failed: ') + err.message);
-      setTimeout(() => setPublishState('idle'), 4000);
+      setPublishMsg((lang === 'tr' ? 'Yayınlama başarısız oldu. ' : 'Publish failed. ') + err.message);
+      setTimeout(() => setPublishState('idle'), 5000);
     }
   };
 
