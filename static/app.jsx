@@ -261,16 +261,6 @@ function App() {
   };
   const handleImageRemove = () => { setImageFile(null); setImagePreview(null); };
 
-  // ── Load Template (directly inject pre-built JSON, no AI) ────────────────
-  const handleLoadTemplate = (templateJson) => {
-    _uid = 0;
-    tagIds(templateJson.layout);
-    setCurrentJson(templateJson);
-    setAppState('editing');
-    setSelectedIds([]);
-    setLeftTab('generate'); // switch to generate tab so user sees the canvas
-  };
-
   // ── Generate ─────────────────────────────────────────────────────────────
   const handleGenerate = async (overridePrompt) => {
     const effectivePrompt = (typeof overridePrompt === 'string') ? overridePrompt : promptText;
@@ -724,7 +714,7 @@ function App() {
         ) : null}
 
         <div className="workspace" style={{ display: view === 'flows' ? 'none' : undefined }}>
-          <window.LeftRail lang={lang} tab={leftTab} onTab={setLeftTab} promptText={promptText} onPromptChange={setPromptText} imagePreview={imagePreview} onImageChange={handleImageChange} onImageRemove={handleImageRemove} smartCrop={smartCrop} onSmartCropChange={setSmartCrop} generateState={generateState} onGenerate={handleGenerate} onLoadTemplate={handleLoadTemplate} files={files} selectedFilePath={currentFilePath} onSelectFile={handleSelectFile} onNewFolder={handleNewFolder} onNewFile={handleNewFile} platform={platform} onPlatform={handlePlatformChange} selectedLabel={selectedLabel} abActive={abActive} currentVersion={`v${version}`} onPublish={handlePublish} onSaveAsA={handleSaveAsA} onSaveAsB={handleSaveAsB} onStartAB={handleStartAB} designSystems={designSystems} onDesignSystemsChange={setDesignSystems} brandRules={brandRules} onBrandRulesChange={setBrandRules}/>
+          <window.LeftRail lang={lang} tab={leftTab} onTab={setLeftTab} promptText={promptText} onPromptChange={setPromptText} imagePreview={imagePreview} onImageChange={handleImageChange} onImageRemove={handleImageRemove} smartCrop={smartCrop} onSmartCropChange={setSmartCrop} generateState={generateState} onGenerate={handleGenerate} files={files} selectedFilePath={currentFilePath} onSelectFile={handleSelectFile} onNewFolder={handleNewFolder} onNewFile={handleNewFile} platform={platform} onPlatform={handlePlatformChange} selectedLabel={selectedLabel} abActive={abActive} currentVersion={`v${version}`} onPublish={handlePublish} onSaveAsA={handleSaveAsA} onSaveAsB={handleSaveAsB} onStartAB={handleStartAB} designSystems={designSystems} onDesignSystemsChange={setDesignSystems} brandRules={brandRules} onBrandRulesChange={setBrandRules}/>
 
           {treeView === 'json' ? (
             <JsonPane lang={lang} json={currentJson} onView={setTreeView}/>
