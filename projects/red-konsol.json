@@ -1,0 +1,425 @@
+{
+  "screen_name": "RedKonsol",
+  "layout": {
+    "type": "Column",
+    "props": {
+      "fillMaxSize": "true",
+      "backgroundColor": "#0B0B18",
+      "scrollable": "true"
+    },
+    "children": [
+      { "type": "Spacer", "props": { "height": 10 } },
+
+      {
+        "type": "Row",
+        "props": {
+          "fillMaxWidth": "true",
+          "padding": "0,20,0,16",
+          "verticalAlignment": "center",
+          "horizontalArrangement": "spaceBetween"
+        },
+        "children": [
+          {
+            "type": "Row",
+            "props": { "verticalAlignment": "center", "gap": 8 },
+            "children": [
+              { "type": "Image", "props": { "url": "/static/logo.png", "w": 28, "h": 28 } },
+              { "type": "Text", "props": { "text": "Red Konsol", "fontSize": 20, "bold": "true", "color": "#E60000" } }
+            ]
+          },
+          {
+            "type": "Row",
+            "props": { "verticalAlignment": "center", "gap": 10 },
+            "children": [
+              {
+                "type": "Box",
+                "props": { "w": 36, "h": 36, "corner": 18, "backgroundColor": "#1E1E2E", "contentAlignment": "center" },
+                "children": [
+                  { "type": "Icon", "props": { "name": "bell", "size": 18, "color": "#AAAACC" } }
+                ]
+              },
+              {
+                "type": "Box",
+                "props": { "w": 36, "h": 36, "corner": 18, "backgroundColor": "#E60000", "contentAlignment": "center" },
+                "children": [
+                  { "type": "Text", "props": { "text": "MT", "fontSize": 12, "bold": "true", "color": "#FFFFFF" } }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      { "type": "Spacer", "props": { "height": 16 } },
+
+      {
+        "type": "Box",
+        "props": {
+          "fillMaxWidth": "true",
+          "marginStart": 16,
+          "marginEnd": 16,
+          "corner": 18,
+          "backgroundColor": "linear-gradient(135deg,#2A0808,#160404)"
+        },
+        "children": [
+          {
+            "type": "Column",
+            "props": { "fillMaxWidth": "true", "padding": "18,18,18,18", "gap": 14 },
+            "children": [
+              {
+                "type": "Row",
+                "props": { "fillMaxWidth": "true", "verticalAlignment": "flex-start", "horizontalArrangement": "spaceBetween" },
+                "children": [
+                  {
+                    "type": "Column",
+                    "props": { "gap": 4, "weight": 1 },
+                    "children": [
+                      { "type": "Text", "props": { "text": "Mehmet Teknoloji A.Ş.", "fontSize": 16, "bold": "true", "color": "#FFFFFF" } },
+                      { "type": "Text", "props": { "text": "Red Business Premium · 47 Lisans", "fontSize": 12, "color": "#88889A" } }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "props": { "horizontalAlignment": "end", "gap": 1 },
+                    "children": [
+                      { "type": "Text", "props": { "text": "Aylık toplam", "fontSize": 10, "color": "#88889A" } },
+                      { "type": "Text", "props": { "text": "₺12.340", "fontSize": 22, "bold": "true", "color": "#E60000" } }
+                    ]
+                  }
+                ]
+              },
+              { "type": "Box", "props": { "fillMaxWidth": "true", "height": 1, "backgroundColor": "#FFFFFF18" } },
+              {
+                "type": "Row",
+                "props": { "fillMaxWidth": "true", "verticalAlignment": "center", "horizontalArrangement": "spaceBetween" },
+                "children": [
+                  {
+                    "type": "Row",
+                    "props": { "verticalAlignment": "center", "gap": 6 },
+                    "children": [
+                      { "type": "Box", "props": { "w": 7, "h": 7, "corner": 4, "backgroundColor": "#00B012" } },
+                      { "type": "Text", "props": { "text": "Tüm hizmetler aktif", "fontSize": 12, "color": "#00B012" } }
+                    ]
+                  },
+                  {
+                    "type": "Row",
+                    "props": { "gap": 20, "verticalAlignment": "center" },
+                    "children": [
+                      {
+                        "type": "Column",
+                        "props": { "horizontalAlignment": "center", "gap": 1 },
+                        "children": [
+                          { "type": "Text", "props": { "text": "47", "fontSize": 15, "bold": "true", "color": "#FFFFFF" } },
+                          { "type": "Text", "props": { "text": "Lisans", "fontSize": 10, "color": "#88889A" } }
+                        ]
+                      },
+                      { "type": "Box", "props": { "w": 1, "height": 24, "backgroundColor": "#FFFFFF22" } },
+                      {
+                        "type": "Column",
+                        "props": { "horizontalAlignment": "center", "gap": 1 },
+                        "children": [
+                          { "type": "Text", "props": { "text": "6", "fontSize": 15, "bold": "true", "color": "#FFFFFF" } },
+                          { "type": "Text", "props": { "text": "Çözüm", "fontSize": 10, "color": "#88889A" } }
+                        ]
+                      },
+                      { "type": "Box", "props": { "w": 1, "height": 24, "backgroundColor": "#FFFFFF22" } },
+                      {
+                        "type": "Column",
+                        "props": { "horizontalAlignment": "center", "gap": 1 },
+                        "children": [
+                          { "type": "Text", "props": { "text": "Haz", "fontSize": 15, "bold": "true", "color": "#FFFFFF" } },
+                          { "type": "Text", "props": { "text": "Fatura", "fontSize": 10, "color": "#88889A" } }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      { "type": "Spacer", "props": { "height": 20 } },
+
+      {
+        "type": "Row",
+        "props": { "fillMaxWidth": "true", "paddingStart": 16, "paddingEnd": 16, "gap": 8, "scrollable": "true" },
+        "children": [
+          { "type": "Box", "props": { "padding": "7,16,7,16", "corner": 20, "backgroundColor": "#E60000" }, "children": [{ "type": "Text", "props": { "text": "Tümü", "fontSize": 13, "bold": "true", "color": "#FFFFFF" } }] },
+          { "type": "Box", "props": { "padding": "7,16,7,16", "corner": 20, "backgroundColor": "#1A1A2E" }, "children": [{ "type": "Text", "props": { "text": "Microsoft", "fontSize": 13, "color": "#AAAACC" } }] },
+          { "type": "Box", "props": { "padding": "7,16,7,16", "corner": 20, "backgroundColor": "#1A1A2E" }, "children": [{ "type": "Text", "props": { "text": "Google", "fontSize": 13, "color": "#AAAACC" } }] },
+          { "type": "Box", "props": { "padding": "7,16,7,16", "corner": 20, "backgroundColor": "#1A1A2E" }, "children": [{ "type": "Text", "props": { "text": "Güvenlik", "fontSize": 13, "color": "#AAAACC" } }] },
+          { "type": "Box", "props": { "padding": "7,16,7,16", "corner": 20, "backgroundColor": "#1A1A2E" }, "children": [{ "type": "Text", "props": { "text": "Depolama", "fontSize": 13, "color": "#AAAACC" } }] }
+        ]
+      },
+
+      { "type": "Spacer", "props": { "height": 20 } },
+
+      {
+        "type": "Row",
+        "props": { "fillMaxWidth": "true", "paddingStart": 16, "paddingEnd": 16, "verticalAlignment": "center", "horizontalArrangement": "spaceBetween" },
+        "children": [
+          { "type": "Text", "props": { "text": "Öne Çıkan Çözümler", "fontSize": 17, "bold": "true", "color": "#FFFFFF" } },
+          {
+            "type": "Row",
+            "props": { "verticalAlignment": "center", "gap": 3 },
+            "children": [
+              { "type": "Text", "props": { "text": "Tümü", "fontSize": 13, "color": "#E60000" } },
+              { "type": "Icon", "props": { "name": "chev-r", "size": 13, "color": "#E60000" } }
+            ]
+          }
+        ]
+      },
+
+      { "type": "Spacer", "props": { "height": 12 } },
+
+      {
+        "type": "Row",
+        "props": { "fillMaxWidth": "true", "paddingStart": 16, "gap": 12, "scrollable": "true" },
+        "children": [
+          {
+            "type": "Box",
+            "props": { "w": 190, "corner": 16, "backgroundColor": "#13131F", "elevation": 3 },
+            "children": [
+              {
+                "type": "Column",
+                "props": { "fillMaxWidth": "true" },
+                "children": [
+                  {
+                    "type": "Box",
+                    "props": { "fillMaxWidth": "true", "h": 90, "backgroundColor": "#1C1C2E", "contentAlignment": "center" },
+                    "children": [
+                      { "type": "Image", "props": { "url": "https://image.pollinations.ai/prompt/microsoft_office_365_logo_colorful_on_dark_background_clean?nologo=true&width=200&height=200&model=flux", "w": 52, "h": 52, "contentScale": "fit" } }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "props": { "padding": "12,12,12,12", "gap": 7 },
+                    "children": [
+                      { "type": "Text", "props": { "text": "Microsoft 365 Business Standard", "fontSize": 13, "bold": "true", "color": "#FFFFFF" } },
+                      { "type": "Text", "props": { "text": "Word · Excel · Teams · 1TB", "fontSize": 11, "color": "#88889A" } },
+                      {
+                        "type": "Box",
+                        "props": { "padding": "3,8,3,8", "corner": 5, "backgroundColor": "#2D1515" },
+                        "children": [{ "type": "Text", "props": { "text": "Microsoft", "fontSize": 10, "bold": "true", "color": "#E60000" } }]
+                      },
+                      {
+                        "type": "Row",
+                        "props": { "verticalAlignment": "baseline", "gap": 1 },
+                        "children": [
+                          { "type": "Text", "props": { "text": "₺350", "fontSize": 17, "bold": "true", "color": "#E60000" } },
+                          { "type": "Text", "props": { "text": "/kullanıcı/ay", "fontSize": 10, "color": "#88889A" } }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Box",
+            "props": { "w": 190, "corner": 16, "backgroundColor": "#13131F", "elevation": 3 },
+            "children": [
+              {
+                "type": "Column",
+                "props": { "fillMaxWidth": "true" },
+                "children": [
+                  {
+                    "type": "Box",
+                    "props": { "fillMaxWidth": "true", "h": 90, "backgroundColor": "#1C1C2E", "contentAlignment": "center" },
+                    "children": [
+                      { "type": "Image", "props": { "url": "https://image.pollinations.ai/prompt/google_workspace_logo_clean_white_background_colorful?nologo=true&width=200&height=200&model=flux", "w": 52, "h": 52, "contentScale": "fit" } }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "props": { "padding": "12,12,12,12", "gap": 7 },
+                    "children": [
+                      { "type": "Text", "props": { "text": "Google Workspace Business Plus", "fontSize": 13, "bold": "true", "color": "#FFFFFF" } },
+                      { "type": "Text", "props": { "text": "Gmail · Drive · Meet · 5TB", "fontSize": 11, "color": "#88889A" } },
+                      {
+                        "type": "Box",
+                        "props": { "padding": "3,8,3,8", "corner": 5, "backgroundColor": "#0D1C2D" },
+                        "children": [{ "type": "Text", "props": { "text": "Google", "fontSize": 10, "bold": "true", "color": "#4285F4" } }]
+                      },
+                      {
+                        "type": "Row",
+                        "props": { "verticalAlignment": "baseline", "gap": 1 },
+                        "children": [
+                          { "type": "Text", "props": { "text": "₺280", "fontSize": 17, "bold": "true", "color": "#E60000" } },
+                          { "type": "Text", "props": { "text": "/kullanıcı/ay", "fontSize": 10, "color": "#88889A" } }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Box",
+            "props": { "w": 190, "corner": 16, "backgroundColor": "#13131F", "elevation": 3 },
+            "children": [
+              {
+                "type": "Column",
+                "props": { "fillMaxWidth": "true" },
+                "children": [
+                  {
+                    "type": "Box",
+                    "props": { "fillMaxWidth": "true", "h": 90, "backgroundColor": "#1C1C2E", "contentAlignment": "center" },
+                    "children": [
+                      { "type": "Image", "props": { "url": "https://image.pollinations.ai/prompt/dropbox_business_logo_blue_clean_dark_background?nologo=true&width=200&height=200&model=flux", "w": 52, "h": 52, "contentScale": "fit" } }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "props": { "padding": "12,12,12,12", "gap": 7 },
+                    "children": [
+                      { "type": "Text", "props": { "text": "Dropbox Business Plus", "fontSize": 13, "bold": "true", "color": "#FFFFFF" } },
+                      { "type": "Text", "props": { "text": "9TB Depolama · Akıllı Sync · Admin", "fontSize": 11, "color": "#88889A" } },
+                      {
+                        "type": "Box",
+                        "props": { "padding": "3,8,3,8", "corner": 5, "backgroundColor": "#0D152D" },
+                        "children": [{ "type": "Text", "props": { "text": "Depolama", "fontSize": 10, "bold": "true", "color": "#0061FF" } }]
+                      },
+                      {
+                        "type": "Row",
+                        "props": { "verticalAlignment": "baseline", "gap": 1 },
+                        "children": [
+                          { "type": "Text", "props": { "text": "₺195", "fontSize": 17, "bold": "true", "color": "#E60000" } },
+                          { "type": "Text", "props": { "text": "/kullanıcı/ay", "fontSize": 10, "color": "#88889A" } }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      { "type": "Spacer", "props": { "height": 24 } },
+
+      {
+        "type": "Row",
+        "props": { "fillMaxWidth": "true", "paddingStart": 16, "paddingEnd": 16, "verticalAlignment": "center", "horizontalArrangement": "spaceBetween" },
+        "children": [
+          { "type": "Text", "props": { "text": "Aktif Hizmetlerim", "fontSize": 17, "bold": "true", "color": "#FFFFFF" } },
+          { "type": "Text", "props": { "text": "6 hizmet", "fontSize": 12, "color": "#88889A" } }
+        ]
+      },
+
+      { "type": "Spacer", "props": { "height": 10 } },
+
+      {
+        "type": "Column",
+        "props": { "fillMaxWidth": "true", "paddingStart": 16, "paddingEnd": 16, "gap": 8 },
+        "children": [
+          {
+            "type": "Row",
+            "props": { "fillMaxWidth": "true", "backgroundColor": "#13131F", "corner": 14, "padding": "14,14,14,14", "verticalAlignment": "center" },
+            "children": [
+              {
+                "type": "Box",
+                "props": { "w": 42, "h": 42, "corner": 10, "backgroundColor": "#1E1E30", "contentAlignment": "center" },
+                "children": [{ "type": "Image", "props": { "url": "https://image.pollinations.ai/prompt/microsoft_office_365_logo_colorful?nologo=true&width=100&height=100&model=flux", "w": 26, "h": 26, "contentScale": "fit" } }]
+              },
+              { "type": "Spacer", "props": { "width": 12 } },
+              {
+                "type": "Column",
+                "props": { "weight": 1, "gap": 3 },
+                "children": [
+                  { "type": "Text", "props": { "text": "Microsoft 365 Business", "fontSize": 13, "bold": "true", "color": "#FFFFFF" } },
+                  { "type": "Text", "props": { "text": "47 lisans · Yenileme: 15 Haz", "fontSize": 11, "color": "#88889A" } }
+                ]
+              },
+              {
+                "type": "Column",
+                "props": { "horizontalAlignment": "end", "gap": 4 },
+                "children": [
+                  { "type": "Text", "props": { "text": "₺16.450", "fontSize": 13, "bold": "true", "color": "#FFFFFF" } },
+                  { "type": "Box", "props": { "padding": "2,7,2,7", "corner": 4, "backgroundColor": "#0A1F0D" }, "children": [{ "type": "Text", "props": { "text": "Aktif", "fontSize": 10, "bold": "true", "color": "#00B012" } }] }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Row",
+            "props": { "fillMaxWidth": "true", "backgroundColor": "#13131F", "corner": 14, "padding": "14,14,14,14", "verticalAlignment": "center" },
+            "children": [
+              {
+                "type": "Box",
+                "props": { "w": 42, "h": 42, "corner": 10, "backgroundColor": "#1E1E30", "contentAlignment": "center" },
+                "children": [{ "type": "Image", "props": { "url": "https://image.pollinations.ai/prompt/google_workspace_logo_colorful?nologo=true&width=100&height=100&model=flux", "w": 26, "h": 26, "contentScale": "fit" } }]
+              },
+              { "type": "Spacer", "props": { "width": 12 } },
+              {
+                "type": "Column",
+                "props": { "weight": 1, "gap": 3 },
+                "children": [
+                  { "type": "Text", "props": { "text": "Google Workspace Business", "fontSize": 13, "bold": "true", "color": "#FFFFFF" } },
+                  { "type": "Text", "props": { "text": "12 lisans · Yenileme: 20 Haz", "fontSize": 11, "color": "#88889A" } }
+                ]
+              },
+              {
+                "type": "Column",
+                "props": { "horizontalAlignment": "end", "gap": 4 },
+                "children": [
+                  { "type": "Text", "props": { "text": "₺3.360", "fontSize": 13, "bold": "true", "color": "#FFFFFF" } },
+                  { "type": "Box", "props": { "padding": "2,7,2,7", "corner": 4, "backgroundColor": "#0A1F0D" }, "children": [{ "type": "Text", "props": { "text": "Aktif", "fontSize": 10, "bold": "true", "color": "#00B012" } }] }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Row",
+            "props": { "fillMaxWidth": "true", "backgroundColor": "#13131F", "corner": 14, "padding": "14,14,14,14", "verticalAlignment": "center" },
+            "children": [
+              {
+                "type": "Box",
+                "props": { "w": 42, "h": 42, "corner": 10, "backgroundColor": "#1E1E30", "contentAlignment": "center" },
+                "children": [{ "type": "Image", "props": { "url": "https://image.pollinations.ai/prompt/kaspersky_security_shield_logo_green?nologo=true&width=100&height=100&model=flux", "w": 26, "h": 26, "contentScale": "fit" } }]
+              },
+              { "type": "Spacer", "props": { "width": 12 } },
+              {
+                "type": "Column",
+                "props": { "weight": 1, "gap": 3 },
+                "children": [
+                  { "type": "Text", "props": { "text": "Kaspersky Endpoint Security", "fontSize": 13, "bold": "true", "color": "#FFFFFF" } },
+                  { "type": "Text", "props": { "text": "47 lisans · Yenileme: 1 Tem", "fontSize": 11, "color": "#88889A" } }
+                ]
+              },
+              {
+                "type": "Column",
+                "props": { "horizontalAlignment": "end", "gap": 4 },
+                "children": [
+                  { "type": "Text", "props": { "text": "₺5.640", "fontSize": 13, "bold": "true", "color": "#FFFFFF" } },
+                  { "type": "Box", "props": { "padding": "2,7,2,7", "corner": 4, "backgroundColor": "#0A1F0D" }, "children": [{ "type": "Text", "props": { "text": "Aktif", "fontSize": 10, "bold": "true", "color": "#00B012" } }] }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      { "type": "Spacer", "props": { "height": 90 } },
+
+      {
+        "type": "BottomBar",
+        "props": {
+          "fillMaxWidth": "true",
+          "backgroundColor": "#13131F",
+          "items": [
+            { "icon": "home", "label": "Ana Sayfa", "active": true, "onClick": { "type": "navigate", "destination": "home" } },
+            { "icon": "grid", "label": "Çözümler", "onClick": { "type": "navigate", "destination": "solutions" } },
+            { "icon": "history", "label": "Fatura", "onClick": { "type": "navigate", "destination": "billing" } },
+            { "icon": "person", "label": "Hesabım", "onClick": { "type": "navigate", "destination": "profile" } }
+          ]
+        }
+      }
+    ]
+  }
+}
