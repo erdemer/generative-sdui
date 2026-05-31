@@ -23,6 +23,20 @@ function computeSDUIStyle(node, p) {
     if (!p.elevation) s.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
   } else if (type === 'Box') {
     s.position = 'relative';
+    // contentAlignment used to apply ONLY to overlay children (index 1+),
+    // leaving a single in-flow child (icon circle, logo box) stuck top-left.
+    // Make the Box a flex container so the first child is aligned too.
+    // Absolutely-positioned overlay children ignore flex, so z-stacking still works.
+    if (p.contentAlignment) {
+      const a = String(p.contentAlignment).toLowerCase();
+      s.display = 'flex';
+      if (a.includes('start')) s.justifyContent = 'flex-start';
+      else if (a.includes('end')) s.justifyContent = 'flex-end';
+      else s.justifyContent = 'center';
+      if (a.includes('top')) s.alignItems = 'flex-start';
+      else if (a.includes('bottom')) s.alignItems = 'flex-end';
+      else s.alignItems = 'center';
+    }
   } else if (type === 'BottomBar') {
     s.display = 'flex'; s.flexDirection = 'row';
     s.position = 'sticky'; s.bottom = 0; s.left = 0; s.right = 0;
