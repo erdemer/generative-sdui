@@ -4,7 +4,7 @@ const { useState, useEffect, useRef, useCallback } = React;
 
 const NODE_WIDTH = 240;
 const PORT_R = 7;
-const PORT_OFFSET_Y = 24; // port center y from top of node
+const PORT_OFFSET_Y = 24;
 
 /* ── Mock Data ─────────────────────────────────────────────────────────────── */
 const MOCK_DATA = {
@@ -47,32 +47,60 @@ const MOCK_DATA = {
     nextTier: 'Platinum',
     toNextTier: 750,
     benefits: ['%20 Teknoloji İndirimi', 'Öncelikli Destek', 'Ücretsiz İade'],
-    expiring: '500 puan 30 Haziran\'da sona eriyor',
+    expiring: "500 puan 30 Haziran'da sona eriyor",
+  },
+  google_analytics: {
+    measurementId: 'G-SDU1PR0X00',
+    events: [
+      { name: 'screen_view',    color: '#F57C00', params: 'screen_name: HomeSDUI · user_segment: Premium',        ts: '14:32:01' },
+      { name: 'select_content', color: '#4CAF50', params: 'content_type: banner · item_id: gold_offer',            ts: '14:32:09' },
+      { name: 'select_item',    color: '#2196F3', params: 'item_name: iPhone 16 Pro · price: 89999 TRY',           ts: '14:32:17' },
+      { name: 'begin_checkout', color: '#9C27B0', params: 'value: 89999 · currency: TRY · num_items: 1',           ts: '14:33:02' },
+    ],
+  },
+  tealium: {
+    account: 'brand-demo',
+    profile: 'main',
+    events: [
+      { name: 'view',       color: '#0087BE', params: 'page_name: home_sdui · user_segment: Premium · loyalty: Gold', ts: '14:32:01' },
+      { name: 'link',       color: '#00B4D8', params: 'link_id: hero_cta · component: HeroBanner',                     ts: '14:32:09' },
+      { name: 'link',       color: '#00B4D8', params: 'link_id: product_card · product_name: iPhone 16 Pro',            ts: '14:32:17' },
+      { name: 'conversion', color: '#00CFE8', params: 'funnel_step: checkout_start · value: 89999 TRY',                 ts: '14:33:02' },
+    ],
   },
 };
 
 /* ── Node type configs ─────────────────────────────────────────────────────── */
 const NODE_TYPES = {
-  user_profile:    { label: 'Kullanıcı Profili',   icon: 'person',        color: '#7C3AED', isSource: true },
-  product_catalog: { label: 'Ürün Kataloğu',       icon: 'inventory_2',   color: '#0891B2', isSource: true },
-  campaigns:       { label: 'Kampanyalar',          icon: 'local_offer',   color: '#D97706', isSource: true },
-  transactions:    { label: 'İşlem Geçmişi',       icon: 'receipt_long',  color: '#059669', isSource: true },
-  loyalty:         { label: 'Sadakat & Puanlar',   icon: 'stars',         color: '#DC2626', isSource: true },
-  ai_generator:    { label: 'AI Ekran Üreticisi',  icon: 'auto_awesome',  color: '#E11D48', isSource: false },
+  /* Sources */
+  user_profile:     { label: 'Kullanıcı Profili',  icon: 'person',       color: '#7C3AED', isSource: true,  isSink: false },
+  product_catalog:  { label: 'Ürün Kataloğu',      icon: 'inventory_2',  color: '#0891B2', isSource: true,  isSink: false },
+  campaigns:        { label: 'Kampanyalar',         icon: 'local_offer',  color: '#D97706', isSource: true,  isSink: false },
+  transactions:     { label: 'İşlem Geçmişi',      icon: 'receipt_long', color: '#059669', isSource: true,  isSink: false },
+  loyalty:          { label: 'Sadakat & Puanlar',  icon: 'stars',        color: '#DC2626', isSource: true,  isSink: false },
+  /* Processors */
+  ai_generator:     { label: 'AI Ekran Üreticisi', icon: 'auto_awesome', color: '#E11D48', isSource: false, isSink: false },
+  /* Analytics Sinks */
+  google_analytics: { label: 'Google Analytics',   icon: 'analytics',    color: '#F57C00', isSource: false, isSink: true  },
+  tealium:          { label: 'Tealium CDP',         icon: 'hub',          color: '#005DAB', isSource: false, isSink: true  },
 };
 
 /* ── Default canvas state ──────────────────────────────────────────────────── */
 const DEFAULT_NODES = [
-  { id: 'user_profile_1',    type: 'user_profile',    position: { x: 60,  y: 55  } },
-  { id: 'product_catalog_1', type: 'product_catalog', position: { x: 60,  y: 215 } },
-  { id: 'campaigns_1',       type: 'campaigns',       position: { x: 60,  y: 375 } },
-  { id: 'ai_generator_1',    type: 'ai_generator',    position: { x: 420, y: 210 } },
+  { id: 'user_profile_1',     type: 'user_profile',     position: { x: 60,  y: 40  } },
+  { id: 'product_catalog_1',  type: 'product_catalog',  position: { x: 60,  y: 200 } },
+  { id: 'campaigns_1',        type: 'campaigns',         position: { x: 60,  y: 360 } },
+  { id: 'ai_generator_1',     type: 'ai_generator',     position: { x: 420, y: 195 } },
+  { id: 'google_analytics_1', type: 'google_analytics', position: { x: 780, y: 120 } },
+  { id: 'tealium_1',          type: 'tealium',          position: { x: 780, y: 300 } },
 ];
 
 const DEFAULT_EDGES = [
-  { id: 'e1', from: 'user_profile_1',    to: 'ai_generator_1' },
-  { id: 'e2', from: 'product_catalog_1', to: 'ai_generator_1' },
-  { id: 'e3', from: 'campaigns_1',       to: 'ai_generator_1' },
+  { id: 'e1', from: 'user_profile_1',    to: 'ai_generator_1'     },
+  { id: 'e2', from: 'product_catalog_1', to: 'ai_generator_1'     },
+  { id: 'e3', from: 'campaigns_1',       to: 'ai_generator_1'     },
+  { id: 'e4', from: 'ai_generator_1',    to: 'google_analytics_1' },
+  { id: 'e5', from: 'ai_generator_1',    to: 'tealium_1'          },
 ];
 
 /* ── Geometry helpers ──────────────────────────────────────────────────────── */
@@ -104,19 +132,28 @@ function GridBg({ offset }) {
 }
 
 /* ── EdgeLine ──────────────────────────────────────────────────────────────── */
-function EdgeLine({ edge, nodes, onDelete }) {
+function EdgeLine({ edge, nodes, onDelete, eventsActive }) {
   const fromNode = nodes.find(n => n.id === edge.from);
   const toNode   = nodes.find(n => n.id === edge.to);
   if (!fromNode || !toNode) return null;
+
   const p1  = getPortPos(fromNode, 'output');
   const p2  = getPortPos(toNode, 'input');
   const cfg = NODE_TYPES[fromNode.type];
   const d   = bezierPath(p1.x, p1.y, p2.x, p2.y);
+
+  const toSink = NODE_TYPES[toNode.type]?.isSink;
+  const isLive = eventsActive && toSink;
+
   return (
     <g style={{ cursor: 'pointer' }} onClick={() => onDelete(edge.id)}>
-      {/* Wide invisible hit area */}
       <path d={d} fill="none" stroke="transparent" strokeWidth={12} />
-      <path d={d} fill="none" stroke={cfg?.color || '#888'} strokeWidth={2} strokeOpacity={0.75} />
+      <path d={d} fill="none" stroke={cfg?.color || '#888'} strokeWidth={isLive ? 2.5 : 2} strokeOpacity={isLive ? 1 : 0.75} />
+      {isLive && (
+        <circle r={4} fill={cfg?.color || '#888'}>
+          <animateMotion dur="2s" repeatCount="indefinite" path={d} />
+        </circle>
+      )}
     </g>
   );
 }
@@ -135,8 +172,44 @@ function PendingEdgeLine({ fromNode, toPos }) {
   );
 }
 
+/* ── Analytics Event Log ───────────────────────────────────────────────────── */
+function AnalyticsEventLog({ events, eventsActive, accentColor }) {
+  if (!eventsActive) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0' }}>
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#333' }} />
+        <span style={{ color: '#444', fontSize: 10, fontStyle: 'italic' }}>Bekleniyor — AI Üretici'ye bağla ve Üret'e bas</span>
+      </div>
+    );
+  }
+  return (
+    <div>
+      {events.map((ev, i) => (
+        <div
+          key={i}
+          style={{
+            marginBottom: 5,
+            opacity: 0,
+            animation: `df-fadein 0.3s ease forwards`,
+            animationDelay: `${i * 0.18}s`,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
+            <span style={{ color: '#444', fontSize: 9, flexShrink: 0 }}>{ev.ts}</span>
+            <span style={{
+              background: `${ev.color}22`, border: `1px solid ${ev.color}55`,
+              color: ev.color, borderRadius: 3, padding: '0px 5px', fontSize: 9, fontWeight: 700,
+            }}>{ev.name}</span>
+          </div>
+          <div style={{ color: '#555', fontSize: 9, marginTop: 2, paddingLeft: 2, lineHeight: 1.4 }}>{ev.params}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ── Data Preview (in node body) ───────────────────────────────────────────── */
-function DataPreview({ nodeType }) {
+function DataPreview({ nodeType, eventsActive }) {
   const data = MOCK_DATA[nodeType];
   if (!data) return null;
 
@@ -199,6 +272,36 @@ function DataPreview({ nodeType }) {
     </div>
   );
 
+  if (nodeType === 'google_analytics') return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 }}>
+        <span style={{ color: '#555', fontSize: 9, fontFamily: 'monospace' }}>{data.measurementId}</span>
+        {eventsActive && (
+          <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#4CAF50', animation: 'df-pulse 1.2s ease-in-out infinite', display: 'inline-block' }} />
+            <span style={{ color: '#4CAF50', fontSize: 8, fontWeight: 700 }}>CANLI</span>
+          </span>
+        )}
+      </div>
+      <AnalyticsEventLog events={data.events} eventsActive={eventsActive} accentColor="#F57C00" />
+    </div>
+  );
+
+  if (nodeType === 'tealium') return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 }}>
+        <span style={{ color: '#555', fontSize: 9, fontFamily: 'monospace' }}>{data.account} / {data.profile}</span>
+        {eventsActive && (
+          <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#4CAF50', animation: 'df-pulse 1.2s ease-in-out infinite', display: 'inline-block' }} />
+            <span style={{ color: '#4CAF50', fontSize: 8, fontWeight: 700 }}>CANLI</span>
+          </span>
+        )}
+      </div>
+      <AnalyticsEventLog events={data.events} eventsActive={eventsActive} accentColor="#005DAB" />
+    </div>
+  );
+
   return null;
 }
 
@@ -220,10 +323,12 @@ function KV({ k, v }) {
 }
 
 /* ── FlowNode ──────────────────────────────────────────────────────────────── */
-function FlowNode({ node, selected, onSelect, onMouseDown, onOutputPortClick, onInputPortClick, isPending }) {
+function FlowNode({ node, selected, onSelect, onMouseDown, onOutputPortClick, onInputPortClick, isPending, eventsActive }) {
   const cfg = NODE_TYPES[node.type];
   if (!cfg) return null;
   const isTarget = isPending && !cfg.isSource;
+  const hasOutput = !cfg.isSink;    // sources + processors
+  const hasInput  = !cfg.isSource;  // processors + sinks
 
   return (
     <div
@@ -237,7 +342,9 @@ function FlowNode({ node, selected, onSelect, onMouseDown, onOutputPortClick, on
         borderRadius: 12,
         boxShadow: selected
           ? `0 0 0 3px ${cfg.color}33, 0 8px 28px rgba(0,0,0,0.6)`
-          : '0 4px 18px rgba(0,0,0,0.4)',
+          : eventsActive && cfg.isSink
+            ? `0 0 0 2px ${cfg.color}44, 0 4px 18px rgba(0,0,0,0.4)`
+            : '0 4px 18px rgba(0,0,0,0.4)',
         cursor: 'grab',
         userSelect: 'none',
         transition: 'border-color 0.12s, box-shadow 0.12s',
@@ -256,21 +363,28 @@ function FlowNode({ node, selected, onSelect, onMouseDown, onOutputPortClick, on
       }}>
         <span className="material-icons" style={{ fontSize: 15, color: 'white' }}>{cfg.icon}</span>
         <span style={{ color: 'white', fontWeight: 700, fontSize: 11, flex: 1, letterSpacing: 0.2 }}>{cfg.label}</span>
-        {!cfg.isSource && <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', background: 'rgba(0,0,0,0.2)', borderRadius: 4, padding: '2px 6px' }}>AI</span>}
+        {!cfg.isSource && !cfg.isSink && (
+          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', background: 'rgba(0,0,0,0.2)', borderRadius: 4, padding: '2px 6px' }}>AI</span>
+        )}
+        {cfg.isSink && (
+          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', background: 'rgba(0,0,0,0.2)', borderRadius: 4, padding: '2px 6px' }}>SINK</span>
+        )}
       </div>
 
       {/* Body */}
       <div style={{ padding: '10px 12px 12px' }}>
         {cfg.isSource
-          ? <DataPreview nodeType={node.type} />
-          : <div style={{ color: '#444', fontSize: 11, fontStyle: 'italic', lineHeight: 1.5 }}>
-              Veri kaynaklarını sol portuna bağla → AI kişiselleştirilmiş ekran üretir
-            </div>
+          ? <DataPreview nodeType={node.type} eventsActive={eventsActive} />
+          : cfg.isSink
+            ? <DataPreview nodeType={node.type} eventsActive={eventsActive} />
+            : <div style={{ color: '#444', fontSize: 11, fontStyle: 'italic', lineHeight: 1.5 }}>
+                Veri kaynaklarını sol portuna bağla → AI kişiselleştirilmiş ekran üretir ve analytics'e gönderir
+              </div>
         }
       </div>
 
-      {/* Output port */}
-      {cfg.isSource && (
+      {/* Output port (sources + processors) */}
+      {hasOutput && (
         <PortDot
           side="right"
           color={cfg.color}
@@ -280,8 +394,8 @@ function FlowNode({ node, selected, onSelect, onMouseDown, onOutputPortClick, on
         />
       )}
 
-      {/* Input port */}
-      {!cfg.isSource && (
+      {/* Input port (processors + sinks) */}
+      {hasInput && (
         <PortDot
           side="left"
           color={isTarget ? '#fff' : '#333'}
@@ -326,7 +440,8 @@ function PortDot({ side, color, title, onClick, active, pulse }) {
 /* ── NodeLibrary (left panel) ──────────────────────────────────────────────── */
 function NodeLibrary({ onAddNode }) {
   const sources    = Object.entries(NODE_TYPES).filter(([, c]) => c.isSource);
-  const processors = Object.entries(NODE_TYPES).filter(([, c]) => !c.isSource);
+  const processors = Object.entries(NODE_TYPES).filter(([, c]) => !c.isSource && !c.isSink);
+  const sinks      = Object.entries(NODE_TYPES).filter(([, c]) => c.isSink);
 
   return (
     <div style={{ width: 196, borderRight: '1px solid #1a1a38', padding: '14px 10px', background: '#0c0c1e', overflowY: 'auto', flexShrink: 0 }}>
@@ -335,10 +450,16 @@ function NodeLibrary({ onAddNode }) {
         <LibraryItem key={type} cfg={cfg} onClick={() => onAddNode(type)} />
       ))}
 
-      <div style={{ margin: '18px 0 12px', height: 1, background: '#1a1a38' }} />
+      <div style={{ margin: '14px 0 12px', height: 1, background: '#1a1a38' }} />
       <SectionLabel>İşlemciler</SectionLabel>
       {processors.map(([type, cfg]) => (
         <LibraryItem key={type} cfg={cfg} onClick={() => onAddNode(type)} />
+      ))}
+
+      <div style={{ margin: '14px 0 12px', height: 1, background: '#1a1a38' }} />
+      <SectionLabel>Analytics Hedefleri</SectionLabel>
+      {sinks.map(([type, cfg]) => (
+        <LibraryItem key={type} cfg={cfg} badge="SINK" onClick={() => onAddNode(type)} />
       ))}
 
       <div style={{ marginTop: 20, padding: 10, background: '#0a0a1a', borderRadius: 8, border: '1px solid #1a1a38' }}>
@@ -357,7 +478,7 @@ function SectionLabel({ children }) {
   return <div style={{ fontSize: 9, fontWeight: 700, color: '#444', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>{children}</div>;
 }
 
-function LibraryItem({ cfg, onClick }) {
+function LibraryItem({ cfg, badge, onClick }) {
   const [hover, setHover] = useState(false);
   return (
     <div
@@ -374,13 +495,14 @@ function LibraryItem({ cfg, onClick }) {
       }}
     >
       <span className="material-icons" style={{ fontSize: 14, color: cfg.color }}>{cfg.icon}</span>
-      <span style={{ fontSize: 11, color: hover ? '#eee' : '#aaa' }}>{cfg.label}</span>
+      <span style={{ fontSize: 11, color: hover ? '#eee' : '#aaa', flex: 1 }}>{cfg.label}</span>
+      {badge && <span style={{ fontSize: 8, color: cfg.color, background: `${cfg.color}22`, border: `1px solid ${cfg.color}44`, borderRadius: 3, padding: '1px 4px' }}>{badge}</span>}
     </div>
   );
 }
 
 /* ── NodeInspector (right panel) ───────────────────────────────────────────── */
-function NodeInspector({ nodeId, nodes, edges, onDeleteEdge, onDeleteNode }) {
+function NodeInspector({ nodeId, nodes, edges, onDeleteEdge, onDeleteNode, eventsActive }) {
   const node = nodes.find(n => n.id === nodeId);
   if (!node) return null;
   const cfg = NODE_TYPES[node.type];
@@ -389,7 +511,10 @@ function NodeInspector({ nodeId, nodes, edges, onDeleteEdge, onDeleteNode }) {
   const inputEdges  = edges.filter(e => e.to === nodeId);
   const outputEdges = edges.filter(e => e.from === nodeId);
   const inputNodes  = inputEdges.map(e => nodes.find(n => n.id === e.from)).filter(Boolean);
+  const outputNodes = outputEdges.map(e => nodes.find(n => n.id === e.to)).filter(Boolean);
   const data        = MOCK_DATA[node.type];
+
+  const roleLabel = cfg.isSource ? 'Mock Veri Kaynağı' : cfg.isSink ? 'Analytics Hedefi' : 'AI İşlemcisi';
 
   return (
     <div style={{ width: 256, borderLeft: '1px solid #1a1a38', background: '#0c0c1e', overflowY: 'auto', flexShrink: 0 }}>
@@ -400,41 +525,39 @@ function NodeInspector({ nodeId, nodes, edges, onDeleteEdge, onDeleteNode }) {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ color: '#eee', fontSize: 12, fontWeight: 700 }}>{cfg.label}</div>
-          <div style={{ color: '#444', fontSize: 10, marginTop: 1 }}>{cfg.isSource ? 'Mock Veri Kaynağı' : 'AI İşlemcisi'}</div>
+          <div style={{ color: '#444', fontSize: 10, marginTop: 1 }}>{roleLabel}</div>
         </div>
         <button onClick={() => onDeleteNode(nodeId)} style={{ background: 'none', border: '1px solid #2a2a4e', borderRadius: 6, color: '#555', padding: '3px 8px', cursor: 'pointer', fontSize: 10, flexShrink: 0 }}>Sil</button>
       </div>
 
-      {/* Connections section */}
-      {!cfg.isSource && (
+      {/* Connections — incoming */}
+      {inputNodes.length > 0 && (
         <div style={{ padding: '12px 14px', borderBottom: '1px solid #1a1a38' }}>
-          <SectionLabel>Bağlı Kaynaklar ({inputNodes.length})</SectionLabel>
-          {inputNodes.length === 0
-            ? <div style={{ color: '#333', fontSize: 11, fontStyle: 'italic' }}>Henüz bağlantı yok</div>
-            : inputNodes.map(n => {
-                const nc = NODE_TYPES[n.type];
-                const edge = inputEdges.find(e => e.from === n.id);
-                return (
-                  <div key={n.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: nc?.color, flexShrink: 0 }}/>
-                    <span style={{ color: '#bbb', fontSize: 11, flex: 1 }}>{nc?.label}</span>
-                    <button onClick={() => onDeleteEdge(edge?.id)} style={{ background: 'none', border: 'none', color: '#444', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '0 2px' }}>×</button>
-                  </div>
-                );
-              })
-          }
+          <SectionLabel>Gelen Bağlantılar ({inputNodes.length})</SectionLabel>
+          {inputNodes.map(n => {
+            const nc = NODE_TYPES[n.type];
+            const edge = inputEdges.find(e => e.from === n.id);
+            return (
+              <div key={n.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: nc?.color, flexShrink: 0 }}/>
+                <span style={{ color: '#bbb', fontSize: 11, flex: 1 }}>{nc?.label}</span>
+                <button onClick={() => onDeleteEdge(edge?.id)} style={{ background: 'none', border: 'none', color: '#444', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '0 2px' }}>×</button>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {cfg.isSource && outputEdges.length > 0 && (
+      {/* Connections — outgoing */}
+      {outputNodes.length > 0 && (
         <div style={{ padding: '12px 14px', borderBottom: '1px solid #1a1a38' }}>
-          <SectionLabel>Bağlantılar</SectionLabel>
+          <SectionLabel>Giden Bağlantılar ({outputNodes.length})</SectionLabel>
           {outputEdges.map(e => {
             const targetNode = nodes.find(n => n.id === e.to);
             const tc = targetNode ? NODE_TYPES[targetNode.type] : null;
             return (
               <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                <span className="material-icons" style={{ fontSize: 11, color: '#444' }}>arrow_forward</span>
+                <span className="material-icons" style={{ fontSize: 11, color: tc?.color || '#444' }}>arrow_forward</span>
                 <span style={{ color: '#bbb', fontSize: 11, flex: 1 }}>{tc?.label}</span>
                 <button onClick={() => onDeleteEdge(e.id)} style={{ background: 'none', border: 'none', color: '#444', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '0 2px' }}>×</button>
               </div>
@@ -443,11 +566,63 @@ function NodeInspector({ nodeId, nodes, edges, onDeleteEdge, onDeleteNode }) {
         </div>
       )}
 
+      {/* Analytics sink live status */}
+      {cfg.isSink && (
+        <div style={{ padding: '10px 14px', borderBottom: '1px solid #1a1a38' }}>
+          <SectionLabel>Durum</SectionLabel>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{
+              width: 7, height: 7, borderRadius: '50%',
+              background: eventsActive ? '#4CAF50' : '#333',
+              animation: eventsActive ? 'df-pulse 1.2s ease-in-out infinite' : 'none',
+            }} />
+            <span style={{ color: eventsActive ? '#4CAF50' : '#555', fontSize: 11, fontWeight: 600 }}>
+              {eventsActive ? 'Canlı — Event akışı aktif' : 'Bekleniyor'}
+            </span>
+          </div>
+          {eventsActive && (
+            <div style={{ marginTop: 8, color: '#444', fontSize: 10 }}>
+              {data?.events?.length || 0} event gönderildi
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Full data view */}
-      {data && (
+      {data && !cfg.isSink && (
         <div style={{ padding: '12px 14px' }}>
           <SectionLabel>Mock Veri</SectionLabel>
           <FullDataView data={data} />
+        </div>
+      )}
+
+      {/* Sink config view */}
+      {cfg.isSink && data && (
+        <div style={{ padding: '12px 14px' }}>
+          <SectionLabel>Konfigürasyon</SectionLabel>
+          {node.type === 'google_analytics' && (
+            <div>
+              <KV k="Measurement ID" v={data.measurementId} />
+              <KV k="Event sayısı" v={data.events.length} />
+            </div>
+          )}
+          {node.type === 'tealium' && (
+            <div>
+              <KV k="Account" v={data.account} />
+              <KV k="Profile" v={data.profile} />
+              <KV k="Event sayısı" v={data.events.length} />
+            </div>
+          )}
+          <div style={{ marginTop: 12 }}>
+            <SectionLabel>Event Listesi</SectionLabel>
+            {data.events.map((ev, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: ev.color, flexShrink: 0 }} />
+                <span style={{ color: ev.color, fontSize: 10, fontWeight: 700, minWidth: 90 }}>{ev.name}</span>
+                <span style={{ color: '#444', fontSize: 9 }}>{ev.ts}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -495,12 +670,13 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
   const [nodes,          setNodes         ] = useState(DEFAULT_NODES);
   const [edges,          setEdges         ] = useState(DEFAULT_EDGES);
   const [selected,       setSelected      ] = useState(null);
-  const [dragging,       setDragging      ] = useState(null);   // { nodeId, offX, offY }
-  const [pendingEdge,    setPendingEdge   ] = useState(null);   // { fromNodeId }
+  const [dragging,       setDragging      ] = useState(null);
+  const [pendingEdge,    setPendingEdge   ] = useState(null);
   const [canvasOffset,   setCanvasOffset  ] = useState({ x: 60, y: 60 });
-  const [canvasDragging, setCanvasDragging] = useState(null);   // { startX, startY, offX, offY }
+  const [canvasDragging, setCanvasDragging] = useState(null);
   const [mousePos,       setMousePos      ] = useState({ x: 0, y: 0 });
   const [generating,     setGenerating    ] = useState(false);
+  const [eventsActive,   setEventsActive  ] = useState(false);
   const [prompt,         setPrompt        ] = useState('Bağlı kullanıcı profili ve veri kaynaklarına göre kişiselleştirilmiş bir ana ekran oluştur');
   const canvasRef = useRef();
 
@@ -604,14 +780,20 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
 
   const handleAutoLayout = useCallback(() => {
     const sources    = nodes.filter(n => NODE_TYPES[n.type]?.isSource);
-    const processors = nodes.filter(n => !NODE_TYPES[n.type]?.isSource);
+    const processors = nodes.filter(n => !NODE_TYPES[n.type]?.isSource && !NODE_TYPES[n.type]?.isSink);
+    const sinks      = nodes.filter(n => NODE_TYPES[n.type]?.isSink);
     const spacing    = 160;
-    const startY     = Math.max(0, (400 - sources.length * spacing) / 2);
+
     const updated = nodes.map(n => {
       const si = sources.findIndex(s => s.id === n.id);
-      if (si >= 0) return { ...n, position: { x: 60, y: startY + si * spacing } };
+      if (si >= 0) return { ...n, position: { x: 60, y: 40 + si * spacing } };
+
       const pi = processors.findIndex(p => p.id === n.id);
-      if (pi >= 0) return { ...n, position: { x: 420, y: startY + pi * spacing + (sources.length * spacing - processors.length * spacing) / 2 } };
+      if (pi >= 0) return { ...n, position: { x: 420, y: 40 + pi * spacing + Math.max(0, (sources.length - processors.length) * spacing / 2) } };
+
+      const ki = sinks.findIndex(k => k.id === n.id);
+      if (ki >= 0) return { ...n, position: { x: 780, y: 40 + ki * spacing + Math.max(0, (sources.length - sinks.length) * spacing / 2) } };
+
       return n;
     });
     setNodes(updated);
@@ -623,6 +805,7 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
       setNodes(DEFAULT_NODES);
       setEdges(DEFAULT_EDGES);
       setSelected(null);
+      setEventsActive(false);
       setCanvasOffset({ x: 60, y: 60 });
     }
   }, []);
@@ -640,17 +823,20 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
     });
 
     setGenerating(true);
+    setEventsActive(false);
     try {
       await onFlowGenerate(context, prompt);
+      setEventsActive(true);
     } finally {
       setGenerating(false);
     }
   }, [nodes, edges, prompt, onFlowGenerate]);
 
   /* ── Derived ── */
-  const fromNode           = pendingEdge ? nodes.find(n => n.id === pendingEdge.fromNodeId) : null;
-  const aiNode             = nodes.find(n => n.type === 'ai_generator');
-  const connectedSrcCount  = aiNode ? edges.filter(e => e.to === aiNode.id).length : 0;
+  const fromNode          = pendingEdge ? nodes.find(n => n.id === pendingEdge.fromNodeId) : null;
+  const aiNode            = nodes.find(n => n.type === 'ai_generator');
+  const connectedSrcCount = aiNode ? edges.filter(e => e.to === aiNode.id).length : 0;
+  const sinkCount         = nodes.filter(n => NODE_TYPES[n.type]?.isSink).length;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', background: '#09091a' }}>
@@ -671,6 +857,13 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
         <span style={{ color: '#eee', fontWeight: 700, fontSize: 13 }}>Personalization Flow</span>
         <span style={{ fontSize: 10, color: '#E11D4877', background: '#E11D4811', border: '1px solid #E11D4833', borderRadius: 4, padding: '1px 7px' }}>Mock Veri</span>
 
+        {eventsActive && (
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#4CAF50', background: '#4CAF5011', border: '1px solid #4CAF5033', borderRadius: 4, padding: '1px 8px' }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#4CAF50', animation: 'df-pulse 1.2s ease-in-out infinite', display: 'inline-block' }} />
+            {sinkCount} Analytics hedefine event akıyor
+          </span>
+        )}
+
         <div style={{ flex: 1 }} />
 
         {/* Prompt input */}
@@ -679,7 +872,7 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
           onChange={e => setPrompt(e.target.value)}
           placeholder="Ekran için prompt…"
           style={{
-            flex: '0 1 380px', background: '#111126', border: '1px solid #252545',
+            flex: '0 1 340px', background: '#111126', border: '1px solid #252545',
             borderRadius: 8, color: '#eee', fontSize: 11, padding: '7px 12px', outline: 'none',
           }}
           onFocus={e => e.target.style.borderColor = '#E11D48'}
@@ -734,7 +927,13 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
           <div style={{ transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px)`, position: 'absolute', top: 0, left: 0, pointerEvents: 'none', zIndex: 1 }}>
             <svg style={{ position: 'absolute', overflow: 'visible' }}>
               {edges.map(e => (
-                <EdgeLine key={e.id} edge={e} nodes={nodes} onDelete={edgeId => { setEdges(prev => prev.filter(ed => ed.id !== edgeId)); }} />
+                <EdgeLine
+                  key={e.id}
+                  edge={e}
+                  nodes={nodes}
+                  eventsActive={eventsActive}
+                  onDelete={edgeId => { setEdges(prev => prev.filter(ed => ed.id !== edgeId)); }}
+                />
               ))}
               {fromNode && <PendingEdgeLine fromNode={fromNode} toPos={mousePos} />}
             </svg>
@@ -752,6 +951,7 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
                 onOutputPortClick={handleOutputPortClick}
                 onInputPortClick={handleInputPortClick}
                 isPending={!!pendingEdge}
+                eventsActive={eventsActive}
               />
             ))}
           </div>
@@ -763,7 +963,7 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
               background: '#111126cc', border: '1px solid #252545', backdropFilter: 'blur(8px)',
               borderRadius: 8, padding: '5px 14px', color: '#aaa', fontSize: 11, pointerEvents: 'none', zIndex: 20,
             }}>
-              AI Üretici'nin giriş portuna tıkla &nbsp;·&nbsp; <kbd style={{ background: '#1e1e42', borderRadius: 3, padding: '1px 5px', fontSize: 10 }}>ESC</kbd> ile iptal
+              Hedef node'un giriş portuna tıkla &nbsp;·&nbsp; <kbd style={{ background: '#1e1e42', borderRadius: 3, padding: '1px 5px', fontSize: 10 }}>ESC</kbd> ile iptal
             </div>
           )}
 
@@ -776,6 +976,26 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
               </div>
             </div>
           )}
+
+          {/* Legend */}
+          <div style={{
+            position: 'absolute', bottom: 14, right: 14,
+            background: '#0c0c1ecc', border: '1px solid #1a1a38', backdropFilter: 'blur(8px)',
+            borderRadius: 8, padding: '8px 12px', pointerEvents: 'none', zIndex: 20,
+          }}>
+            <div style={{ fontSize: 9, color: '#444', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>Akış</div>
+            {[
+              { color: '#7C3AED', label: 'Veri Kaynakları' },
+              { color: '#E11D48', label: 'AI Üretici' },
+              { color: '#F57C00', label: 'Google Analytics' },
+              { color: '#005DAB', label: 'Tealium CDP' },
+            ].map(({ color, label }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: color }} />
+                <span style={{ color: '#555', fontSize: 10 }}>{label}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Inspector */}
@@ -786,6 +1006,7 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
             edges={edges}
             onDeleteEdge={handleDeleteEdge}
             onDeleteNode={handleDeleteNode}
+            eventsActive={eventsActive}
           />
         )}
       </div>
@@ -796,6 +1017,7 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
           50%       { transform: scale(1.3); box-shadow: 0 0 0 7px rgba(255,255,255,0); }
         }
         @keyframes df-spin { to { transform: rotate(360deg); } }
+        @keyframes df-fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
         .df-canvas-bg { background: #09091a; }
       `}</style>
     </div>
