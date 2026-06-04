@@ -641,10 +641,33 @@ function AttrSection({ title, children, defaultOpen = true }) {
 
 function AttrRow({ label, children }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '86px 1fr', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-      <label style={{ fontSize: 11, color: 'var(--fg-3)' }}>{label}</label>
+    <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+      <label style={{ fontSize: 11, color: 'var(--fg-3)', paddingTop: 5, lineHeight: 1.3 }}>{label}</label>
       <div style={{ minWidth: 0 }}>{children}</div>
     </div>
+  );
+}
+
+function AutoTextarea({ className, style, value, onChange, onBlur, onKeyDown, placeholder, ...rest }) {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    if (!ref.current) return;
+    ref.current.style.height = 'auto';
+    ref.current.style.height = ref.current.scrollHeight + 'px';
+  }, [value]);
+  return (
+    <textarea
+      ref={ref}
+      className={className}
+      style={{ resize: 'none', overflow: 'hidden', lineHeight: 1.45, minHeight: 26, ...style }}
+      value={value}
+      onChange={onChange}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+      placeholder={placeholder}
+      rows={1}
+      {...rest}
+    />
   );
 }
 
@@ -671,13 +694,13 @@ function ColorRow({ value, onChange }) {
   const handleKey = (e) => { if (e.key === 'Enter') handleBlur(); };
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, height: 26, padding: '0 4px 0 6px', border: '1px solid var(--input-line)', borderRadius: 6, background: 'var(--input)', width: '100%' }}>
-      <span style={{ width: 14, height: 14, borderRadius: 4, background: value, border: '1px solid var(--line)', flexShrink: 0 }}/>
-      <input 
-        style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg)', flex: 1, minWidth: 0, background: 'transparent', border: 0, outline: 'none' }}
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, minHeight: 26, padding: '4px 4px 4px 6px', border: '1px solid var(--input-line)', borderRadius: 6, background: 'var(--input)', width: '100%' }}>
+      <span style={{ width: 14, height: 14, borderRadius: 4, background: value, border: '1px solid var(--line)', flexShrink: 0, marginTop: 1 }}/>
+      <AutoTextarea
+        style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg)', flex: 1, minWidth: 0, background: 'transparent', border: 0, outline: 'none', padding: 0 }}
         value={val} onChange={e => setVal(e.target.value)} onBlur={handleBlur} onKeyDown={handleKey}
       />
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--fg-3)' }}>100%</span>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--fg-3)', flexShrink: 0, marginTop: 2 }}>100%</span>
     </div>
   );
 }
@@ -711,11 +734,11 @@ function SelectedAttributes({ selection, lang, onChangeProp, onRefine }) {
       <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--line)', background: 'var(--panel-2)' }}>
         <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--fg-3)', marginBottom: 6 }}>{lang === 'tr' ? 'KİMLİK VE ETİKET' : 'IDENTITY & LABEL'}</div>
         <div style={{ position: 'relative' }}>
-          <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 12, fontWeight: 700, color: 'var(--brand)' }}>$</span>
-          <input 
-            className="input" 
+          <span style={{ position: 'absolute', left: 8, top: 6, fontSize: 12, fontWeight: 700, color: 'var(--brand)' }}>$</span>
+          <AutoTextarea
+            className="input"
             placeholder={lang === 'tr' ? 'Etiket (örn: topCard)' : 'Label (ex: topCard)'}
-            style={{ height: 28, width: '100%', paddingLeft: 18, fontSize: 12, fontWeight: 600, border: '1px solid var(--brand-soft)' }}
+            style={{ minHeight: 28, width: '100%', paddingLeft: 18, fontSize: 12, fontWeight: 600, border: '1px solid var(--brand-soft)' }}
             value={(p.sduiLabel || "").replace('$', '')}
             onChange={e => {
               const val = e.target.value.replace('$', '');
@@ -785,7 +808,7 @@ function SelectedAttributes({ selection, lang, onChangeProp, onRefine }) {
             </select>
           </AttrRow>
           <AttrRow label={lang==='tr'?'Hedef':'Target'}>
-            <input className="input" style={{ height: 26, fontSize: 11, fontFamily: 'var(--font-mono)', width: '100%' }} defaultValue="/product/123"/>
+            <AutoTextarea className="input" style={{ minHeight: 26, fontSize: 11, fontFamily: 'var(--font-mono)', width: '100%' }} defaultValue="/product/123"/>
           </AttrRow>
         </AttrSection>
       )}
