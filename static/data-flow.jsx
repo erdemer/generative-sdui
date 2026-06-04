@@ -591,7 +591,6 @@ function NodeInspector({ nodeId, nodes, edges, onDeleteEdge, onDeleteNode, event
       {/* Full data view */}
       {data && !cfg.isSink && (
         <div style={{ padding: '12px 14px' }}>
-          <SectionLabel>Mock Veri</SectionLabel>
           <FullDataView data={data} />
         </div>
       )}
@@ -855,7 +854,6 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
 
         <span className="material-icons" style={{ fontSize: 18, color: '#E11D48' }}>device_hub</span>
         <span style={{ color: '#eee', fontWeight: 700, fontSize: 13 }}>Personalization Flow</span>
-        <span style={{ fontSize: 10, color: '#E11D4877', background: '#E11D4811', border: '1px solid #E11D4833', borderRadius: 4, padding: '1px 7px' }}>Mock Veri</span>
 
         {eventsActive && (
           <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#4CAF50', background: '#4CAF5011', border: '1px solid #4CAF5033', borderRadius: 4, padding: '1px 8px' }}>
