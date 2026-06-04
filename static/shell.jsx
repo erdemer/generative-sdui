@@ -680,8 +680,8 @@ function NumInput({ value, unit = "px", onChange }) {
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      <input className="input" value={val} onChange={e => setVal(e.target.value)} onBlur={handleBlur} onKeyDown={handleKey} style={{ height: 26, width: '100%', paddingRight: 26, fontSize: 11, fontFamily: 'var(--font-mono)' }}/>
-      <span style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: 'var(--fg-3)', fontFamily: 'var(--font-mono)' }}>{unit}</span>
+      <input className="input" value={val} onChange={e => setVal(e.target.value)} onBlur={handleBlur} onKeyDown={handleKey} style={{ width: '100%', paddingRight: 26, fontSize: 11, fontFamily: 'var(--font-mono)', padding: '5px 26px 5px 10px' }}/>
+      <span style={{ position: 'absolute', right: 8, top: 0, bottom: 0, display: 'flex', alignItems: 'center', fontSize: 10, color: 'var(--fg-3)', fontFamily: 'var(--font-mono)', pointerEvents: 'none' }}>{unit}</span>
     </div>
   );
 }
@@ -772,7 +772,7 @@ function SelectedAttributes({ selection, lang, onChangeProp, onRefine }) {
         <AttrSection title={t(lang,"typography")}>
           <AttrRow label={t(lang,"fontSize")}><NumInput value={p.fontSize || 16} onChange={v => onChangeProp && onChangeProp('fontSize', v)}/></AttrRow>
           <AttrRow label={t(lang,"fontWeight")}>
-            <select className="select" style={{ height: 26, fontSize: 11, width: '100%', textOverflow: 'ellipsis' }} value={p.fontWeight || "600"} onChange={e => onChangeProp && onChangeProp('fontWeight', e.target.value)}>
+            <select className="select" style={{ fontSize: 11 }} value={p.fontWeight || "600"} onChange={e => onChangeProp && onChangeProp('fontWeight', e.target.value)}>
               <option value="400">Regular · 400</option>
               <option value="500">Medium · 500</option>
               <option value="600">Semibold · 600</option>
@@ -788,7 +788,7 @@ function SelectedAttributes({ selection, lang, onChangeProp, onRefine }) {
         {!isMulti && <AttrRow label={t(lang,"radius")}><NumInput value={p.radius || p.borderRadius || 12} onChange={v => onChangeProp && onChangeProp('borderRadius', v)}/></AttrRow>}
         {!isMulti && (
           <AttrRow label={lang==='tr'?'Gölge':'Shadow'}>
-            <select className="select" style={{ height: 26, fontSize: 11, width: '100%', textOverflow: 'ellipsis' }} value={p.shadow || "sm"} onChange={e => onChangeProp && onChangeProp('shadow', e.target.value)}>
+            <select className="select" style={{ fontSize: 11 }} value={p.shadow || "sm"} onChange={e => onChangeProp && onChangeProp('shadow', e.target.value)}>
               <option value="none">None</option>
               <option value="sm">Soft · sm</option>
               <option value="md">Medium · md</option>
@@ -801,7 +801,7 @@ function SelectedAttributes({ selection, lang, onChangeProp, onRefine }) {
       {!isMulti && (
         <AttrSection title={t(lang,"interactions")} defaultOpen={false}>
           <AttrRow label={t(lang,"onTap")}>
-            <select className="select" style={{ height: 26, fontSize: 11, width: '100%', textOverflow: 'ellipsis' }} defaultValue="navigate">
+            <select className="select" style={{ fontSize: 11 }} defaultValue="navigate">
               <option value="none">{t(lang,"none")}</option>
               <option value="navigate">{t(lang,"navigate")}</option>
               <option value="track">{t(lang,"track")}</option>
