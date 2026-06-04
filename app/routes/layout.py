@@ -35,7 +35,7 @@ async def update_layout(
             "reject_reason": None,
         }
         state.pending_publishes.append(item)
-        approvals_store.save(state.pending_publishes)
+        await approvals_store.save_async(state.pending_publishes)
         print(f"📝 Onay bekliyor: {sess['username']} → {screen_name} ({platform})")
         return {"status": "pending_approval", "id": item["id"]}
 
