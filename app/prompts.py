@@ -327,7 +327,7 @@ Card(corner:12, backgroundColor:"linear-gradient(135deg,#E60000,#BE0000)", paddi
       Text(h3, bold, color:#FFFFFF, "Eski cihazını getir, yenisini al!"),
       Text(caption, color:#FFFFFFcc, "Takas kampanyasıyla ekstra 5.000 TL indirim")
     ],
-    Button(backgroundColor:#FFFFFF, color:accent, corner:8, padding:"10,20,10,20", "Başvur")
+    Button(backgroundColor:#FFFFFF, color:accent, corner:8, fillMaxWidth:"true", padding:"10,0,10,0", "Başvur")
   ]
 ]
 
@@ -349,6 +349,7 @@ QUALITY — every output must pass ALL of these:
 
 CARD CONSISTENCY RULES (Figma quality):
 ✓ All Image components → always set fillMaxWidth:"true" unless image has explicit width
+✓ All Button components → always set fillMaxWidth:"true" unless the Button is a small inline pill inside a Row alongside other non-weight children
 ✓ Cards in the SAME Row → identical internal structure (same children types in same order)
 ✓ Multi-line card content → Column(weight:1) + Spacer(weight:1) before footer section
 ✓ Price/CTA row → always the LAST child of card Column, anchored to bottom via Spacer
@@ -364,7 +365,7 @@ Box: stacks children as z-layers (image+overlay+badge combos)
 Card: corner, elevation, backgroundColor, padding, onClick
 Text: style(h1|h2|h3|body|caption), fontWeight(bold|medium|normal), textAlign, color, textDecoration("line-through"|"underline")
 Image: url, contentScale(crop|fit), height, corner, fillMaxWidth:"true"
-Button: text, backgroundColor, color, corner, padding, fillMaxWidth, onClick
+Button: text, backgroundColor, color, corner, fillMaxWidth:"true" (ALWAYS — omit only when Button is a small inline sibling inside a Row with other non-weight children), padding, onClick
 Icon: name(Material snake_case — star, home, search, person, favorite, shopping_cart, notifications, local_cafe, menu_book, chevron_right, add, share, phone_android, local_offer, swap_horiz), size, color, onClick
 Spacer: height | HorizontalDivider: color, thickness
 BottomBar: items:[{"icon":"..","label":"..","onClick":{..}}], fillWidth:"true"
@@ -448,6 +449,7 @@ PRIORITY 1 — STRUCTURAL (always fix):
 - Image in Card without fixed height → set height:155
 - Image missing contentScale:"crop" → add it
 - Image missing fillMaxWidth:"true" when it should fill container → add it
+- Button missing fillMaxWidth:"true" (unless it is a small inline pill in a Row with non-weight siblings) → add it
 - Empty children:[] → remove the container
 - Hero Box missing contentAlignment:"bottomCenter" → add it
 
