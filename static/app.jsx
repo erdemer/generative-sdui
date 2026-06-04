@@ -767,6 +767,88 @@ function App() {
         </div>
       </div>
 
+      {publishState === 'loading' && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(10, 10, 20, 0.92)',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(8px)',
+        }}>
+          <style>{`
+            @keyframes pub-rocket-fly {
+              0%   { transform: translateY(0px) rotate(-45deg); }
+              25%  { transform: translateY(-18px) rotate(-45deg); }
+              50%  { transform: translateY(-8px) rotate(-45deg); }
+              75%  { transform: translateY(-22px) rotate(-45deg); }
+              100% { transform: translateY(0px) rotate(-45deg); }
+            }
+            @keyframes pub-pulse-ring {
+              0%   { transform: scale(0.6); opacity: 0.8; }
+              100% { transform: scale(2.2); opacity: 0; }
+            }
+            @keyframes pub-trail {
+              0%   { opacity: 0.9; transform: scaleX(1); }
+              100% { opacity: 0; transform: scaleX(0.2); }
+            }
+            @keyframes pub-dots {
+              0%, 80%, 100% { transform: scale(0); }
+              40%            { transform: scale(1); }
+            }
+            @keyframes pub-shimmer {
+              0%   { background-position: -400px 0; }
+              100% { background-position: 400px 0; }
+            }
+          `}</style>
+
+          {/* Pulse rings */}
+          {[0, 300, 600].map(delay => (
+            <div key={delay} style={{
+              position: 'absolute',
+              width: 120, height: 120,
+              borderRadius: '50%',
+              border: '2px solid rgba(99,102,241,0.6)',
+              animation: `pub-pulse-ring 1.6s ${delay}ms ease-out infinite`,
+            }}/>
+          ))}
+
+          {/* Rocket */}
+          <div style={{
+            fontSize: 64,
+            animation: 'pub-rocket-fly 1.2s ease-in-out infinite',
+            filter: 'drop-shadow(0 0 18px rgba(99,102,241,0.9))',
+            position: 'relative', zIndex: 1,
+          }}>🚀</div>
+
+          {/* Shimmer text */}
+          <div style={{
+            marginTop: 32,
+            fontSize: 18,
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            background: 'linear-gradient(90deg, #6366f1 0%, #a5b4fc 40%, #6366f1 60%, #818cf8 100%)',
+            backgroundSize: '400px 100%',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            animation: 'pub-shimmer 1.6s linear infinite',
+          }}>
+            {lang === 'tr' ? 'Yayınlanıyor…' : 'Publishing…'}
+          </div>
+
+          {/* Bouncing dots */}
+          <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+            {[0, 160, 320].map(delay => (
+              <div key={delay} style={{
+                width: 8, height: 8,
+                borderRadius: '50%',
+                background: '#818cf8',
+                animation: `pub-dots 1.2s ${delay}ms ease-in-out infinite`,
+              }}/>
+            ))}
+          </div>
+        </div>
+      )}
+
       {showApprovals && (
         <window.SDUIAuth.ApprovalsPanel
           lang={lang}
