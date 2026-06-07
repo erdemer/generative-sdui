@@ -123,7 +123,7 @@ function GridBg({ offset }) {
     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
       <defs>
         <pattern id="df-grid" x={ox} y={oy} width={sp} height={sp} patternUnits="userSpaceOnUse">
-          <circle cx={sp / 2} cy={sp / 2} r={1} fill="rgba(255,255,255,0.07)" />
+          <circle cx={sp / 2} cy={sp / 2} r={1} fill="rgba(0,0,0,0.12)" />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#df-grid)" />
@@ -177,8 +177,8 @@ function AnalyticsEventLog({ events, eventsActive, accentColor }) {
   if (!eventsActive) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0' }}>
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#333' }} />
-        <span style={{ color: '#444', fontSize: 10, fontStyle: 'italic' }}>Bekleniyor — AI Üretici'ye bağla ve Üret'e bas</span>
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#cbd5e1' }} />
+        <span style={{ color: '#64748b', fontSize: 10, fontStyle: 'italic' }}>Bekleniyor — AI Üretici'ye bağla ve Üret'e bas</span>
       </div>
     );
   }
@@ -195,13 +195,13 @@ function AnalyticsEventLog({ events, eventsActive, accentColor }) {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-            <span style={{ color: '#444', fontSize: 9, flexShrink: 0 }}>{ev.ts}</span>
+            <span style={{ color: '#94a3b8', fontSize: 9, flexShrink: 0 }}>{ev.ts}</span>
             <span style={{
               background: `${ev.color}22`, border: `1px solid ${ev.color}55`,
               color: ev.color, borderRadius: 3, padding: '0px 5px', fontSize: 9, fontWeight: 700,
             }}>{ev.name}</span>
           </div>
-          <div style={{ color: '#555', fontSize: 9, marginTop: 2, paddingLeft: 2, lineHeight: 1.4 }}>{ev.params}</div>
+          <div style={{ color: '#64748b', fontSize: 9, marginTop: 2, paddingLeft: 2, lineHeight: 1.4 }}>{ev.params}</div>
         </div>
       ))}
     </div>
@@ -215,11 +215,11 @@ function DataPreview({ nodeType, eventsActive }) {
 
   if (nodeType === 'user_profile') return (
     <div>
-      <div style={{ color: '#fff', fontWeight: 700, fontSize: 12, marginBottom: 6 }}>{data.name}</div>
+      <div style={{ color: '#1e293b', fontWeight: 700, fontSize: 12, marginBottom: 6 }}>{data.name}</div>
       <div style={{ display: 'flex', gap: 4, marginBottom: 6, flexWrap: 'wrap' }}>
         <Tag color="#7C3AED">{data.loyaltyTier}</Tag>
         <Tag color="#0891B2">{data.segment}</Tag>
-        <Tag color="#444">{data.city}</Tag>
+        <Tag color="#64748b">{data.city}</Tag>
       </div>
       <KV k="İlgi" v={data.interests.join(', ')} />
       <KV k="Puan" v={`${data.loyaltyPoints} · ${data.monthlySpend}/ay`} />
@@ -230,11 +230,11 @@ function DataPreview({ nodeType, eventsActive }) {
     <div>
       {data.recommended.slice(0, 3).map((p, i) => (
         <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 11 }}>
-          <span style={{ color: '#ccc' }}>{p.name}</span>
-          <span style={{ color: '#38bdf8', fontWeight: 600 }}>{p.price}</span>
+          <span style={{ color: '#475569' }}>{p.name}</span>
+          <span style={{ color: '#0891b2', fontWeight: 600 }}>{p.price}</span>
         </div>
       ))}
-      <div style={{ fontSize: 10, color: '#555', marginTop: 4 }}>+{data.recommended.length - 3} ürün daha</div>
+      <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>+{data.recommended.length - 3} ürün daha</div>
     </div>
   );
 
@@ -242,8 +242,8 @@ function DataPreview({ nodeType, eventsActive }) {
     <div>
       {data.active.slice(0, 2).map((c, i) => (
         <div key={i} style={{ marginBottom: 6 }}>
-          <div style={{ color: '#fbbf24', fontSize: 11, fontWeight: 600 }}>{c.title}</div>
-          <div style={{ color: '#666', fontSize: 10 }}>{c.desc}</div>
+          <div style={{ color: '#d97706', fontSize: 11, fontWeight: 600 }}>{c.title}</div>
+          <div style={{ color: '#64748b', fontSize: 10 }}>{c.desc}</div>
         </div>
       ))}
     </div>
@@ -253,8 +253,8 @@ function DataPreview({ nodeType, eventsActive }) {
     <div>
       {data.recent.map((t, i) => (
         <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 11 }}>
-          <span style={{ color: '#ccc' }}>{t.product}</span>
-          <span style={{ color: '#4ade80', fontWeight: 600 }}>{t.amount}</span>
+          <span style={{ color: '#475569' }}>{t.product}</span>
+          <span style={{ color: '#16a34a', fontWeight: 600 }}>{t.amount}</span>
         </div>
       ))}
     </div>
@@ -263,8 +263,8 @@ function DataPreview({ nodeType, eventsActive }) {
   if (nodeType === 'loyalty') return (
     <div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 }}>
-        <span style={{ color: '#fbbf24', fontSize: 20, fontWeight: 800 }}>{data.points}</span>
-        <span style={{ color: '#666', fontSize: 10 }}>puan</span>
+        <span style={{ color: '#d97706', fontSize: 20, fontWeight: 800 }}>{data.points}</span>
+        <span style={{ color: '#64748b', fontSize: 10 }}>puan</span>
         <Tag color="#DC2626">{data.tier}</Tag>
       </div>
       <KV k="Sonraki" v={`${data.toNextTier} puan → ${data.nextTier}`} />
@@ -275,7 +275,7 @@ function DataPreview({ nodeType, eventsActive }) {
   if (nodeType === 'google_analytics') return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 }}>
-        <span style={{ color: '#555', fontSize: 9, fontFamily: 'monospace' }}>{data.measurementId}</span>
+        <span style={{ color: '#64748b', fontSize: 9, fontFamily: 'monospace' }}>{data.measurementId}</span>
         {eventsActive && (
           <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#4CAF50', animation: 'df-pulse 1.2s ease-in-out infinite', display: 'inline-block' }} />
@@ -290,7 +290,7 @@ function DataPreview({ nodeType, eventsActive }) {
   if (nodeType === 'tealium') return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 }}>
-        <span style={{ color: '#555', fontSize: 9, fontFamily: 'monospace' }}>{data.account} / {data.profile}</span>
+        <span style={{ color: '#64748b', fontSize: 9, fontFamily: 'monospace' }}>{data.account} / {data.profile}</span>
         {eventsActive && (
           <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#4CAF50', animation: 'df-pulse 1.2s ease-in-out infinite', display: 'inline-block' }} />
@@ -309,15 +309,15 @@ function Tag({ color, children }) {
   return (
     <span style={{
       background: `${color}22`, border: `1px solid ${color}44`,
-      color: color === '#444' ? '#888' : color,
+      color: color === '#444' ? '#94a3b8' : color,
       borderRadius: 4, padding: '1px 6px', fontSize: 10, fontWeight: 600,
     }}>{children}</span>
   );
 }
 function KV({ k, v }) {
   return (
-    <div style={{ fontSize: 10, color: '#777', marginTop: 3 }}>
-      <span style={{ color: '#555' }}>{k}: </span>{v}
+    <div style={{ fontSize: 10, color: '#64748b', marginTop: 3 }}>
+      <span style={{ color: '#475569' }}>{k}: </span>{v}
     </div>
   );
 }
@@ -337,14 +337,14 @@ function FlowNode({ node, selected, onSelect, onMouseDown, onOutputPortClick, on
         left: node.position.x,
         top: node.position.y,
         width: NODE_WIDTH,
-        background: '#111126',
-        border: `2px solid ${selected ? cfg.color : (isTarget ? '#ffffff55' : '#252545')}`,
+        background: '#ffffff',
+        border: `2px solid ${selected ? cfg.color : (isTarget ? '#00000033' : '#e2e8f0')}`,
         borderRadius: 12,
         boxShadow: selected
-          ? `0 0 0 3px ${cfg.color}33, 0 8px 28px rgba(0,0,0,0.6)`
+          ? `0 0 0 3px ${cfg.color}33, 0 8px 28px rgba(0,0,0,0.12)`
           : eventsActive && cfg.isSink
-            ? `0 0 0 2px ${cfg.color}44, 0 4px 18px rgba(0,0,0,0.4)`
-            : '0 4px 18px rgba(0,0,0,0.4)',
+            ? `0 0 0 2px ${cfg.color}44, 0 4px 18px rgba(0,0,0,0.08)`
+            : '0 2px 12px rgba(0,0,0,0.08)',
         cursor: 'grab',
         userSelect: 'none',
         transition: 'border-color 0.12s, box-shadow 0.12s',
@@ -377,7 +377,7 @@ function FlowNode({ node, selected, onSelect, onMouseDown, onOutputPortClick, on
           ? <DataPreview nodeType={node.type} eventsActive={eventsActive} />
           : cfg.isSink
             ? <DataPreview nodeType={node.type} eventsActive={eventsActive} />
-            : <div style={{ color: '#444', fontSize: 11, fontStyle: 'italic', lineHeight: 1.5 }}>
+            : <div style={{ color: '#64748b', fontSize: 11, fontStyle: 'italic', lineHeight: 1.5 }}>
                 Veri kaynaklarını sol portuna bağla → AI kişiselleştirilmiş ekran üretir ve analytics'e gönderir
               </div>
         }
@@ -398,7 +398,7 @@ function FlowNode({ node, selected, onSelect, onMouseDown, onOutputPortClick, on
       {hasInput && (
         <PortDot
           side="left"
-          color={isTarget ? '#fff' : '#333'}
+          color={isTarget ? cfg.color : '#cbd5e1'}
           title="Veri bağlantısını buraya bırak"
           onClick={e => { e.stopPropagation(); onInputPortClick(node.id); }}
           active={isTarget}
@@ -425,7 +425,7 @@ function PortDot({ side, color, title, onClick, active, pulse }) {
         height: PORT_R * 2,
         borderRadius: '50%',
         background: color,
-        border: '2.5px solid #111126',
+        border: '2.5px solid #f1f5f9',
         cursor: 'crosshair',
         zIndex: 10,
         transition: 'transform 0.12s, background 0.12s',
@@ -444,27 +444,27 @@ function NodeLibrary({ onAddNode }) {
   const sinks      = Object.entries(NODE_TYPES).filter(([, c]) => c.isSink);
 
   return (
-    <div style={{ width: 196, borderRight: '1px solid #1a1a38', padding: '14px 10px', background: '#0c0c1e', overflowY: 'auto', flexShrink: 0 }}>
+    <div style={{ width: 196, borderRight: '1px solid #e2e8f0', padding: '14px 10px', background: '#f8fafc', overflowY: 'auto', flexShrink: 0 }}>
       <SectionLabel>Veri Kaynakları</SectionLabel>
       {sources.map(([type, cfg]) => (
         <LibraryItem key={type} cfg={cfg} onClick={() => onAddNode(type)} />
       ))}
 
-      <div style={{ margin: '14px 0 12px', height: 1, background: '#1a1a38' }} />
+      <div style={{ margin: '14px 0 12px', height: 1, background: '#e2e8f0' }} />
       <SectionLabel>İşlemciler</SectionLabel>
       {processors.map(([type, cfg]) => (
         <LibraryItem key={type} cfg={cfg} onClick={() => onAddNode(type)} />
       ))}
 
-      <div style={{ margin: '14px 0 12px', height: 1, background: '#1a1a38' }} />
+      <div style={{ margin: '14px 0 12px', height: 1, background: '#e2e8f0' }} />
       <SectionLabel>Analytics Hedefleri</SectionLabel>
       {sinks.map(([type, cfg]) => (
         <LibraryItem key={type} cfg={cfg} badge="SINK" onClick={() => onAddNode(type)} />
       ))}
 
-      <div style={{ marginTop: 20, padding: 10, background: '#0a0a1a', borderRadius: 8, border: '1px solid #1a1a38' }}>
+      <div style={{ marginTop: 20, padding: 10, background: '#f1f5f9', borderRadius: 8, border: '1px solid #e2e8f0' }}>
         <SectionLabel style={{ marginBottom: 6 }}>İpucu</SectionLabel>
-        <div style={{ fontSize: 10, color: '#555', lineHeight: 1.6 }}>
+        <div style={{ fontSize: 10, color: '#64748b', lineHeight: 1.6 }}>
           Listedeki öğeye tıkla → tuvale ekle.
           Çıkış portuna tıkla → bağlantı modu → giriş portuna tıkla.
           Bağlantıya tıkla → sil.
@@ -475,7 +475,7 @@ function NodeLibrary({ onAddNode }) {
 }
 
 function SectionLabel({ children }) {
-  return <div style={{ fontSize: 9, fontWeight: 700, color: '#444', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>{children}</div>;
+  return <div style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>{children}</div>;
 }
 
 function LibraryItem({ cfg, badge, onClick }) {
@@ -489,13 +489,13 @@ function LibraryItem({ cfg, badge, onClick }) {
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '8px 10px', borderRadius: 8, marginBottom: 4,
         cursor: 'pointer',
-        background: hover ? `${cfg.color}18` : '#111126',
-        border: `1px solid ${hover ? cfg.color : '#1e1e42'}`,
+        background: hover ? `${cfg.color}12` : '#ffffff',
+        border: `1px solid ${hover ? cfg.color : '#e2e8f0'}`,
         transition: 'all 0.12s',
       }}
     >
       <span className="material-icons" style={{ fontSize: 14, color: cfg.color }}>{cfg.icon}</span>
-      <span style={{ fontSize: 11, color: hover ? '#eee' : '#aaa', flex: 1 }}>{cfg.label}</span>
+      <span style={{ fontSize: 11, color: hover ? '#1e293b' : '#64748b', flex: 1 }}>{cfg.label}</span>
       {badge && <span style={{ fontSize: 8, color: cfg.color, background: `${cfg.color}22`, border: `1px solid ${cfg.color}44`, borderRadius: 3, padding: '1px 4px' }}>{badge}</span>}
     </div>
   );
@@ -517,22 +517,22 @@ function NodeInspector({ nodeId, nodes, edges, onDeleteEdge, onDeleteNode, event
   const roleLabel = cfg.isSource ? 'Mock Veri Kaynağı' : cfg.isSink ? 'Analytics Hedefi' : 'AI İşlemcisi';
 
   return (
-    <div style={{ width: 256, borderLeft: '1px solid #1a1a38', background: '#0c0c1e', overflowY: 'auto', flexShrink: 0 }}>
+    <div style={{ width: 256, borderLeft: '1px solid #e2e8f0', background: '#f8fafc', overflowY: 'auto', flexShrink: 0 }}>
       {/* Header */}
-      <div style={{ padding: '12px 14px', borderBottom: '1px solid #1a1a38', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ padding: '12px 14px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: 8 }}>
         <div style={{ width: 30, height: 30, borderRadius: 8, background: cfg.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <span className="material-icons" style={{ fontSize: 15, color: 'white' }}>{cfg.icon}</span>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ color: '#eee', fontSize: 12, fontWeight: 700 }}>{cfg.label}</div>
-          <div style={{ color: '#444', fontSize: 10, marginTop: 1 }}>{roleLabel}</div>
+          <div style={{ color: '#1e293b', fontSize: 12, fontWeight: 700 }}>{cfg.label}</div>
+          <div style={{ color: '#94a3b8', fontSize: 10, marginTop: 1 }}>{roleLabel}</div>
         </div>
-        <button onClick={() => onDeleteNode(nodeId)} style={{ background: 'none', border: '1px solid #2a2a4e', borderRadius: 6, color: '#555', padding: '3px 8px', cursor: 'pointer', fontSize: 10, flexShrink: 0 }}>Sil</button>
+        <button onClick={() => onDeleteNode(nodeId)} style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: 6, color: '#94a3b8', padding: '3px 8px', cursor: 'pointer', fontSize: 10, flexShrink: 0 }}>Sil</button>
       </div>
 
       {/* Connections — incoming */}
       {inputNodes.length > 0 && (
-        <div style={{ padding: '12px 14px', borderBottom: '1px solid #1a1a38' }}>
+        <div style={{ padding: '12px 14px', borderBottom: '1px solid #e2e8f0' }}>
           <SectionLabel>Gelen Bağlantılar ({inputNodes.length})</SectionLabel>
           {inputNodes.map(n => {
             const nc = NODE_TYPES[n.type];
@@ -540,8 +540,8 @@ function NodeInspector({ nodeId, nodes, edges, onDeleteEdge, onDeleteNode, event
             return (
               <div key={n.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                 <div style={{ width: 7, height: 7, borderRadius: '50%', background: nc?.color, flexShrink: 0 }}/>
-                <span style={{ color: '#bbb', fontSize: 11, flex: 1 }}>{nc?.label}</span>
-                <button onClick={() => onDeleteEdge(edge?.id)} style={{ background: 'none', border: 'none', color: '#444', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '0 2px' }}>×</button>
+                <span style={{ color: '#475569', fontSize: 11, flex: 1 }}>{nc?.label}</span>
+                <button onClick={() => onDeleteEdge(edge?.id)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '0 2px' }}>×</button>
               </div>
             );
           })}
@@ -550,16 +550,16 @@ function NodeInspector({ nodeId, nodes, edges, onDeleteEdge, onDeleteNode, event
 
       {/* Connections — outgoing */}
       {outputNodes.length > 0 && (
-        <div style={{ padding: '12px 14px', borderBottom: '1px solid #1a1a38' }}>
+        <div style={{ padding: '12px 14px', borderBottom: '1px solid #e2e8f0' }}>
           <SectionLabel>Giden Bağlantılar ({outputNodes.length})</SectionLabel>
           {outputEdges.map(e => {
             const targetNode = nodes.find(n => n.id === e.to);
             const tc = targetNode ? NODE_TYPES[targetNode.type] : null;
             return (
               <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                <span className="material-icons" style={{ fontSize: 11, color: tc?.color || '#444' }}>arrow_forward</span>
-                <span style={{ color: '#bbb', fontSize: 11, flex: 1 }}>{tc?.label}</span>
-                <button onClick={() => onDeleteEdge(e.id)} style={{ background: 'none', border: 'none', color: '#444', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '0 2px' }}>×</button>
+                <span className="material-icons" style={{ fontSize: 11, color: tc?.color || '#94a3b8' }}>arrow_forward</span>
+                <span style={{ color: '#475569', fontSize: 11, flex: 1 }}>{tc?.label}</span>
+                <button onClick={() => onDeleteEdge(e.id)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '0 2px' }}>×</button>
               </div>
             );
           })}
@@ -568,12 +568,12 @@ function NodeInspector({ nodeId, nodes, edges, onDeleteEdge, onDeleteNode, event
 
       {/* Analytics sink live status */}
       {cfg.isSink && (
-        <div style={{ padding: '10px 14px', borderBottom: '1px solid #1a1a38' }}>
+        <div style={{ padding: '10px 14px', borderBottom: '1px solid #e2e8f0' }}>
           <SectionLabel>Durum</SectionLabel>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{
               width: 7, height: 7, borderRadius: '50%',
-              background: eventsActive ? '#4CAF50' : '#333',
+              background: eventsActive ? '#4CAF50' : '#cbd5e1',
               animation: eventsActive ? 'df-pulse 1.2s ease-in-out infinite' : 'none',
             }} />
             <span style={{ color: eventsActive ? '#4CAF50' : '#555', fontSize: 11, fontWeight: 600 }}>
@@ -581,7 +581,7 @@ function NodeInspector({ nodeId, nodes, edges, onDeleteEdge, onDeleteNode, event
             </span>
           </div>
           {eventsActive && (
-            <div style={{ marginTop: 8, color: '#444', fontSize: 10 }}>
+            <div style={{ marginTop: 8, color: '#64748b', fontSize: 10 }}>
               {data?.events?.length || 0} event gönderildi
             </div>
           )}
@@ -618,7 +618,7 @@ function NodeInspector({ nodeId, nodes, edges, onDeleteEdge, onDeleteNode, event
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
                 <div style={{ width: 5, height: 5, borderRadius: '50%', background: ev.color, flexShrink: 0 }} />
                 <span style={{ color: ev.color, fontSize: 10, fontWeight: 700, minWidth: 90 }}>{ev.name}</span>
-                <span style={{ color: '#444', fontSize: 9 }}>{ev.ts}</span>
+                <span style={{ color: '#94a3b8', fontSize: 9 }}>{ev.ts}</span>
               </div>
             ))}
           </div>
@@ -634,29 +634,29 @@ function FullDataView({ data }) {
       return (
         <div style={{ marginLeft: depth ? 8 : 0 }}>
           {val.map((item, i) => (
-            <div key={i} style={{ marginBottom: 6, paddingLeft: 8, borderLeft: '2px solid #1e1e42' }}>
+            <div key={i} style={{ marginBottom: 6, paddingLeft: 8, borderLeft: '2px solid #e2e8f0' }}>
               {typeof item === 'object' && item !== null
                 ? Object.entries(item).map(([k, v]) => (
                     <div key={k} style={{ display: 'flex', gap: 6, marginBottom: 2 }}>
-                      <span style={{ color: '#444', fontSize: 10, minWidth: 56 }}>{k}</span>
-                      <span style={{ color: '#ccc', fontSize: 10 }}>{String(v)}</span>
+                      <span style={{ color: '#475569', fontSize: 10, minWidth: 56 }}>{k}</span>
+                      <span style={{ color: '#1e293b', fontSize: 10 }}>{String(v)}</span>
                     </div>
                   ))
-                : <span style={{ color: '#ccc', fontSize: 10 }}>{String(item)}</span>
+                : <span style={{ color: '#1e293b', fontSize: 10 }}>{String(item)}</span>
               }
             </div>
           ))}
         </div>
       );
     }
-    return <span style={{ color: '#ccc', fontSize: 10 }}>{String(val)}</span>;
+    return <span style={{ color: '#1e293b', fontSize: 10 }}>{String(val)}</span>;
   };
 
   return (
     <div>
       {Object.entries(data).map(([key, val]) => (
         <div key={key} style={{ marginBottom: 10 }}>
-          <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4 }}>{key}</div>
+          <div style={{ color: '#94a3b8', fontSize: 9, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4 }}>{key}</div>
           {renderVal(val)}
         </div>
       ))}
@@ -838,22 +838,22 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
   const sinkCount         = nodes.filter(n => NODE_TYPES[n.type]?.isSink).length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', background: '#09091a' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', background: '#f1f5f9' }}>
 
       {/* ── Toolbar ── */}
-      <div style={{ height: 52, display: 'flex', alignItems: 'center', padding: '0 14px', gap: 10, background: '#0c0c1e', borderBottom: '1px solid #1a1a38', flexShrink: 0 }}>
+      <div style={{ height: 52, display: 'flex', alignItems: 'center', padding: '0 14px', gap: 10, background: '#ffffff', borderBottom: '1px solid #e2e8f0', flexShrink: 0 }}>
         <button onClick={onBack}
-          style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: '1px solid #252545', borderRadius: 8, color: '#777', padding: '5px 10px', cursor: 'pointer', fontSize: 11, transition: 'all 0.12s' }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#555'; e.currentTarget.style.color = '#ccc'; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = '#252545'; e.currentTarget.style.color = '#777'; }}
+          style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: '1px solid #e2e8f0', borderRadius: 8, color: '#64748b', padding: '5px 10px', cursor: 'pointer', fontSize: 11, transition: 'all 0.12s' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#94a3b8'; e.currentTarget.style.color = '#334155'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.color = '#64748b'; }}
         >
           <span className="material-icons" style={{ fontSize: 13 }}>arrow_back</span> Studio
         </button>
 
-        <div style={{ width: 1, height: 22, background: '#1a1a38' }} />
+        <div style={{ width: 1, height: 22, background: '#e2e8f0' }} />
 
         <span className="material-icons" style={{ fontSize: 18, color: '#E11D48' }}>device_hub</span>
-        <span style={{ color: '#eee', fontWeight: 700, fontSize: 13 }}>Personalization Flow</span>
+        <span style={{ color: '#1e293b', fontWeight: 700, fontSize: 13 }}>Personalization Flow</span>
 
         {eventsActive && (
           <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#4CAF50', background: '#4CAF5011', border: '1px solid #4CAF5033', borderRadius: 4, padding: '1px 8px' }}>
@@ -870,27 +870,27 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
           onChange={e => setPrompt(e.target.value)}
           placeholder="Ekran için prompt…"
           style={{
-            flex: '0 1 340px', background: '#111126', border: '1px solid #252545',
-            borderRadius: 8, color: '#eee', fontSize: 11, padding: '7px 12px', outline: 'none',
+            flex: '0 1 340px', background: '#f8fafc', border: '1px solid #e2e8f0',
+            borderRadius: 8, color: '#1e293b', fontSize: 11, padding: '7px 12px', outline: 'none',
           }}
           onFocus={e => e.target.style.borderColor = '#E11D48'}
-          onBlur={e => e.target.style.borderColor = '#252545'}
+          onBlur={e => e.target.style.borderColor = '#e2e8f0'}
         />
 
         <button onClick={handleAutoLayout} title="Düğümleri otomatik düzenle"
-          style={{ background: 'none', border: '1px solid #252545', borderRadius: 8, color: '#666', padding: '6px 10px', cursor: 'pointer', fontSize: 11 }}>
+          style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: 8, color: '#64748b', padding: '6px 10px', cursor: 'pointer', fontSize: 11 }}>
           <span className="material-icons" style={{ fontSize: 13, verticalAlign: 'middle' }}>auto_fix_high</span>
         </button>
 
         <button onClick={handleReset} title="Flow'u sıfırla"
-          style={{ background: 'none', border: '1px solid #252545', borderRadius: 8, color: '#666', padding: '6px 10px', cursor: 'pointer', fontSize: 11 }}>
+          style={{ background: 'none', border: '1px solid #e2e8f0', borderRadius: 8, color: '#64748b', padding: '6px 10px', cursor: 'pointer', fontSize: 11 }}>
           <span className="material-icons" style={{ fontSize: 13, verticalAlign: 'middle' }}>restart_alt</span>
         </button>
 
         <button onClick={handleRunFlow} disabled={generating}
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            background: generating ? '#333' : '#E11D48',
+            background: generating ? '#cbd5e1' : '#E11D48',
             border: 'none', borderRadius: 8, color: 'white',
             padding: '7px 16px', cursor: generating ? 'not-allowed' : 'pointer',
             fontSize: 12, fontWeight: 700, opacity: generating ? 0.7 : 1, transition: 'all 0.15s',
@@ -958,17 +958,17 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
           {pendingEdge && (
             <div style={{
               position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)',
-              background: '#111126cc', border: '1px solid #252545', backdropFilter: 'blur(8px)',
-              borderRadius: 8, padding: '5px 14px', color: '#aaa', fontSize: 11, pointerEvents: 'none', zIndex: 20,
+              background: '#ffffffee', border: '1px solid #e2e8f0', backdropFilter: 'blur(8px)',
+              borderRadius: 8, padding: '5px 14px', color: '#64748b', fontSize: 11, pointerEvents: 'none', zIndex: 20,
             }}>
-              Hedef node'un giriş portuna tıkla &nbsp;·&nbsp; <kbd style={{ background: '#1e1e42', borderRadius: 3, padding: '1px 5px', fontSize: 10 }}>ESC</kbd> ile iptal
+              Hedef node'un giriş portuna tıkla &nbsp;·&nbsp; <kbd style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 3, padding: '1px 5px', fontSize: 10, color: '#475569' }}>ESC</kbd> ile iptal
             </div>
           )}
 
           {/* Empty state hint */}
           {nodes.length === 0 && (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-              <div style={{ textAlign: 'center', color: '#333' }}>
+              <div style={{ textAlign: 'center', color: '#94a3b8' }}>
                 <span className="material-icons" style={{ fontSize: 48, display: 'block', marginBottom: 12 }}>device_hub</span>
                 <div style={{ fontSize: 13, fontWeight: 600 }}>Sol panelden düğüm ekle</div>
               </div>
@@ -978,10 +978,10 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
           {/* Legend */}
           <div style={{
             position: 'absolute', bottom: 14, right: 14,
-            background: '#0c0c1ecc', border: '1px solid #1a1a38', backdropFilter: 'blur(8px)',
+            background: '#f8fafc', border: '1px solid #e2e8f0', backdropFilter: 'blur(8px)',
             borderRadius: 8, padding: '8px 12px', pointerEvents: 'none', zIndex: 20,
           }}>
-            <div style={{ fontSize: 9, color: '#444', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>Akış</div>
+            <div style={{ fontSize: 9, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>Akış</div>
             {[
               { color: '#7C3AED', label: 'Veri Kaynakları' },
               { color: '#E11D48', label: 'AI Üretici' },
@@ -990,7 +990,7 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
             ].map(({ color, label }) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                 <div style={{ width: 7, height: 7, borderRadius: '50%', background: color }} />
-                <span style={{ color: '#555', fontSize: 10 }}>{label}</span>
+                <span style={{ color: '#64748b', fontSize: 10 }}>{label}</span>
               </div>
             ))}
           </div>
@@ -1016,7 +1016,7 @@ function DataFlowPage({ lang, onBack, onFlowGenerate }) {
         }
         @keyframes df-spin { to { transform: rotate(360deg); } }
         @keyframes df-fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-        .df-canvas-bg { background: #09091a; }
+        .df-canvas-bg { background: #f1f5f9; }
       `}</style>
     </div>
   );
