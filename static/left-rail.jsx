@@ -419,7 +419,7 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
 
 EKRAN YAPISI:
 1. Header: Vodafone logosu (Image, w:28, h:28, url:"/static/logo.png") + "5G Cihazlar" başlığı, sağda sepet ve bildirim ikonu
-2. Hero Banner: 5G teknoloji temalı görsel (Pollinations: "futuristic_5g_network_speed_concept,bright_red_white_gradient,clean_modern_tech,high_key_lighting,vibrant,no_dark_background"), hafif gradient overlay (üst transparan → alt yarı beyaz), "5G Hızıyla Tanışın" h1 + "Yeni Nesil Hız, Uygun Taksitlerle" body (koyu metin), "Fırsatları Keşfet" kırmızı accent CTA butonu
+2. Hero Banner: Vodafone temalı görsel (Pollinations: "vodafone_red_5g_network,abstract_red_white_speed_lines,modern_telecom_brand,clean_white_background,bold_red_accent,no_dark,bright_studio_light"), gradient overlay yok veya çok hafif kırmızı-beyaz, "5G Hızıyla Tanışın" h1 (fg:#1A1A1A) + "Yeni Nesil Hız, Uygun Taksitlerle" body, "Fırsatları Keşfet" accent:#E60000 CTA butonu
 3. Marka Filtresi: yatay scroll chip strip — Tümü (aktif/accent), Samsung, iPhone, Xiaomi, Oppo
 4. Öne Çıkan Cihazlar başlık satırı + "Tümü →" link
 5. 2-sütun cihaz grid (pattern ⑥):
@@ -438,7 +438,7 @@ RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#6666
 
 SCREEN STRUCTURE:
 1. Header: Vodafone logo (Image, w:28, h:28, url:"/static/logo.png") + "5G Devices" title, cart and notification icons on right
-2. Hero Banner: 5G tech visual (Pollinations: "futuristic_5g_network_speed_concept,bright_red_white_gradient,clean_modern_tech,high_key_lighting,vibrant,no_dark_background"), light gradient overlay (top transparent → bottom half white), "Experience 5G Speed" h1 + "Next Gen Speed, Affordable Installments" body (dark text), "Explore Deals" red accent CTA button
+2. Hero Banner: Vodafone branded visual (Pollinations: "vodafone_red_5g_network,abstract_red_white_speed_lines,modern_telecom_brand,clean_white_background,bold_red_accent,no_dark,bright_studio_light"), no overlay or very light red-to-white gradient, "Experience 5G Speed" h1 (fg:#1A1A1A) + "Next Gen Speed, Affordable Installments" body, "Explore Deals" accent:#E60000 CTA button
 3. Brand Filter: horizontal scroll chip strip — All (active/accent), Samsung, iPhone, Xiaomi, Oppo
 4. Featured Devices section header + "All →" link
 5. 2-column device grid (pattern ⑥):
