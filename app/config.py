@@ -34,3 +34,4 @@ else:
     print(f"🏠  YEREL MOD (Local): {BASE_URL}")
 
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+HF_TOKEN = os.environ.get("HF_TOKEN", "")  # Hugging Face free token — hf.co/settings/tokens

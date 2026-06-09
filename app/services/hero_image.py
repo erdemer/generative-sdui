@@ -1,106 +1,179 @@
-"""Vodafone brand-compliant hero image generation using Gemini image models."""
+"""Vodafone brand-compliant hero image generation.
+
+Priority order:
+  1. Hugging Face FLUX.1-schnell  (free tier, needs HF_TOKEN in .env)
+  2. Pollinations.ai               (completely free, no key)
+  3. Gemini image models           (paid, fallback of last resort)
+"""
 
 import base64
 import hashlib
 import os
 import time
+import urllib.parse
+import urllib.request
 
 import google.generativeai as genai
 from google.api_core.exceptions import ResourceExhausted
 
-from app.config import GOOGLE_API_KEY, STATIC_DIR
+from app.config import GOOGLE_API_KEY, HF_TOKEN, STATIC_DIR
 
 genai.configure(api_key=GOOGLE_API_KEY)
 
 GENERATED_DIR = os.path.join(STATIC_DIR, "generated")
 os.makedirs(GENERATED_DIR, exist_ok=True)
 
-# Ordered list of image-capable models to try
-_IMAGE_MODELS = [
+# ── Brand prompt ─────────────────────────────────────────────────────────────
+# NOTE: Avoid "5G network / futuristic city / space" keywords — they trigger
+# dark space/earth imagery on every model. Use abstract design language instead.
+
+_HF_PROMPT = (
+    "A professional telecom brand hero banner. "
+    "Bold vibrant red gradient background, deep red #E60000 to #CC0000. "
+    "Elegant white abstract wave lines and circular rings overlaid on the red surface. "
+    "Clean modern graphic design, high contrast, bright and energetic. "
+    "Commercial advertising aesthetic, no text, no dark areas, no space, no earth, no night sky. "
+    "Wide landscape banner format, studio quality."
+)
+
+_POLLINATIONS_PROMPT = (
+    "vodafone_red_brand_banner,"
+    "bold_red_gradient_background,"
+    "white_abstract_wave_lines,"
+    "clean_modern_graphic_design,"
+    "bright_vibrant_commercial,"
+    "no_space_no_dark_no_earth,"
+    "wide_landscape_telecom_ad"
+)
+
+_GEMINI_PROMPT = (
+    "Create a professional hero banner image. "
+    "Bright vivid red gradient background from #E60000 to #CC0000. "
+    "White abstract speed lines and geometric wave patterns. "
+    "Clean modern telecom brand aesthetic, bright, NO dark backgrounds, NO space, NO night sky."
+)
+
+_GEMINI_MODELS = [
     "gemini-3.1-flash-image",
     "gemini-3-pro-image",
     "gemini-2.5-flash-image",
-    "gemini-3.1-flash-image-preview",
 ]
 
-_BRAND_SYSTEM_PROMPT = """\
-You are a professional visual designer for Vodafone Turkey.
-Create a hero banner image that strictly follows Vodafone brand guidelines:
-- Dominant color: Vodafone Red (#E60000)
-- Background: Bold red gradient (#E60000 → #CC0000) — NO dark backgrounds, NO black, NO space/night imagery
-- Style: Modern, premium, energetic, clean
-- Decorative elements: Abstract 5G signal waves, speed lines, geometric shapes in white/light pink
-- Composition: Wide banner (16:9), bright, vibrant, professional telecom campaign aesthetic
-- White highlights and accents to contrast the red background
-"""
+HF_MODEL = "black-forest-labs/FLUX.1-schnell"
+HF_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
 
 
-def _build_prompt(concept: str) -> str:
-    base = (
-        "Create a professional Vodafone 5G hero banner image. "
-        "Bright red gradient background (#E60000 to #CC0000). "
-        "Abstract white speed lines and 5G network wave patterns overlaid on the red background. "
-        "Clean modern telecom brand aesthetic. High-key lighting. Vivid colors. "
-        "NO dark backgrounds. NO space. NO night sky. NO earth from space imagery. "
-        "Purely abstract graphic design with Vodafone red as the hero color."
-    )
-    if concept and concept.strip():
-        base += f" Additional concept: {concept.strip()}"
-    return base
+# ── Individual generators ─────────────────────────────────────────────────────
 
+def _generate_hf(filepath: str) -> bool:
+    """Try Hugging Face FLUX.1-schnell. Returns True on success."""
+    if not HF_TOKEN:
+        return False
+    try:
+        import json
+        payload = json.dumps({"inputs": _HF_PROMPT, "parameters": {"width": 832, "height": 480}}).encode()
+        req = urllib.request.Request(
+            HF_URL,
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {HF_TOKEN}",
+                "Content-Type": "application/json",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            content_type = resp.headers.get("Content-Type", "")
+            if "image" in content_type:
+                with open(filepath, "wb") as f:
+                    f.write(resp.read())
+                print(f"✅ Hero image via Hugging Face FLUX.1: {filepath}")
+                return True
+            # HF sometimes returns JSON error even with 200
+            body = resp.read()
+            print(f"⚠️  HF returned non-image: {body[:200]}")
+            return False
+    except Exception as e:
+        print(f"⚠️  Hugging Face failed: {e}")
+        return False
+
+
+def _generate_pollinations(filepath: str) -> bool:
+    """Try Pollinations.ai (no key required). Returns True on success."""
+    try:
+        encoded = urllib.parse.quote(_POLLINATIONS_PROMPT)
+        url = (
+            f"https://image.pollinations.ai/prompt/{encoded}"
+            "?nologo=true&width=832&height=480&model=flux&enhance=true&seed=42"
+        )
+        req = urllib.request.Request(url, headers={"User-Agent": "SDUI-Studio/1.0"})
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            content_type = resp.headers.get("Content-Type", "")
+            if "image" in content_type:
+                with open(filepath, "wb") as f:
+                    f.write(resp.read())
+                print(f"✅ Hero image via Pollinations: {filepath}")
+                return True
+        return False
+    except Exception as e:
+        print(f"⚠️  Pollinations failed: {e}")
+        return False
+
+
+def _generate_gemini(filepath: str) -> bool:
+    """Try Gemini image models (paid). Returns True on success."""
+    for model_name in _GEMINI_MODELS:
+        try:
+            model = genai.GenerativeModel(model_name)
+            response = model.generate_content(_GEMINI_PROMPT)
+            for part in response.candidates[0].content.parts:
+                if hasattr(part, "inline_data") and part.inline_data:
+                    raw = part.inline_data.data
+                    image_bytes = raw if isinstance(raw, (bytes, bytearray)) else base64.b64decode(raw)
+                    with open(filepath, "wb") as f:
+                        f.write(image_bytes)
+                    print(f"✅ Hero image via {model_name}: {filepath}")
+                    return True
+        except ResourceExhausted:
+            print(f"⚠️  {model_name} quota exceeded")
+            time.sleep(1)
+        except Exception as e:
+            print(f"⚠️  {model_name} failed: {e}")
+    return False
+
+
+# ── Public API ────────────────────────────────────────────────────────────────
 
 def generate_brand_hero_image(concept: str = "") -> dict:
     """
-    Generate a Vodafone-branded hero image using Gemini image generation.
+    Generate a Vodafone-branded hero image, trying providers in order:
+      HF FLUX.1 → Pollinations → Gemini (paid)
 
     Returns:
-        {"url": "/static/generated/hero_xxx.jpg", "model": "...", "cached": bool}
+        {"url": "/static/generated/hero_xxx.jpg", "provider": "hf|pollinations|gemini", "cached": bool}
     Raises:
-        RuntimeError: if all models fail
+        RuntimeError if all providers fail.
     """
-    prompt = _build_prompt(concept)
-
-    # Cache based on prompt hash so repeated calls don't regenerate
-    cache_key = hashlib.md5(prompt.encode()).hexdigest()[:16]
+    # Cache key based on a stable string (concept ignored for caching — same brand always)
+    cache_key = hashlib.md5(b"vodafone-hero-v3").hexdigest()[:16]
     filename = f"hero_{cache_key}.jpg"
     filepath = os.path.join(GENERATED_DIR, filename)
     url = f"/static/generated/{filename}"
 
     if os.path.exists(filepath):
-        return {"url": url, "model": "cached", "cached": True}
+        return {"url": url, "provider": "cached", "cached": True}
 
-    last_error = None
-    for model_name in _IMAGE_MODELS:
-        try:
-            model = genai.GenerativeModel(model_name)
-            response = model.generate_content(prompt)
+    # 1️⃣  Hugging Face (free with token)
+    if _generate_hf(filepath):
+        return {"url": url, "provider": "huggingface", "cached": False}
 
-            for part in response.candidates[0].content.parts:
-                if hasattr(part, "inline_data") and part.inline_data:
-                    raw = part.inline_data.data
-                    # data may already be bytes or base64 string
-                    if isinstance(raw, (bytes, bytearray)):
-                        image_bytes = raw
-                    else:
-                        image_bytes = base64.b64decode(raw)
+    # 2️⃣  Pollinations (completely free)
+    if _generate_pollinations(filepath):
+        return {"url": url, "provider": "pollinations", "cached": False}
 
-                    with open(filepath, "wb") as f:
-                        f.write(image_bytes)
-
-                    print(f"✅ Hero image generated with {model_name}: {url}")
-                    return {"url": url, "model": model_name, "cached": False}
-
-            raise ValueError("No image part in response")
-
-        except ResourceExhausted as e:
-            print(f"⚠️  {model_name} quota exceeded, trying next model…")
-            last_error = e
-            time.sleep(1)
-        except Exception as e:
-            print(f"⚠️  {model_name} failed: {e}")
-            last_error = e
+    # 3️⃣  Gemini image models (paid)
+    if _generate_gemini(filepath):
+        return {"url": url, "provider": "gemini", "cached": False}
 
     raise RuntimeError(
-        f"All Gemini image models failed. Last error: {last_error}. "
-        "Please enable billing on your Google AI API key for image generation models."
+        "All image generation providers failed. "
+        "Add HF_TOKEN=hf_xxx to .env for free Hugging Face access (hf.co/settings/tokens)."
     )
