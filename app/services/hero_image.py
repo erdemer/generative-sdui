@@ -28,12 +28,14 @@ os.makedirs(GENERATED_DIR, exist_ok=True)
 # dark space/earth imagery on every model. Use abstract design language instead.
 
 _HF_PROMPT = (
-    "A professional telecom brand hero banner. "
-    "Bold vibrant red gradient background, deep red #E60000 to #CC0000. "
-    "Elegant white abstract wave lines and circular rings overlaid on the red surface. "
-    "Clean modern graphic design, high contrast, bright and energetic. "
-    "Commercial advertising aesthetic, no text, no dark areas, no space, no earth, no night sky. "
-    "Wide landscape banner format, studio quality."
+    "Dynamic telecom 5G speed concept hero banner. "
+    "Vivid red background (#E60000), bright and luminous. "
+    "Multiple white and light-pink glowing speed streaks shooting horizontally across the frame, motion blur effect, high velocity. "
+    "Overlapping translucent concentric signal rings and network node dots in white, suggesting wireless connectivity. "
+    "Subtle red-to-crimson radial glow in center adding depth. "
+    "Ultra-modern, energetic, premium telecom brand aesthetic. "
+    "No text, no dark backgrounds, no space, no earth imagery. "
+    "Wide landscape 16:9 banner, commercial advertising quality."
 )
 
 _POLLINATIONS_PROMPT = (
@@ -154,7 +156,7 @@ def generate_brand_hero_image(concept: str = "") -> dict:
         RuntimeError if all providers fail.
     """
     # Cache key based on a stable string (concept ignored for caching — same brand always)
-    cache_key = hashlib.md5(b"vodafone-hero-v3").hexdigest()[:16]
+    cache_key = hashlib.md5(b"vodafone-hero-v4").hexdigest()[:16]
     filename = f"hero_{cache_key}.jpg"
     filepath = os.path.join(GENERATED_DIR, filename)
     url = f"/static/generated/{filename}"
