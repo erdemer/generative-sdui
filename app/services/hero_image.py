@@ -60,7 +60,8 @@ _GEMINI_MODELS = [
 ]
 
 HF_MODEL = "black-forest-labs/FLUX.1-schnell"
-HF_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
+# api-inference.huggingface.co DNS no longer resolves — use the new router endpoint
+HF_URL = f"https://router.huggingface.co/hf-inference/models/{HF_MODEL}"
 
 
 # ── Individual generators ─────────────────────────────────────────────────────
