@@ -419,7 +419,10 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
 
 EKRAN YAPISI:
 1. Header: Vodafone logosu (Image, w:28, h:28, url:"/static/logo.png") + "5G Cihazlar" başlığı, sağda sepet ve bildirim ikonu
-2. Hero Banner: GÖRSEL YOK — sadece gradient Card (background: "linear-gradient(135deg,#E60000 0%,#FF4444 60%,#FF8A80 100%)"), borderRadius:16, padding:28. İçerik: sol üstte küçük beyaz "5G" badge (bg:rgba(255,255,255,0.25), borderRadius:20), altında "5G Hızıyla Tanışın" h1 beyaz bold, "Yeni Nesil Hız, Uygun Taksitlerle" body rgba(255,255,255,0.85), "Fırsatları Keşfet" beyaz dolgulu buton (bg:#FFFFFF, color:#E60000, fontWeight:700). Sağ tarafta dekoratif beyaz daire/halka şekli (opacity:0.15). Image komponenti KULLANMA.
+2. Hero Banner: Box (position:relative, height:220, borderRadius:16, overflow:hidden) içinde:
+   a) Image (url:"https://source.unsplash.com/800x450/?abstract,red,speed,light,technology", width:"100%", height:220, fit:cover) — parlak kırmızı/turuncu soyut teknoloji görseli
+   b) Üstüne Box overlay (position:absolute, inset:0, background:"linear-gradient(160deg,rgba(230,0,0,0.55) 0%,rgba(180,0,0,0.75) 100%)") — Vodafone kırmızısı bağlar
+   c) En üstte içerik Column (position:absolute, inset:0, padding:24, justifyContent:flex-end): "5G" beyaz badge, "5G Hızıyla Tanışın" h1 beyaz bold, "Yeni Nesil Hız, Uygun Taksitlerle" body rgba(255,255,255,0.9), "Fırsatları Keşfet" butonu (bg:#FFFFFF, color:#E60000, fontWeight:700)
 3. Marka Filtresi: yatay scroll chip strip — Tümü (aktif/accent), Samsung, iPhone, Xiaomi, Oppo
 4. Öne Çıkan Cihazlar başlık satırı + "Tümü →" link
 5. 2-sütun cihaz grid (pattern ⑥):
@@ -438,7 +441,10 @@ RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#6666
 
 SCREEN STRUCTURE:
 1. Header: Vodafone logo (Image, w:28, h:28, url:"/static/logo.png") + "5G Devices" title, cart and notification icons on right
-2. Hero Banner: NO IMAGE — gradient Card only (background: "linear-gradient(135deg,#E60000 0%,#FF4444 60%,#FF8A80 100%)"), borderRadius:16, padding:28. Content: small white "5G" badge top-left (bg:rgba(255,255,255,0.25), borderRadius:20), "Experience 5G Speed" h1 white bold, "Next Gen Speed, Affordable Installments" body rgba(255,255,255,0.85), "Explore Deals" white-filled button (bg:#FFFFFF, color:#E60000, fontWeight:700). Decorative white circle/ring shape on the right (opacity:0.15). Do NOT use an Image component.
+2. Hero Banner: Box (position:relative, height:220, borderRadius:16, overflow:hidden) containing:
+   a) Image (url:"https://source.unsplash.com/800x450/?abstract,red,speed,light,technology", width:"100%", height:220, fit:cover) — bright red/orange abstract tech visual
+   b) Box overlay on top (position:absolute, inset:0, background:"linear-gradient(160deg,rgba(230,0,0,0.55) 0%,rgba(180,0,0,0.75) 100%)") — ties to Vodafone red
+   c) Content Column on top (position:absolute, inset:0, padding:24, justifyContent:flex-end): "5G" white badge, "Experience 5G Speed" h1 white bold, "Next Gen Speed, Affordable Installments" body rgba(255,255,255,0.9), "Explore Deals" button (bg:#FFFFFF, color:#E60000, fontWeight:700)
 3. Brand Filter: horizontal scroll chip strip — All (active/accent), Samsung, iPhone, Xiaomi, Oppo
 4. Featured Devices section header + "All →" link
 5. 2-column device grid (pattern ⑥):
