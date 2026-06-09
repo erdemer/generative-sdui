@@ -205,13 +205,15 @@ PRODUCT IMAGE SEARCH — HIGHEST PRIORITY (for named devices & products):
 - Use search:// ONLY for specific named products/devices you are certain exist.
 - For generic/hero/abstract images: use Pollinations as normal (see below).
 
-POLLINATIONS IMAGE URL RULES (for hero banners, abstract, generic images):
+⚠️ HERO IMAGE OVERRIDE RULE: If the user prompt specifies an explicit url for the hero image (e.g. url:"/static/generated/hero_xxx.jpg"), use that URL EXACTLY as given. Do NOT replace it with a Pollinations URL or any other URL. The provided URL is a pre-generated brand asset.
+
+POLLINATIONS IMAGE URL RULES (for hero banners, abstract, generic images — only when no explicit URL is provided):
 - NEVER use just a product name like "samsung_galaxy_s25" — Pollinations does NOT know brand names.
 - ALWAYS describe the VISUAL APPEARANCE: shape, color, material, context.
 - Smartphone example:   modern_premium_smartphone_titanium_dark_color_floating_on_gradient_background_studio_lighting
 - Smartphone example 2: sleek_black_smartphone_triple_camera_large_screen_product_photography_white_background
-- 5G Hero example:      5g_network_speed_concept_glowing_blue_red_neon_light_trails_futuristic_city_night
-- Tech Hero example:    futuristic_technology_abstract_red_blue_light_streaks_dark_background_digital_speed_concept
+- 5G Hero example:      dynamic_red_speed_streaks_white_light_trails_bright_vivid_red_background_telecom_brand
+- Tech Hero example:    abstract_red_gradient_white_wave_lines_modern_clean_bright_technology_brand
 - CRITICAL: Always write prompt keywords inside the URL in English. Even if the UI text is Turkish, translate visual descriptions to English in the URL.
 - CRITICAL: Every device/phone card MUST contain an Image component. Named products → use search://, unnamed/generic → use Pollinations product_photography.
 
@@ -220,7 +222,7 @@ LAYOUT PATTERNS — apply these exact structures:
 
 ① HERO OVERLAY (mandatory on main screens):
 Box(fillMaxWidth:"true", contentAlignment:"bottomCenter") children:[
-  Image(fillMaxWidth:"true", h:240, contentScale:"crop", url:"https://image.pollinations.ai/prompt/futuristic_5g_network_speed_concept_glowing_red_neon_light_trails_futuristic_city_night?nologo=true&width=800&height=480&model=flux"),
+  Image(fillMaxWidth:"true", h:240, contentScale:"crop", url:"https://image.pollinations.ai/prompt/dynamic_red_speed_streaks_white_light_trails_bright_vivid_red_background_telecom_brand?nologo=true&width=800&height=480&model=flux"),
   Box(fillMaxSize:"true", backgroundColor:"linear-gradient(0deg,#000000e8,#00000000)"),
   Column(fillMaxWidth:"true", padding:"0,16,28,16", verticalArrangement:"spacedby:8") children:[
     Text(h1, white, bold, "Real tagline"),
