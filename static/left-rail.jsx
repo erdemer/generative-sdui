@@ -246,6 +246,7 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
   const [clarifyState, setClarifyState] = React.useState('idle'); // 'idle'|'loading'|'ready'
   const [clarifyQuestions, setClarifyQuestions] = React.useState([]);
   const [clarifyAnswers, setClarifyAnswers] = React.useState({});
+  const [heroImgLoading, setHeroImgLoading] = React.useState(false);
   const prevPromptRef = React.useRef(promptText);
 
   React.useEffect(() => {
@@ -414,74 +415,118 @@ function GenerateContent({ lang, state, promptText, onPromptChange, imagePreview
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {/* Vodafone 5G Campaign — primary template */}
             <div
-              onClick={() => onPromptChange && onPromptChange(lang === 'tr'
-                ? `Vodafone 5G cihaz kampanyası ekranı tasarla.
+              onClick={async () => {
+                if (heroImgLoading) return;
+
+                // ── Helper: build the full prompt given a hero image URL (or null) ──
+                const build5GPrompt = (heroUrl) => {
+                  const heroBannerTR = heroUrl
+                    ? `2. Hero Banner: Box (position:relative, overflow:hidden, borderRadius:16, height:240). İçinde:
+   a) Image (url:"${heroUrl}", width:"100%", height:240, fit:cover) — AI üretilmiş Vodafone marka görseli
+   b) Box overlay (position:absolute, inset:0, background:"linear-gradient(180deg,rgba(0,0,0,0.0) 20%,rgba(0,0,0,0.55) 100%)")
+   c) Column (position:absolute, bottom:0, left:0, right:0, padding:20, gap:6): Text "5G Hızıyla Tanışın" (color:#FFFFFF, fontSize:26, fontWeight:800) + Text "Yeni Nesil Hız, Uygun Taksitlerle" (color:rgba(255,255,255,0.9), fontSize:14) + Button "Fırsatları Keşfet" (background:#FFFFFF, color:#E60000, fontWeight:700, borderRadius:12)`
+                    : `2. Hero Banner: Card (background:"linear-gradient(135deg,#E60000,#CC0000)", borderRadius:16, padding:24). İçinde: Box (background:rgba(255,255,255,0.2), borderRadius:20, paddingH:10, paddingV:3, alignSelf:flex-start): Text "5G" (color:#FFFFFF, fontWeight:700). Text "5G Hızıyla Tanışın" (color:#FFFFFF, fontSize:26, fontWeight:800). Text "Yeni Nesil Hız, Uygun Taksitlerle" (color:rgba(255,255,255,0.85), fontSize:14). Button "Fırsatları Keşfet" (background:#FFFFFF, color:#E60000, fontWeight:700, borderRadius:12, width:100%)`;
+
+                  const heroBannerEN = heroUrl
+                    ? `2. Hero Banner: Box (position:relative, overflow:hidden, borderRadius:16, height:240). Inside:
+   a) Image (url:"${heroUrl}", width:"100%", height:240, fit:cover) — AI-generated Vodafone brand visual
+   b) Box overlay (position:absolute, inset:0, background:"linear-gradient(180deg,rgba(0,0,0,0.0) 20%,rgba(0,0,0,0.55) 100%)")
+   c) Column (position:absolute, bottom:0, left:0, right:0, padding:20, gap:6): Text "Experience 5G Speed" (color:#FFFFFF, fontSize:26, fontWeight:800) + Text "Next Gen Speed, Affordable Installments" (color:rgba(255,255,255,0.9), fontSize:14) + Button "Explore Deals" (background:#FFFFFF, color:#E60000, fontWeight:700, borderRadius:12)`
+                    : `2. Hero Banner: Card (background:"linear-gradient(135deg,#E60000,#CC0000)", borderRadius:16, padding:24). Inside: Box (background:rgba(255,255,255,0.2), borderRadius:20, paddingH:10, paddingV:3, alignSelf:flex-start): Text "5G" (color:#FFFFFF, fontWeight:700). Text "Experience 5G Speed" (color:#FFFFFF, fontSize:26, fontWeight:800). Text "Next Gen Speed, Affordable Installments" (color:rgba(255,255,255,0.85), fontSize:14). Button "Explore Deals" (background:#FFFFFF, color:#E60000, fontWeight:700, borderRadius:12, width:100%)`;
+
+                  return lang === 'tr'
+                    ? `Vodafone 5G cihaz kampanyası ekranı tasarla.
 
 EKRAN YAPISI:
 1. Header: Vodafone logosu (Image, w:28, h:28, url:"/static/logo.png") + "5G Cihazlar" başlığı, sağda sepet ve bildirim ikonu
-2. Hero Banner: Tek bir Card componenti (props — background:"linear-gradient(135deg,#E60000 0%,#CC0000 100%)", borderRadius:16, padding:24, marginH:0). Card içinde YALNIZCA şunlar var, başka hiçbir şey (Image komponenti KESİNLİKLE YOK):
-   • Row (alignItems:center, marginBottom:12): Box (background:"rgba(255,255,255,0.25)", borderRadius:20, paddingH:10, paddingV:3) içinde Text "5G" (color:"#FFFFFF", fontSize:11, fontWeight:700)
-   • Text "5G Hızıyla Tanışın" (color:"#FFFFFF", fontSize:26, fontWeight:800, marginBottom:6)
-   • Text "Yeni Nesil Hız, Uygun Taksitlerle" (color:"rgba(255,255,255,0.85)", fontSize:14, marginBottom:20)
-   • Button "Fırsatları Keşfet" (background:"#FFFFFF", color:"#E60000", fontWeight:700, borderRadius:12, width:"100%")
+${heroBannerTR}
 3. Marka Filtresi: yatay scroll chip strip — Tümü (aktif/accent), Samsung, iPhone, Xiaomi, Oppo
 4. Öne Çıkan Cihazlar başlık satırı + "Tümü →" link
 5. 2-sütun cihaz grid (pattern ⑥):
    - Samsung Galaxy S25 Ultra 256GB (url: search://Samsung Galaxy S25 Ultra) — eski: 74.999 TL, kampanya: ₺54.999, taksit: ₺2.291/ay × 24, badge: "5G"
    - iPhone 16 Pro 256GB (url: search://iPhone 16 Pro) — eski: 84.999 TL, kampanya: ₺69.999, taksit: ₺2.916/ay × 24, badge: "Yeni"
-6. Takas Kampanyası Banner (pattern ⑦ — sadece gradient Card, image YOK): "Eski Cihazını Getir, Yenisini Al!" + "Ekstra 5.000 TL indirim kazan", "Başvur" beyaz buton
+6. Takas Kampanyası Banner (sadece gradient Card, image YOK): "Eski Cihazını Getir, Yenisini Al!" + "Ekstra 5.000 TL indirim kazan", "Başvur" beyaz buton
 7. Fırsat Cihazları başlık satırı
 8. 2-sütun cihaz grid (pattern ⑥):
    - Xiaomi 15 Ultra 512GB (url: search://Xiaomi 15 Ultra) — ₺39.999, ₺1.666/ay × 24, badge: "%25 İndirim"
    - Samsung Galaxy A56 5G 128GB (url: search://Samsung Galaxy A56 5G) — ₺17.999, ₺749/ay × 24, badge: "5G"
 
-⛔ BottomBar / alt navigasyon çubuğu EKLEME. Bu ekran tek başına bir kampanya akışıdır; alt bar İSTENMİYOR.
-
+⛔ BottomBar / alt navigasyon çubuğu EKLEME.
 RENK PALETİ: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
-                : `Design a Vodafone 5G device campaign screen.
+                    : `Design a Vodafone 5G device campaign screen.
 
 SCREEN STRUCTURE:
 1. Header: Vodafone logo (Image, w:28, h:28, url:"/static/logo.png") + "5G Devices" title, cart and notification icons on right
-2. Hero Banner: A single Card component (props — background:"linear-gradient(135deg,#E60000 0%,#CC0000 100%)", borderRadius:16, padding:24, marginH:0). Inside the Card ONLY these elements, nothing else (absolutely NO Image component):
-   • Row (alignItems:center, marginBottom:12): Box (background:"rgba(255,255,255,0.25)", borderRadius:20, paddingH:10, paddingV:3) containing Text "5G" (color:"#FFFFFF", fontSize:11, fontWeight:700)
-   • Text "Experience 5G Speed" (color:"#FFFFFF", fontSize:26, fontWeight:800, marginBottom:6)
-   • Text "Next Gen Speed, Affordable Installments" (color:"rgba(255,255,255,0.85)", fontSize:14, marginBottom:20)
-   • Button "Explore Deals" (background:"#FFFFFF", color:"#E60000", fontWeight:700, borderRadius:12, width:"100%")
+${heroBannerEN}
 3. Brand Filter: horizontal scroll chip strip — All (active/accent), Samsung, iPhone, Xiaomi, Oppo
 4. Featured Devices section header + "All →" link
 5. 2-column device grid (pattern ⑥):
    - Samsung Galaxy S25 Ultra 256GB (url: search://Samsung Galaxy S25 Ultra) — old: $1,299, campaign: $999, installment: $41.6/mo × 24, badge: "5G"
    - iPhone 16 Pro 256GB (url: search://iPhone 16 Pro) — old: $1,499, campaign: $1,199, installment: $49.9/mo × 24, badge: "New"
-6. Trade-in Banner (pattern ⑦ — gradient Card only, NO image): "Trade in your old phone, get a new one!" + "$200 extra discount", white "Apply" button
+6. Trade-in Banner (gradient Card only, NO image): "Trade in your old phone!" + "$200 extra discount", white "Apply" button
 7. Deal Devices section header
 8. 2-column device grid (pattern ⑥):
    - Xiaomi 15 Ultra 512GB (url: search://Xiaomi 15 Ultra) — $699, $29.1/mo × 24, badge: "25% Off"
    - Samsung Galaxy A56 5G 128GB (url: search://Samsung Galaxy A56 5G) — $349, $14.5/mo × 24, badge: "5G"
 
-⛔ Do NOT add a BottomBar / bottom navigation. This screen is a standalone campaign flow; no bottom bar wanted.
+⛔ Do NOT add a BottomBar.
+COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`;
+                };
 
-COLOR PALETTE: bg:#FFFFFF, surface:#F4F4F4, accent:#E60000, fg:#1A1A1A, fg3:#666666`
-              )}
+                // ── Step 1: generate brand hero image ──
+                setHeroImgLoading(true);
+                let heroUrl = null;
+                try {
+                  const res = await fetch('/api/brand/generate_hero_image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ concept: 'Vodafone 5G campaign vivid red energetic speed' }),
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    if (data.status === 'ok' && data.url) heroUrl = data.url;
+                  }
+                } catch (e) {
+                  console.warn('Hero image generation failed, using gradient fallback', e);
+                } finally {
+                  setHeroImgLoading(false);
+                }
+
+                // ── Step 2: build prompt with image URL (or gradient fallback) ──
+                const prompt = build5GPrompt(heroUrl);
+                onPromptChange && onPromptChange(prompt);
+                onGenerate && onGenerate(prompt);
+              }}
               style={{
-                padding: '8px 10px', borderRadius: 8, cursor: 'pointer',
+                padding: '8px 10px', borderRadius: 8, cursor: heroImgLoading ? 'wait' : 'pointer',
                 background: 'linear-gradient(135deg, #E6000012, #E6000006)',
                 border: '1px solid #E6000030',
                 display: 'flex', alignItems: 'center', gap: 8,
                 transition: 'all 0.15s',
+                opacity: heroImgLoading ? 0.7 : 1,
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#E60000'; e.currentTarget.style.background = 'linear-gradient(135deg, #E6000020, #E6000010)'; }}
+              onMouseEnter={e => { if (!heroImgLoading) { e.currentTarget.style.borderColor = '#E60000'; e.currentTarget.style.background = 'linear-gradient(135deg, #E6000020, #E6000010)'; }}}
               onMouseLeave={e => { e.currentTarget.style.borderColor = '#E6000030'; e.currentTarget.style.background = 'linear-gradient(135deg, #E6000012, #E6000006)'; }}
             >
-              <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>📱</span>
+              {heroImgLoading
+                ? <span style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid #E6000040', borderTopColor: '#E60000', animation: 'spin 0.7s linear infinite', display: 'inline-block', flexShrink: 0 }} />
+                : <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>📱</span>
+              }
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 11, fontWeight: 600, color: '#E60000' }}>
-                  {lang === 'tr' ? 'Vodafone 5G Cihaz Kampanyası' : 'Vodafone 5G Device Campaign'}
+                  {heroImgLoading
+                    ? (lang === 'tr' ? 'Marka görseli üretiliyor…' : 'Generating brand image…')
+                    : (lang === 'tr' ? 'Vodafone 5G Cihaz Kampanyası' : 'Vodafone 5G Device Campaign')
+                  }
                 </div>
                 <div style={{ fontSize: 9.5, color: 'var(--fg-3)', marginTop: 1 }}>
-                  {lang === 'tr' ? 'Hero + filtre + 4 cihaz + takas banner' : 'Hero + filter + 4 devices + trade-in banner'}
+                  {heroImgLoading
+                    ? (lang === 'tr' ? 'Gemini ile AI görsel oluşturuluyor' : 'Generating AI visual with Gemini')
+                    : (lang === 'tr' ? 'AI hero görseli + filtre + 4 cihaz + takas banner' : 'AI hero image + filter + 4 devices + trade-in banner')
+                  }
                 </div>
               </div>
-              <Icon name="chev-r" size={10} style={{ color: '#E6000080', flexShrink: 0 }}/>
+              {!heroImgLoading && <Icon name="chev-r" size={10} style={{ color: '#E6000080', flexShrink: 0 }}/>}
             </div>
 
             {/* Vodafone Tarife Karşılaştırma */}
