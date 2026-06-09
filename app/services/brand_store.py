@@ -77,8 +77,8 @@ GÖRSEL KALİTESİ (CRITICAL FOR GENERATOR)
 • Cihaz görselleri: ürün odaklı, temiz/beyaz arka plan, stüdyo ışığı
   - Image URL keyword: prompt içerisindeki görsel tanımları mutlaka İNGİLİZCE olmalıdır.
   - Örnek: url: "https://image.pollinations.ai/prompt/sleek_premium_smartphone_dark_titanium_floating_on_white_background,product_photography,studio_lighting,clean_white_background?nologo=true&width=400&height=400&model=flux"
-• Hero görseli: 5G teknoloji temalı, parlak, dinamik
-  - Örnek: url: "https://image.pollinations.ai/prompt/futuristic_5g_network_speed_concept_glowing_red_neon_light_trails_futuristic_city_night?nologo=true&width=800&height=480&model=flux"
+• Hero görseli: Prompt'ta belirtilen URL'i AYNEN kullan — kendi URL üretme, değiştirme.
+  ⛔ Pollinations veya başka bir AI görsel servisi URL'i OLUŞTURMA. Prompt'taki url değerini birebir kopyala.
 • contentScale: ürün kartlarında "fit", hero'da "crop"
 • Tüm Image'larda fillMaxWidth:"true"
 
