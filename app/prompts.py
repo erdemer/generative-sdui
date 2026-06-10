@@ -217,6 +217,7 @@ Box(fillMaxWidth:"true", contentAlignment:"bottomCenter") children:[
 ]
 → contentAlignment:"bottomCenter" pins text+button to bottom of image.
 → NEVER put title/button outside the Box or above the image.
+→ Hero Box is full-bleed: NO horizontal padding/margin on it or its parent, and NEVER wrap it in a Card — it must span edge-to-edge.
 
 ② SECTION HEADER (before every list/grid):
 Row(horizontalArrangement:spacebetween, verticalAlignment:center, padding:"20,0,10,0") children:[
@@ -433,6 +434,7 @@ PRIORITY 1 — STRUCTURAL (always fix):
 - Button missing fillMaxWidth:"true" (unless it is a small inline pill in a Row with non-weight siblings) → add it
 - Empty children:[] → remove the container
 - Hero Box missing contentAlignment:"bottomCenter" → add it
+- Hero Box has horizontal padding/margin or is wrapped in a Card → remove the padding/margin and unwrap the Card so the hero spans edge-to-edge
 
 PRIORITY 2 — VISUAL (fix only if clearly broken):
 - Text on dark surface without explicit light color → set color:#ffffff or color:#ffffffcc
