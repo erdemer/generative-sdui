@@ -98,7 +98,15 @@ function computeSDUIStyle(node, p) {
     const parts = String(v).split(',').map(x => x.trim());
     return parts.map(x => (/^\d+$/.test(x) ? x + 'px' : x)).join(' ');
   };
-  if (p.padding != null) s.padding = parsePadding(p.padding);
+  // Always expand `padding` into the four longhand sides — never mix the
+  // `padding` shorthand with `paddingTop` etc. in the same style object.
+  // React warns (and can apply stale values across re-renders) when a
+  // shorthand and its longhand counterpart both appear in a style update.
+  if (p.padding != null) {
+    const parts = String(p.padding).split(',').map(x => x.trim()).map(x => (/^\d+$/.test(x) ? x + 'px' : x));
+    const [top, right = top, bottom = top, left = right] = parts;
+    s.paddingTop = top; s.paddingRight = right; s.paddingBottom = bottom; s.paddingLeft = left;
+  }
   if (p.horizontalPadding != null) { s.paddingLeft = toPx(p.horizontalPadding); s.paddingRight = toPx(p.horizontalPadding); }
   if (p.verticalPadding != null) { s.paddingTop = toPx(p.verticalPadding); s.paddingBottom = toPx(p.verticalPadding); }
   if (p.paddingTop != null) s.paddingTop = toPx(p.paddingTop);
@@ -222,15 +230,6 @@ function computeSDUIStyle(node, p) {
 
   // Safe area: push content below notch/status bar
   if (p.statusBarPadding === 'true' || p.statusBarPadding === true) {
-    // Expand shorthand `padding` to longhand sides first — mixing the
-    // `padding` shorthand with `paddingTop` in the same style object is
-    // order-dependent and can silently zero out paddingTop.
-    if (s.padding != null) {
-      const vals = String(s.padding).split(/\s+/);
-      const [top, right = top, bottom = top, left = right] = vals;
-      s.paddingTop = top; s.paddingRight = right; s.paddingBottom = bottom; s.paddingLeft = left;
-      delete s.padding;
-    }
     const existingTop = s.paddingTop ? parseInt(s.paddingTop) : 0;
     s.paddingTop = (existingTop + 44) + 'px';
   }
@@ -303,7 +302,9 @@ function SDUINode({ node, selectedIds, onSelectId }) {
     }
 
     case 'Button': {
-      const bs = { ...style, display:'flex', alignItems:'center', justifyContent: p.textAlign === 'start' ? 'flex-start' : p.textAlign === 'end' ? 'flex-end' : 'center', cursor:'pointer', userSelect:'none', border:0, fontFamily:'inherit', fontWeight: style.fontWeight || '600', padding: style.padding || '10px 20px', borderRadius: style.borderRadius || '8px' };
+      const hasPadding = style.padding != null || style.paddingTop != null || style.paddingRight != null || style.paddingBottom != null || style.paddingLeft != null;
+      const bs = { ...style, display:'flex', alignItems:'center', justifyContent: p.textAlign === 'start' ? 'flex-start' : p.textAlign === 'end' ? 'flex-end' : 'center', cursor:'pointer', userSelect:'none', border:0, fontFamily:'inherit', fontWeight: style.fontWeight || '600', borderRadius: style.borderRadius || '8px' };
+      if (!hasPadding) { bs.paddingTop = '10px'; bs.paddingBottom = '10px'; bs.paddingLeft = '20px'; bs.paddingRight = '20px'; }
       return <div {...nodeAttrs} onClick={combinedClick} style={bs}>{p.text || ''}</div>;
     }
 
