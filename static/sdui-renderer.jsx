@@ -222,6 +222,15 @@ function computeSDUIStyle(node, p) {
 
   // Safe area: push content below notch/status bar
   if (p.statusBarPadding === 'true' || p.statusBarPadding === true) {
+    // Expand shorthand `padding` to longhand sides first — mixing the
+    // `padding` shorthand with `paddingTop` in the same style object is
+    // order-dependent and can silently zero out paddingTop.
+    if (s.padding != null) {
+      const vals = String(s.padding).split(/\s+/);
+      const [top, right = top, bottom = top, left = right] = vals;
+      s.paddingTop = top; s.paddingRight = right; s.paddingBottom = bottom; s.paddingLeft = left;
+      delete s.padding;
+    }
     const existingTop = s.paddingTop ? parseInt(s.paddingTop) : 0;
     s.paddingTop = (existingTop + 44) + 'px';
   }
@@ -381,7 +390,7 @@ function SDUINode({ node, selectedIds, onSelectId }) {
   }
 }
 
-function SDUIRenderer({ layout, selectedIds, onSelectId }) {
+function SDUIRenderer({ layout, selectedIds, onSelectId, forceSafeArea }) {
   if (!layout) return (
     <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', gap:10, color:'var(--fg-3)', fontSize:12, textAlign:'center', padding:24 }}>
       <span style={{ fontSize:24, opacity:0.3 }}>✦</span>
@@ -397,6 +406,12 @@ function SDUIRenderer({ layout, selectedIds, onSelectId }) {
     const kids = layout.children || [];
     const alreadyHasBar = kids.some(c => c && c.type === 'BottomBar');
     if (!alreadyHasBar) root = { ...layout, children: [...kids, strayBar] };
+  }
+  // Device frame (iPhone notch / Android punch-hole) sits on top of the content
+  // — guarantee the root always reserves status-bar space so it never gets
+  // visually clipped, regardless of whether the AI set statusBarPadding itself.
+  if (forceSafeArea) {
+    root = { ...root, props: { ...(root.props || {}), statusBarPadding: 'true' } };
   }
   return (
     <div className="sdui-device-content">

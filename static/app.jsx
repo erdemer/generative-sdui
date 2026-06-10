@@ -760,7 +760,7 @@ function App() {
               </div>
             )}
             {appState === 'streaming' && <window.SDUIMocks.MockStreamingScreen lang={lang} progress={generateProgress}/>}
-            {appState === 'editing' && <SDUIRenderer layout={currentJson?.layout} selectedIds={selectedIds} onSelectId={handleSelectNode}/>}
+            {appState === 'editing' && <SDUIRenderer layout={currentJson?.layout} selectedIds={selectedIds} onSelectId={handleSelectNode} forceSafeArea={device !== 'web'}/>}
           </window.SDUI.CanvasPane>
 
           <window.SDUI.AttributesPane lang={lang} selection={attrSelection} onChangeProp={handlePropChange} onDuplicate={handleDuplicate} onDelete={handleDelete} onRefine={handleRefine}/>
