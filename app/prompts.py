@@ -189,33 +189,18 @@ TECHNICAL RULES:
 - Equal-width siblings: weight:1 on each child
 - onClick: {"type":"navigate","destination":"screen"} | {"type":"toast","message":"..."}
 
-IMAGES — photorealistic quality:
-- Hero:      h:240, url: https://image.pollinations.ai/prompt/{vivid_scene_in_english},professional_photography,cinematic_lighting,high_detail?nologo=true&width=800&height=480&model=flux
-- Card img:  h:155, url: https://image.pollinations.ai/prompt/{visual_desc_in_english},product_shot,studio_lighting?nologo=true&width=400&height=320&model=flux
-- Product:   h:180, url: https://image.pollinations.ai/prompt/{product_visual_desc_in_english},product_photography,studio_lighting,clean_white_background,centered_object?nologo=true&width=400&height=400&model=flux
-- Thumbnail: h:72,  url: https://image.pollinations.ai/prompt/{desc_in_english},clean_background?nologo=true&width=200&height=200&model=flux
-- Always contentScale:"crop" for hero, contentScale:"fit" for product shots | use underscores in desc, be vivid
+IMAGES:
+- Hero:      h:240, contentScale:"crop", url: https://image.pollinations.ai/prompt/{vivid_scene_en},professional_photography,cinematic_lighting,high_detail?nologo=true&width=800&height=480&model=flux
+- Card img:  h:155, url: https://image.pollinations.ai/prompt/{visual_desc_en},product_shot,studio_lighting?nologo=true&width=400&height=320&model=flux
+- Product:   h:180, contentScale:"fit", url: https://image.pollinations.ai/prompt/{product_visual_desc_en},product_photography,studio_lighting,clean_white_background,centered_object?nologo=true&width=400&height=400&model=flux
+- Thumbnail: h:72,  url: https://image.pollinations.ai/prompt/{desc_en},clean_background?nologo=true&width=200&height=200&model=flux
+- Pollinations prompts: describe VISUAL appearance only (shape/color/material/context), NEVER brand names — e.g. modern_premium_smartphone_titanium_dark_color_floating_on_gradient_background_studio_lighting. Always English, underscores, vivid. Every device/phone card MUST contain an Image.
 
-PRODUCT IMAGE SEARCH — HIGHEST PRIORITY (for named devices & products):
-- When the UI contains a SPECIFIC named product (e.g. "Samsung Galaxy S25 Ultra", "Xiaomi 15 Ultra", "iPhone 16 Pro Max", "Sony Xperia 1 VI"), use the search:// URL format:
-  url: "search://Samsung Galaxy S25 Ultra"
-  url: "search://Xiaomi 15 Ultra"
-  url: "search://iPhone 16 Pro Max"
-- The backend will automatically find the REAL official product photo and replace the URL.
-- Use search:// ONLY for specific named products/devices you are certain exist.
-- For generic/hero/abstract images: use Pollinations as normal (see below).
+PRODUCT IMAGE SEARCH — HIGHEST PRIORITY for named devices (e.g. "Samsung Galaxy S25 Ultra", "iPhone 16 Pro Max"):
+- url: "search://<exact product name>" — backend replaces it with the real official product photo.
+- Use ONLY for specific named products you're certain exist; otherwise use Pollinations as above.
 
-⚠️ HERO IMAGE OVERRIDE RULE: If the user prompt specifies an explicit url for the hero image (e.g. url:"/static/generated/hero_xxx.jpg"), use that URL EXACTLY as given. Do NOT replace it with a Pollinations URL or any other URL. The provided URL is a pre-generated brand asset.
-
-POLLINATIONS IMAGE URL RULES (for hero banners, abstract, generic images — only when no explicit URL is provided):
-- NEVER use just a product name like "samsung_galaxy_s25" — Pollinations does NOT know brand names.
-- ALWAYS describe the VISUAL APPEARANCE: shape, color, material, context.
-- Smartphone example:   modern_premium_smartphone_titanium_dark_color_floating_on_gradient_background_studio_lighting
-- Smartphone example 2: sleek_black_smartphone_triple_camera_large_screen_product_photography_white_background
-- 5G Hero example:      dynamic_red_speed_streaks_white_light_trails_bright_vivid_red_background_telecom_brand
-- Tech Hero example:    abstract_red_gradient_white_wave_lines_modern_clean_bright_technology_brand
-- CRITICAL: Always write prompt keywords inside the URL in English. Even if the UI text is Turkish, translate visual descriptions to English in the URL.
-- CRITICAL: Every device/phone card MUST contain an Image component. Named products → use search://, unnamed/generic → use Pollinations product_photography.
+⚠️ HERO IMAGE OVERRIDE: if the user prompt gives an explicit hero url (e.g. "/static/generated/hero_xxx.jpg"), use it EXACTLY as-is — never replace with Pollinations.
 
 
 LAYOUT PATTERNS — apply these exact structures:
@@ -349,16 +334,10 @@ QUALITY — every output must pass ALL of these:
 ✓ Prices in ₺ (TL) format with realistic Turkey market values
 ✓ Old price with textDecoration:"line-through" + new campaign price in bold accent
 
-CARD CONSISTENCY RULES (Figma quality):
-✓ All Image components → always set fillMaxWidth:"true" unless image has explicit width
-✓ All Button components → always set fillMaxWidth:"true" unless the Button is a small inline pill inside a Row alongside other non-weight children
-✓ Cards in the SAME Row → identical internal structure (same children types in same order)
-✓ Multi-line card content → Column(weight:1) + Spacer(weight:1) before footer section
-✓ Price/CTA row → always the LAST child of card Column, anchored to bottom via Spacer
-✓ Never truncate card titles differently in the same row — use the same style
-✓ Discount badges → Box child overlay (not inside the Column body)
-✓ Two-column grid cards → BOTH must have: image → title → desc → Spacer → rating → price (exact same sequence)
-✓ Product campaign cards → BOTH must have: image+badge → name → specs → Spacer → old price → new price → installment → CTA (exact same sequence)
+CARD CONSISTENCY:
+✓ Image → always fillMaxWidth:"true" unless an explicit width is needed
+✓ Button → always fillMaxWidth:"true" unless it's a small inline pill in a Row with non-weight siblings
+✓ Cards in the same Row → identical structure and child order (image → title → desc → Spacer → rating/footer → price)
 
 COMPONENTS:
 Column: verticalArrangement(top|bottom|center|spacebetween|spaceevenly|spacedby:N), horizontalAlignment(start|center|end), scroll:"true"
