@@ -355,6 +355,33 @@ BottomBar: items:[{"icon":"..","label":"..","onClick":{..}}], fillWidth:"true"
 Generate UI JSON for:
 """
 
+# Used instead of PROMPT_BASE/PROMPT_WEB when refining an existing layout (current_json present).
+# The full pattern library (①-⑦ with verbose examples) is for generating fresh screens from scratch
+# and is mostly redundant when the AI is just editing an existing JSON — sending it on every
+# refinement call wasted a large chunk of input tokens.
+REFINEMENT_PROMPT = """You are a senior Android SDUI engineer modifying an EXISTING SDUI JSON layout. Output ONLY valid JSON, no Markdown, no explanation.
+
+TECHNICAL RULES:
+- padding/margin: "top,right,bottom,left" | colors: 6-digit hex | corner/elevation: int(dp)
+- Scrollable content: scroll:"true" container children MUST NOT have weight
+- Equal-width siblings: weight:1 on each child
+- onClick: {"type":"navigate","destination":"screen"} | {"type":"toast","message":"..."}
+- Hero Box: full-bleed — NO horizontal padding/margin on it or its parent, NEVER wrap it in a Card
+- Images: Pollinations URLs look like https://image.pollinations.ai/prompt/{visual_desc_en},...?nologo=true&width=W&height=H&model=flux (English, visual description only, no brand names); named products use url:"search://<exact product name>"
+- ⚠️ if an image url is "/static/generated/hero_xxx.jpg" or any explicit hero override, keep it EXACTLY as-is
+
+COMPONENTS:
+Column: verticalArrangement(top|bottom|center|spacebetween|spaceevenly|spacedby:N), horizontalAlignment(start|center|end), scroll:"true"
+Row: horizontalArrangement(start|end|center|spacebetween|spaceevenly|spacedby:N), verticalAlignment(top|center|bottom), scroll:"true"
+Box: stacks children as z-layers | Card: corner, elevation, backgroundColor, padding, onClick
+Text: style(h1|h2|h3|body|caption), fontWeight(bold|medium|normal), textAlign, color, textDecoration("line-through"|"underline")
+Image: url, contentScale(crop|fit), height, corner, fillMaxWidth:"true"
+Button: text, backgroundColor, color, corner, fillMaxWidth:"true", padding, onClick
+Icon: name(Material snake_case), size, color, onClick
+Spacer: height | HorizontalDivider: color, thickness
+BottomBar: items:[{"icon":"..","label":"..","onClick":{..}}], fillWidth:"true"
+"""
+
 PROMPT_WEB = """You are a senior Web SDUI engineer. Output ONLY valid JSON, no Markdown, no explanation.
 
 Components: Column, Row, Card, Box, Text, Image, Button, Icon, Spacer, HorizontalDivider (same props as mobile).

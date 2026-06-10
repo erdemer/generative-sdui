@@ -6,7 +6,7 @@ from PIL import Image
 
 import app.state as state
 from app.ai_client import generate_with_retry
-from app.prompts import PROMPT_BASE, PROMPT_WEB, SMART_CROP_PROMPT, CLARIFY_PROMPT, build_design_system_block, build_data_context_block
+from app.prompts import PROMPT_BASE, PROMPT_WEB, REFINEMENT_PROMPT, SMART_CROP_PROMPT, CLARIFY_PROMPT, build_design_system_block, build_data_context_block
 from app.services.image import process_crops
 from app.services.image_search import resolve_search_urls
 
@@ -70,7 +70,12 @@ async def generate_ui(
             print("📥 Manuel JSON modu")
             parsed_json = json_repair.loads(prompt)
         else:
-            base_prompt = PROMPT_WEB if platform == "web" else PROMPT_BASE
+            if current_json:
+                # Refinement: AI is editing an existing layout, not generating from
+                # scratch — skip the full pattern library to cut input tokens.
+                base_prompt = REFINEMENT_PROMPT
+            else:
+                base_prompt = PROMPT_WEB if platform == "web" else PROMPT_BASE
             # Inject brand rules (always, if set)
             if state.brand_rules and state.brand_rules.strip():
                 brand_block = (
