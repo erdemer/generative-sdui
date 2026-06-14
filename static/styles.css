@@ -212,7 +212,7 @@ input, textarea { font-family: inherit; color: inherit; }
 /* Top bar */
 .topbar {
   display: grid;
-  grid-template-columns: 260px 1fr 260px;
+  grid-template-columns: minmax(260px, auto) minmax(0, 1fr) minmax(260px, auto);
   align-items: center;
   height: 48px;
   background: var(--panel);
@@ -429,6 +429,8 @@ input, textarea { font-family: inherit; color: inherit; }
   background: var(--panel-2);
   color: var(--fg-2);
   border: 1px solid var(--line);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .chip.brand { background: var(--brand-soft); color: var(--brand); border-color: transparent; }
 .chip.ok { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
