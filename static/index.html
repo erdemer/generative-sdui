@@ -15,7 +15,10 @@
     #root { height: 100%; }
     .studio { width: 100vw !important; height: 100vh !important; border-radius: 0 !important; border: none !important; }
     .pane.canvas { position: relative; }
-    .sdui-device-content { width: 100%; height: 100%; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; -webkit-font-smoothing: antialiased; }
+    /* Default text color for the simulated phone screen. The device screen is always light,
+       so uncolored SDUI Text must default to dark — never inherit the Studio chrome's --fg
+       (near-white in dark theme), which would make titles without an explicit color invisible. */
+    .sdui-device-content { width: 100%; height: 100%; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; color: #1a1a1a; -webkit-font-smoothing: antialiased; }
     .sdui-device-content::-webkit-scrollbar { display: none; }
     .m-skeleton { background: linear-gradient(90deg,oklch(0.94 0.005 250) 0%,oklch(0.97 0.005 250) 50%,oklch(0.94 0.005 250) 100%); background-size: 200% 100%; animation: shimmer 1.6s infinite; border-radius: 6px; }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
