@@ -220,7 +220,8 @@ input, textarea { font-family: inherit; color: inherit; }
   padding: 0 var(--s-4);
 }
 .topbar-left { display: flex; align-items: center; gap: var(--s-3); }
-.topbar-center { display: flex; justify-content: center; align-items: center; gap: var(--s-2); }
+.topbar-center { display: flex; justify-content: center; align-items: center; gap: var(--s-2); overflow: hidden; min-width: 0; }
+.topbar-center .seg { flex-shrink: 0; }
 .topbar-right { display: flex; justify-content: flex-end; align-items: center; gap: var(--s-2); }
 
 .brand-mark {
