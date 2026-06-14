@@ -237,7 +237,7 @@ function computeSDUIStyle(node, p) {
   return s;
 }
 
-function SDUINode({ node, selectedIds, onSelectId }) {
+function SDUINode({ node, selectedIds, onSelectId, pinBottom }) {
   if (!node) return null;
   const p = node.props || {};
   // String coerce on both sides — selectedIds may have come from DOM (string)
@@ -305,6 +305,10 @@ function SDUINode({ node, selectedIds, onSelectId }) {
       const hasPadding = style.padding != null || style.paddingTop != null || style.paddingRight != null || style.paddingBottom != null || style.paddingLeft != null;
       const bs = { ...style, display:'flex', alignItems:'center', justifyContent: p.textAlign === 'start' ? 'flex-start' : p.textAlign === 'end' ? 'flex-end' : 'center', cursor:'pointer', userSelect:'none', border:0, fontFamily:'inherit', fontWeight: style.fontWeight || '600', borderRadius: style.borderRadius || '8px' };
       if (!hasPadding) { bs.paddingTop = '10px'; bs.paddingBottom = '10px'; bs.paddingLeft = '20px'; bs.paddingRight = '20px'; }
+      // Pin a trailing CTA to the bottom of a stretched card so buttons across an
+      // equal-height card row line up — `margin-top:auto` consumes free space only
+      // when the card is taller than its content, and is a no-op otherwise.
+      if (pinBottom) bs.marginTop = 'auto';
       return <div {...nodeAttrs} onClick={combinedClick} style={bs}>{p.text || ''}</div>;
     }
 
@@ -315,8 +319,19 @@ function SDUINode({ node, selectedIds, onSelectId }) {
       return <span {...nodeAttrs} onClick={combinedClick} style={is} className="material-icons" aria-hidden="true">{p.name || 'help_outline'}</span>;
     }
 
-    case 'Card':
-      return <div {...nodeAttrs} onClick={combinedClick} style={{ ...style, cursor: p.onClick ? 'pointer' : undefined }}>{children}</div>;
+    case 'Card': {
+      // When a card ends in a CTA button and the layout did NOT supply a Spacer
+      // to push it down, pin that button to the bottom so a row of equal-height
+      // cards lines up its CTAs regardless of differing title/price line counts.
+      const kids = node.children || [];
+      const hasSpacer = kids.some(c => c && c.type === 'Spacer');
+      const lastIdx = kids.length - 1;
+      const cardChildren = kids.map((c, i) => (
+        <SDUINode key={i} node={c} selectedIds={selectedIds} onSelectId={onSelectId}
+          pinBottom={!hasSpacer && i === lastIdx && c && c.type === 'Button'}/>
+      ));
+      return <div {...nodeAttrs} onClick={combinedClick} style={{ ...style, cursor: p.onClick ? 'pointer' : undefined }}>{cardChildren}</div>;
+    }
 
     case 'BottomBar':
       return <div {...nodeAttrs} onClick={onClick} style={style}>{children}</div>;
